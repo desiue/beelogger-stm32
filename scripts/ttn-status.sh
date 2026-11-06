@@ -30,3 +30,10 @@ print(ok("disabled" in m.get("adr",{}))+"ADR aus:", "disabled" in m.get("adr",{}
 up=[(u["received_at"][11:19],u["payload"]["mac_payload"]["f_hdr"].get("f_cnt",0)) for u in st.get("recent_uplinks",[])]
 print("   letzte Uplinks (UTC, FCnt):", up[-5:])
 '
+# Application Server zählt Downlinks selbst weiter; "Reset session and MAC state" setzt ihn nicht zurück
+curl -s -H "Authorization: Bearer $KEY" \
+  "https://${TTN_CLUSTER:-eu1}.cloud.thethings.network/api/v3/as/applications/$APP/devices/$DEV?field_mask=session.last_a_f_cnt_down" |
+python3 -c '
+import json,sys
+a=int(json.load(sys.stdin).get("session",{}).get("last_a_f_cnt_down",0))
+print(("ok " if a<65536 else "!! ")+"AS-FCntDown", a, "(muss < 65536 sein; sonst AS-Zähler zurücksetzen)")'

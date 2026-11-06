@@ -167,8 +167,8 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 ## Offene Punkte (Stand 06.11.2026, Ende Sitzung 2)
 
 **Paket 2 (Rest)**
-- [ ] blue05: Application-Server-Downlink-Zähler (224648) zurücksetzen. Wege prüfen: Konsole → Gerät → Application layer bzw. ABP-Session (AppSKey neu speichern), sonst Gerät in TTN löschen und mit gleichen ABP-Daten neu anlegen. Danach `0F` erneut, Abnahme F103.
-- [ ] In die TTN-Anleitung: FCntDown muss < 65536 sein, in NS **und** AS; `scripts/ttn-status.sh` zeigt nur den NS-Wert → Skript um AS-Wert ergänzen, falls per API lesbar.
+- [x] blue05: AS- und NS-Downlink-Zähler per API auf 0 gesetzt (PUT `/api/v3/as/…` und `/api/v3/ns/…` mit Feldmaske `session.last_a_f_cnt_down` bzw. `session.last_n_f_cnt_down`, Key mit „Edit devices“). 18:51 UTC `DL Port 10: 15`, `DL: 15min`, Weckzeit +15 min. **Paket 2 auf F103 abgenommen.**
+- [ ] In die TTN-Anleitung: FCntDown muss < 65536 sein, in NS **und** AS (`scripts/ttn-status.sh` zeigt beide). Zurücksetzen per API (siehe oben) oder Gerät neu anlegen. beelogger09: AS 39426 – ok, aber im Blick behalten.
 - [ ] **Firmware-Version kenntlich machen:** `l_ID` steht noch auf 260705 (Aux3 und Debug). Eigene Kennung festlegen (z. B. 260705 + Variante/Build-Nr. oder Datum) und in Startzeile, Aux3 und Doku führen.
 - [ ] Rückmeldung an den Server, welches Intervall aktiv ist (z. B. in jedem 10. Uplink wie die ID)?
 
