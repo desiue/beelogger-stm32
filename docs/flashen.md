@@ -40,8 +40,13 @@ Hinweise:
 Startzeile seriell: `Name: <LOGGER_NAME> UID: <w2 w1 w0> DevAddr: <hex>` – die UID steht dort in umgekehrter Wortreihenfolge zu stm32loader.
 
 
-| Name | DevAddr | TTN-App | Chip / UID | Firmware |
-|---|---|---|---|---|
-| beeloggerblue01 (Testumgebung Black) | 260B939B | beeloggerblue01 | F411, laut 29.10. 256 KB Flash gemeldet | 260705 seit 29.10. |
-| beelogger07 (Feldgerät) | 260BEB70 | beeloggerblue07 | ? | alte Eigenbau-FW, Aux3 = 1 (FCnt 8203 am 06.11.) |
-| beelogger09 (Quad9, Testboard am Laptop) | 260BD691 | beelogger09 | F411CE 512 KB, UID 0066-0041-33375106-35343932 | alte FW Aux3 = 1; 06.11. kurz versehentlich als 260BEB70 geflasht, dann 260705 als beelogger09 (Uplink 06.11. 14:44 UTC, FCnt 4, Aux3 260705) |
+Geräte-ID = `device_id` in TTN (für API und `scripts/ttn-status.sh <app> <device_id>`). Rolle laut Planung Paket 3.
+
+| Name | Rolle | DevAddr | TTN-App | TTN-Gerät (device_id) | Chip / UID | Firmware |
+|---|---|---|---|---|---|---|
+| beelogger09 (Quad9, Testboard) | Test 1, ABP | 260BD691 | beelogger09 | beelogger09 | Black F411CE 512 KB, UID 0066-0041-33375106-35343932 | alte FW Aux3 = 1; 06.11. kurz versehentlich als 260BEB70 geflasht, dann 260705 als beelogger09 (Uplink 06.11. 14:44 UTC, FCnt 4); danach Paket 2. 261106 noch nicht geflasht |
+| beeloggerblue05 (Testboard Blue) | Test 2, ABP | 260B6573 | beeloggerblue05 | eui-70b3d57ed005f5e0 | Blue F103, Startzeile-UID 30003F2A000000001A5A5BB6; Reset-Taster defekt | Paket 2, abgenommen 06.11. 18:51 UTC. 261106 noch nicht geflasht |
+| beelogger011 (Testboard Blue) | Test 3, OTAA geplant | 260BF6FE | beelogger011 | beelogger011 | Blue F103C8T6, meldet 128 KB, UID 5BB6-1A5A-00000000-301117FD | 261106 seit 06.11. (vorher alte FW, nicht empfangen); Spannung kalibriert 4150 mV / 1636 Bit; erster Uplink 06.11. 20:31 UTC FCnt 1 (FCnt 0 verworfen, Altwert 0 vom März); 20:38 UTC Rx2 DR 3 + Session/MAC-Reset per API |
+| beelogger08 | Test 4, OTAA geplant | 260B2D40 | beelogger08 | beelogger08 | Black, Chip ? | alte FW; **vor dem Update Strom/Wachzeit messen** |
+| beeloggerblue01 (Testumgebung Black) | – | 260B939B | beeloggerblue01 | beeloggerblue01 | F411, laut 29.10. 256 KB Flash gemeldet | 260705 seit 29.10. |
+| beelogger07 (Feldgerät) | – | 260BEB70 | beeloggerblue07 | eui-70b3d57ed0066fa2 | ? | alte Eigenbau-FW, Aux3 = 1 (FCnt 8203 am 06.11.) |

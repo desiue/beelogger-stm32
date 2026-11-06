@@ -10,5 +10,6 @@ src/Config_LORA.h
 src/Config_LORA.h.bak*
 # Gerätekonfiguration mit Passwörtern/Standorten: nur lokal. Vorlagen: *.example
 src/Config_MULTI.h
+src/Config_MULTI.h.bak*
 # Private Notizen (Standorte, Kontakte, Pfade)
 docs/privat/

@@ -23,6 +23,9 @@ Alte Firmware wird nicht gesichert (Entscheidung Nutzer, 06.11.2026): Es wird je
 | 06.11.2026 | Waagenkonfiguration per Downlink zurückgestellt | Braucht Befehlsformat mit Prüfsumme und Rücklesen |
 | 06.11.2026 | Kein externes EEPROM (nicht bestückt) | Hinweis Nutzer |
 | 06.11.2026 | OTAA-Session: F1 im Flash, nur beim Join geschrieben; F4 in freien Backup-Registern | siehe Speicher |
+| 06.11.2026 | Paket 3 mit 1 Blue + 1 Black, beide neu als OTAA-Gerät in TTN | beide Speicherwege (Flash F1, Backup-Register F4) testen |
+| 06.11.2026 | 4 Testgeräte: ABP = beelogger09 (Black, 260BD691), beeloggerblue05 (Blue, 260B6573, TTN-Gerät eui-70b3d57ed005f5e0); OTAA = beelogger011 (Blue, 260BF6FE, F103C8 meldet 128 KB), beelogger08 (Black, 260B2D40, vorher Strom/Wachzeit messen) | Nutzerentscheid |
+| 06.11.2026 | Neu-Join: ohne gültige Session oder nach Stromausfall (FCnt-Register leer); dazu 1 Link-Check pro Tag, 3 ohne Antwort in Folge → Neu-Join | Netzausfall erkennen, kostet nur 1 von 10 Downlinks pro Tag |
 
 ## Fakten aus dem Code (Firmware STM32_LORA_260705, Bibliotheken 2026_04)
 
@@ -172,6 +175,8 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [x] **Firmware-Version kenntlich machen:** `l_ID` = 261106 (JJMMTT, Nutzerentscheid 06.11.), README Punkt 5, Diff neu erzeugt. Noch nicht geflasht.
 - [ ] Rückmeldung an den Server, welches Intervall aktiv ist (z. B. in jedem 10. Uplink wie die ID)?
 
+- [ ] In die TTN-Anleitung: „Reset session and MAC state“ per API = `PATCH /api/v3/ns/applications/<app>/devices/<dev>` mit Body `{"field_mask":{"paths":["session","mac_state"]}}` (nicht `/reset`, das gibt 404); Beispiel: App beelogger011, Gerät beelogger011. Setzt NS-FCntDown auf 0, AS-Zähler extra per PUT. 06.11. an beelogger011 gemacht.
+
 **Doku / Repo**
 - [x] (06.11., README neu) README-Startseite überarbeiten: Ziel des Projekts in 3 Sätzen; **Schritt-für-Schritt „Firmware selbst bauen“** (Repo laden, VS Code + PlatformIO, Vorlagen kopieren, Env wählen BluePill/BlackPill, Schalter ABP/OTAA (`LORA_OTAA`, ab Paket 3), bauen, flashen); Startzeile `Name/UID/DevAddr` erklären (steht bisher nur knapp unter „Änderungen“).
 - [ ] DevAddr/DevEUI wieder unverändert lassen (Nutzer 06.11.: nicht geheim, hilft beim Nachvollziehen). Neutralisierung der DevEUIs in `docs/ttn/` beim nächsten Export nicht mehr machen; Standorte/Namen/URLs/Passwörter bleiben draußen.
@@ -193,9 +198,9 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 ## Offene Fragen (Planung)
 
 - [x] Serielle Konsole läuft (FTDI, 9600 Baud).
-- [ ] Flash-Größe des Test-Chips (64 oder 128 KB) und ob der Build mit Join-Code passt.
+- [ ] Flash-Größe des Test-Chips (64 oder 128 KB) und ob der Build mit Join-Code passt. Stand 06.11.: Build F103 = 54 KB; bei C8 (64 KB) bleiben ca. 9 KB für Join-Code + 1 KB Session-Seite.
 - [x] Intervall-Fernwert: entschieden 06.11.2026 (Sitzung 2) **Backup-Register 5, Bit 9–14** (F1 und F4), nicht Flash.
-- [ ] Neu-Join-Regel: nach wie vielen Uplinks ohne Netzantwort (Link-Check)?
+- [x] Neu-Join-Regel: entschieden 06.11.2026, siehe Entscheidungen (1 Link-Check/Tag, 3 ohne Antwort → Neu-Join).
 
 
 ## Fragen und Antworten aus der Planung
