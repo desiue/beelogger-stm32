@@ -179,9 +179,10 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 
 ## Offene Punkte (Stand 06.11.2026, Ende Sitzung 3)
 
-- [ ] beelogger08: Akku kurz ab → Startzeile DevAddr 0, neuer Join (neue DevAddr in TTN).
+- [x] beelogger08: Akku kurz ab → Startzeile DevAddr 0, neuer Join (neue DevAddr in TTN). 06.11. 22:32: Join nach 8 s, DevAddr 260B056F, FCnt 0 angenommen, Wachzeit mit Join 19 s. (3,96 V kam vom Multimeter in Reihe.)
 - [ ] beelogger08: Link-Check am nächsten Tag im Log (`Link-Check Fehlversuche: 0`).
-- [ ] beelogger08: Strom/Wachzeit mit neuer FW messen (gleicher Aufbau wie Basismessung) und Spannungsanzeige gegen Multimeter prüfen (Kalibrierung vorerst Black-Wert 4120 mV / 1650 Bit).
+- [x] beelogger08: Strom mit neuer FW (261106 OTAA) gemessen 06.11.: Schlaf 18,09 µA, wach 24–34 mA – gleich wie alte FW. Wachzeit normaler Zyklus noch aus `t-on` ablesen (mit Join 19 s).
+- [ ] beelogger08: Spannungsanzeige gegen Multimeter prüfen (Kalibrierung vorerst Black-Wert 4120 mV / 1650 Bit).
 - [ ] beelogger08: altes ABP-Gerät `beelogger08` in TTN löschen, wenn OTAA stabil läuft.
 - [ ] Paket 3 auf F1 (beelogger011): Session im Flash (letzte Seite, nur beim Join schreiben, Akkuspannung prüfen); F103C8 meldet 128 KB, Build mit OTAA prüfen.
 
@@ -203,6 +204,8 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [x] (06.11. Nutzer: **nein**, bleiben im Wiki) Entscheiden: DokuWiki-Seiten zu beelogger (Payload/Bitaufteilung, Verschlüsselung, TTN 06/06a) ins Repo übernehmen (Markdown, ohne Privates)?
 - [ ] Downlink aus der Server-Software: Doku für beelogger-Entwickler, wie ihr Server per TTN-API Downlinks schickt (`POST /api/v3/as/applications/<app>/devices/<dev>/down/push`, API-Key mit „Write downlink application traffic“, FPort 10, Base64-Payload) – Beispiel curl/PHP.
 - [ ] TTN-Anleitung mit Screenshots je Variante (siehe Paket 4).
+- [ ] Doku (Nutzer 06.11.): Vor- und Nachteile OTAA vs. ABP erklären – warum es beide Varianten gibt.
+- [ ] Doku (Nutzer 06.11.): In Beispielen echte Live-Daten aus der TTN-Konsole zeigen (z. B. Uplink von beelogger08), damit neue Nutzer sehen, wie die Daten dort aussehen müssen. Dazu passende Auszüge aus der seriellen Konsole (Startzeile, Join, Uplink, TX done).
 
 **Messen / Hardware**
 - [ ] Wachzeit und Stromverbrauch pro Zyklus messen, **vor und nach** dem Flash der neuen Firmware: am **beelogger08** (vor dem Update!). Log `t-on` und `TX done`-Zeit (ms) vergleichen; Strom mit Multimeter/USB-Meter.
