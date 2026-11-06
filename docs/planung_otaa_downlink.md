@@ -173,10 +173,10 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [ ] Rückmeldung an den Server, welches Intervall aktiv ist (z. B. in jedem 10. Uplink wie die ID)?
 
 **Doku / Repo**
-- [ ] README-Startseite überarbeiten: Ziel des Projekts in 3 Sätzen; **Schritt-für-Schritt „Firmware selbst bauen“** (Repo laden, VS Code + PlatformIO, Vorlagen kopieren, Env wählen BluePill/BlackPill, Schalter ABP/OTAA (`LORA_OTAA`, ab Paket 3), bauen, flashen); Startzeile `Name/UID/DevAddr` erklären (steht bisher nur knapp unter „Änderungen“).
+- [x] (06.11., README neu) README-Startseite überarbeiten: Ziel des Projekts in 3 Sätzen; **Schritt-für-Schritt „Firmware selbst bauen“** (Repo laden, VS Code + PlatformIO, Vorlagen kopieren, Env wählen BluePill/BlackPill, Schalter ABP/OTAA (`LORA_OTAA`, ab Paket 3), bauen, flashen); Startzeile `Name/UID/DevAddr` erklären (steht bisher nur knapp unter „Änderungen“).
 - [ ] DevAddr/DevEUI wieder unverändert lassen (Nutzer 06.11.: nicht geheim, hilft beim Nachvollziehen). Neutralisierung der DevEUIs in `docs/ttn/` beim nächsten Export nicht mehr machen; Standorte/Namen/URLs/Passwörter bleiben draußen.
-- [ ] Abschnitt **„Gefundene Fehler“** (Repo-Doku): Aux3 in jedem Uplink (seqnoUp), Register 4 `WeckIntervallMinuten` gespeichert aber unbenutzt, FCntDown > 65535 → Downlink verworfen, AS-Zähler übersteht MAC-Reset, RX2-SF9 vs. TTN-Vorgabe SF12.
-- [ ] Abschnitt **Fair Use Policy** (TTN: 30 s Airtime/Tag, 10 Downlinks/Tag) mit Paketgrößen und Intervallen; Material aus Wiki `projekte:beelogger_doku` übernehmen.
+- [x] (06.11., README) Abschnitt **„Gefundene Fehler“** (Repo-Doku): Aux3 in jedem Uplink (seqnoUp), Register 4 `WeckIntervallMinuten` gespeichert aber unbenutzt, FCntDown > 65535 → Downlink verworfen, AS-Zähler übersteht MAC-Reset, RX2-SF9 vs. TTN-Vorgabe SF12.
+- [x] (06.11., README) Abschnitt **Fair Use Policy** (TTN: 30 s Airtime/Tag, 10 Downlinks/Tag) mit Paketgrößen und Intervallen; Material aus Wiki `projekte:beelogger_doku` übernehmen.
 - [ ] Entscheiden: DokuWiki-Seiten zu beelogger (Payload/Bitaufteilung, Verschlüsselung, TTN 06/06a) ins Repo übernehmen (Markdown, ohne Privates)?
 - [ ] Downlink aus der Server-Software: Doku für beelogger-Entwickler, wie ihr Server per TTN-API Downlinks schickt (`POST /api/v3/as/applications/<app>/devices/<dev>/down/push`, API-Key mit „Write downlink application traffic“, FPort 10, Base64-Payload) – Beispiel curl/PHP.
 - [ ] TTN-Anleitung mit Screenshots je Variante (siehe Paket 4).
