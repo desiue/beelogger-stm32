@@ -1,0 +1,31 @@
+    
+  STM32_LTE_EE_20211102
+  32768 96 254
+  RST
+  Datum:    04.11.2021 10:15:02
+  ADC-bits: 1602  Bat. [V]: 4.05
+  ADC-bits: 1712  Sol. [V]: 4.32
+  System On
+  sw:0  1
+  Vdd. [V]: 3.27
+  T-STM32 [C]: 13.39
+  DS18B20
+   [C]: 11.25
+  W 1 [kg] 0.3
+  2021/11/04_10:15:06,,11.3,,,,0.30,4.05,3.21,5.00,,3.27,13.39
+  LTEon
+  Init!
+  internet.t-mobile.de
+  SSL!
+  community.beelogger.de
+  GET /accountname/beelogger1/beelogger_log.php?
+  &M1_Data=2021/11/04_08:30:06,,11.3,,,,0.30,4.05,3.21,5.00,,3.27,13.39
+  
+  1636020943T5Bok *
+  cls:ok
+  
+  send 1
+  Datum:    04.11.2021 10:15:45
+   Weckzeit 04.11.2021 10:20:00
+    Nr:0  nextsend: 12h  send-cyc: 2h  Interval: 5min  t-on: 44s  dly: 0  sw: 0  report:0
+   

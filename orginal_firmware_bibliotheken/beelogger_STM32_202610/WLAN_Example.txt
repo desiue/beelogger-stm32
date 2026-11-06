@@ -1,0 +1,38 @@
+STM32_WLAN_220604
+STM32F103CB
+32768 96 254
+RST
+Datum:    09.06.2022 09:39:50
+ADC-bits: 1621  Bat. [V]: 4.19
+ADC-bits: 399  Sol. [V]: 1.03
+System On
+awake: 0
+sw:1  1
+Vdd. [V]: 3.26
+T - STM32 [C]: 26.52
+BME280
+ [hPa]: 1005.78
+ [C]: 21.92
+ [ % RH]: 56.76
+BH1750
+ [lux]: 6.67
+W 1 [kg] 4.14
+2022/06/09_09:39:56,,21.9,,56.8,6.7,4.14,4.19,1.03,99.00,1005.8,3.26,26.52
+ESP?
+Init!
+access-point name
+WLAN!
+WLAN*
+community.beelogger.de
+ Connect
+GET /accountname/beelogger1/beelogger_log.php?
+&M1_Data=2022/06/09_09:39:39,,22.0,,57.7,6.7,4.14,4.19,1.04,0.00,1005.8,3.26,25.60
+2022/06/09_09:39:56,,21.9,,56.8,6.7,4.14,4.19,1.03,99.00,1005.8,3.26,26.52
+http
+ Q: 
+1654767605T5B
+
+Send: 2
+Datum:    09.06.2022 09:40:05
+ Weckzeit 09.06.2022 09:44:59
+  Nr:0  nextsend: 11h  send-cyc: 2h  Interval: 5min  t-on: 16s  dly: 0  sw: 1  report:0  al:0

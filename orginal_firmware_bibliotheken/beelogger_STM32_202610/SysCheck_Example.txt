@@ -1,0 +1,94 @@
+
+STM32 System Check  Version 10.05.2023
+
+
+STM32F103C8
+
+ 
+Datum:    01.01.2000 09:08:58
+Sketch Time is set to system
+Datum:    11.05.2023 09:06:07
+ 
+ SIM Pin 5 low
+ Power-On using Pin: 4
+ 
+ 
+Vdd. [V]: 3.25
+T-STM32 [C]: 34.13
+ 
+ 
+ ADC-bits: 1657
+ Akku-Spannung ca: 4.0 V
+ 
+ HX711 Nummer 1:  found.
+ databits:
+FFFD37BF  5975
+ 
+ DHT 21/22:
+
+ DHT at pin: 16
+ temperature [C]: 21.40
+ humidity [%RH]: 57.70
+ 
+ DHT at pin: 15
+  DHT not found or not installed. 
+ 
+Looking for 1-Wire devices... (i.e. DS18B20)
+at Pin: 12
+
+
+Found '1-Wire' device with address:
+
+0x28, 0xAA, 0x02, 0x95, 0x50, 0x14, 0x01, 0x9C
+
+One-Wire scan done.
+
+DS18B20 ?
+ 
+1  :  [C]: 21.00
+ 
+
+I2CScanner:
+starting scanning of I2C bus from 8 to 119...
+found at address 0x57
+found at address 0x76
+ 
+ EE-Prom
+      is present at: 0x57
+
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,  
+ EE-Prom: 32 kByte
+
+Sketch Konfiguration:
+#define EEProm_Size 32768
+ 
+ 
+ 
+ BME/BMP
+ temperature [C]: 21.81
+ humidity [%RH]: 54.99
+ pressure [hPa]: 1004.88
+ 
+no test for BMP 280
+no test for BME 680
+
+
+
+Testing Com.-Modul
+Sp⸮vE⸮ͅ⸮U⸮l⸮F⸮JI⸮⸮ͤ⸮⸮⸮⸮.â\⸮$MOΡ⸮⸮GxbI⸮⸮⸮KdKEAË⸮
+
+AT
+
+OK found
+
+AT+GMR
+AT version:1.7.4.0(May 11 2020 19:13:04)
+SDK version:3.0.4(9532ceb)
+compile time:May 27 2020 10:12:17
+Bin version(Wroom 02):1.7.4
+OK
+ 
+ 
+
+peripherie power off
+Sleep forever ! 

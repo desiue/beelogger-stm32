@@ -1,0 +1,12 @@
+Die Payload-Converter für TTN:
+
+
+alter Payload-Converter für Sketch STM32_LORA_220316:
+beelogger_payload_211019.js
+
+
+
+neuer Payload-Converter für Sketch STM32_LORA_220326:
+payloadformatter_220227.js
+
+kodiert die Felder der Payload per Bitfeld, damit wird die payload kleiner, die Air-Time kürzer

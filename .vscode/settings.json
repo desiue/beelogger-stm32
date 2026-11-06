@@ -1,0 +1,19 @@
+{
+    "arduino.enableUSBDetection": true,
+    "arduino.path": "",
+    "arduino.additionalUrls": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json",
+    "arduino.logLevel": "info",
+    "platformio-ide.useBuiltinPIOCore": true,
+    "platformio-ide.autoRebuildAutocompleteIndex": true,
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.default.cppStandard": "c++17",
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-arm",
+    "files.associations": {
+        "*.ino": "cpp",
+        "*.h": "cpp"
+    },
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "terminal.integrated.defaultProfile.osx": "zsh"
+}

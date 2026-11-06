@@ -1,0 +1,21 @@
+###########################################
+# Syntax Coloring Map For beelogger_Adafruit_BME280-library
+###########################################
+
+###########################################
+# Datatypes (KEYWORD1)
+###########################################
+
+beelogger_Adafruit_BME280	KEYWORD1
+
+###########################################
+# Methods and Functions (KEYWORD2)
+###########################################
+
+begin	KEYWORD2
+readTemperature	KEYWORD2
+readPressure	KEYWORD2
+readHumidity	KEYWORD2
+takeForcedMeasurement	KEYWORD2
+
+

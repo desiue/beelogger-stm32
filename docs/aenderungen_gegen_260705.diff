@@ -1,0 +1,258 @@
+diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
+--- orig/Config_LORA.h	2026-11-06 17:15:12.499229539 +0100
++++ neu/Config_LORA.h	2026-11-06 17:15:12.497967311 +0100
+@@ -1,68 +1,73 @@
+-/****************************************************************/
+-// LORA Konfiguration
+-/****************************************************************/
+-#include <lmic.h>
+-#include <hal/hal.h>
+-#include <SPI.h>
+-
+-// Verbindungsparameter:
+-// Beispiel für LORA-http-Intergration Setting in der TTN config:
+-// https://community.beelogger.de/UserName/beelogger1/beelogger_log.php?Passwort=deinpasswort&LORA=1
+-
+-// "################################################"
+-// "This code needs payloadformatter_220227.js"
+-// "################################################"
+-
+-// LoRaWAN NwkSKey, network session key
+-// LoRaWAN AppSKey, application session key
+-static const u1_t PROGMEM NWKSKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+-static const u1_t PROGMEM APPSKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+-
+-
+-// LoRaWAN end-device address (DevAddr)
+-//static const u4_t DEVADDR =   0x12345678;  //   <-- Change this address for every node!  
+-static const u4_t DEVADDR = 0x12345678;
+-
+-// LoRaWAN Network Prefix
+-static const uint16_t PREFIX =   0x13;     //   https://www.thethingsnetwork.org/docs/lorawan/prefix-assignments.html  
+-// example: 0x13 = TTN
+-//          0x01 = your own local Lora accesspoint
+-
+-
+-// number of LORA-Channels to be used  1, 3 or 8
+-// 1 = Single-Channel-Gateway, may be need to change frequency in STM32_LORA.ino
+-// 3 = three channels
+-// 8 = use all channels
+-#define LORA_CHANNELS 3
+-
+-// turn LMIC-Lib Debug on/off.  "On" with this line commented out
+-#define NDEBUG 1
+-
+-
+-/****************************************************************/
+-// Allgemeine Konfiguration
+-/****************************************************************/
+-#define WeckIntervall       10          //  Weckintervall / Messzyklus
+-
+-#define WeckIntervall_aktiv  1          // Manuelle Intervallsteuerung 0 = inaktiv, 1 = aktiv
+-
+-#define WeckIntervall_Tag 10
+-#define WeckIntervall_Nacht 30
+-#define WeckIntervall_Nacht_Anfang 23
+-#define WeckIntervall_Nacht_Ende 6
+-
+-#define WeckIntervall_Winter_aktiv  0   // Intervall Winter 0 = inaktiv, 1 = aktiv
+-#define WeckIntervall_Winter       60   // Intervall in Minuten
+-#define WeckIntervall_Winter_Anfang 9   // Monat Winterintervall Start
+-#define WeckIntervall_Winter_Ende   4   // Monat Winterintervall Ende
+-
+-// alternative Messzyklusumschaltung
+-#define TEMP_ZYKLUS_aktiv    0            //  0 / 1 aktiviert Umschaltung Messzyklus Winter per Temperatur
+-const float Temperatur_Wintertag = 8.0;   // < = Wintertag
+-#define SOLAR_ZYKLUS_aktiv   0            //  0 / 1 aktiviert Umschaltung Messzyklus Tag/Nacht per Solarzellenspannung
+-const float SolarSpannung_Sommertag = 0.1;// < = Nacht
+-
+-
+-
+-// 
+-#define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht
++// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
++//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): LOGGER_NAME ergänzt.
++//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
++
++/****************************************************************/
++// LORA Konfiguration
++/****************************************************************/
++#include <lmic.h>
++#include <hal/hal.h>
++#include <SPI.h>
++
++// Verbindungsparameter:
++// Beispiel für LORA-http-Intergration Setting in der TTN config:
++// https://community.beelogger.de/UserName/beelogger1/beelogger_log.php?Passwort=deinpasswort&LORA=1
++
++// "################################################"
++// "This code needs payloadformatter_220227.js"
++// "################################################"
++
++// LoRaWAN NwkSKey, network session key
++// LoRaWAN AppSKey, application session key
++static const u1_t PROGMEM NWKSKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
++static const u1_t PROGMEM APPSKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
++
++
++// LoRaWAN end-device address (DevAddr)
++//static const u4_t DEVADDR =   0x12345678;  //   <-- Change this address for every node!  
++static const u4_t DEVADDR = 0x12345678;
++#define LOGGER_NAME "beelogger"  // erscheint in der Startzeile (seriell), je Gerät anpassen
++
++// LoRaWAN Network Prefix
++static const uint16_t PREFIX =   0x13;     //   https://www.thethingsnetwork.org/docs/lorawan/prefix-assignments.html  
++// example: 0x13 = TTN
++//          0x01 = your own local Lora accesspoint
++
++
++// number of LORA-Channels to be used  1, 3 or 8
++// 1 = Single-Channel-Gateway, may be need to change frequency in STM32_LORA.ino
++// 3 = three channels
++// 8 = use all channels
++#define LORA_CHANNELS 3
++
++// turn LMIC-Lib Debug on/off.  "On" with this line commented out
++#define NDEBUG 1
++
++
++/****************************************************************/
++// Allgemeine Konfiguration
++/****************************************************************/
++#define WeckIntervall       10          //  Weckintervall / Messzyklus
++
++#define WeckIntervall_aktiv  1          // Manuelle Intervallsteuerung 0 = inaktiv, 1 = aktiv
++
++#define WeckIntervall_Tag 10
++#define WeckIntervall_Nacht 30
++#define WeckIntervall_Nacht_Anfang 23
++#define WeckIntervall_Nacht_Ende 6
++
++#define WeckIntervall_Winter_aktiv  0   // Intervall Winter 0 = inaktiv, 1 = aktiv
++#define WeckIntervall_Winter       60   // Intervall in Minuten
++#define WeckIntervall_Winter_Anfang 9   // Monat Winterintervall Start
++#define WeckIntervall_Winter_Ende   4   // Monat Winterintervall Ende
++
++// alternative Messzyklusumschaltung
++#define TEMP_ZYKLUS_aktiv    0            //  0 / 1 aktiviert Umschaltung Messzyklus Winter per Temperatur
++const float Temperatur_Wintertag = 8.0;   // < = Wintertag
++#define SOLAR_ZYKLUS_aktiv   0            //  0 / 1 aktiviert Umschaltung Messzyklus Tag/Nacht per Solarzellenspannung
++const float SolarSpannung_Sommertag = 0.1;// < = Nacht
++
++
++
++// 
++#define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht
+diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
+--- orig/STM32_LORA_260705.ino	2026-11-06 17:15:12.499319559 +0100
++++ neu/STM32_LORA_260705.ino	2026-11-06 17:15:12.497256434 +0100
+@@ -1,3 +1,7 @@
++// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
++//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink).
++//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
++
+ /*
+    (C) 2024 R.Schick - beelogger.de
+ 
+@@ -131,6 +135,7 @@
+ uint8_t stuck_switch = 0;  // Service Switch permanent on
+ uint8_t s_alarm = 0;       // Schwarmalarm
+ uint8_t akku_save = 0;     // in Akku Save Mode
++uint8_t FernIntervall = 0; // Sendeintervall per Downlink (FPort 10), 0 = Firmware-Vorgabe, BKP-Reg 5 Bit 9-14
+ 
+ uint8_t nr_to_measure = 1;    // POR_RST
+ uint16_t LoRaSeqCounter = 0;  // TTN Sequence numbber
+diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
+--- orig/STM32_LORA.ino	2026-11-06 17:15:12.499300901 +0100
++++ neu/STM32_LORA.ino	2026-11-06 17:15:12.497278852 +0100
+@@ -1,3 +1,7 @@
++// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
++//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
++//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
++
+ /****************************************************************/
+ // Funktion LORA - Daten Senden
+ /****************************************************************/
+@@ -537,7 +541,7 @@
+   cnt_pld++;
+   debugprintF("info:");  debugprintln(svc);
+ 
+-  if (LMIC.seqnoUp % 10 == 0 ) { // ID not in every transmission
++  if (LoRaSeqCounter % 10 == 0 ) { // ID not in every transmission (seqnoUp ist hier noch nicht gesetzt)
+     //payload[cnt_pld] = TYPE_AUX2;
+     //cnt_pld++;
+     PayloadHeader |= TYPE_AUX2;
+@@ -599,6 +603,13 @@
+ 
+             }
+       */
++      // Downlink FPort 10, 1 Byte: Sendeintervall in Minuten (5..180, 0 = Firmware-Vorgabe)
++      if ((LMIC.txrxFlags & TXRX_PORT) && LMIC.dataLen == 1 && LMIC.frame[LMIC.dataBeg - 1] == 10) {
++        uint8_t m = LMIC.frame[LMIC.dataBeg];
++        debugprintF("DL Port 10: ");
++        debugprintln(m);
++        if (m == 0 || (m >= 5 && m <= 180)) FernIntervall = m - m % 5;  // Weckzeit rastet auf 5 min
++      }
+       inc_LoRaSeq();
+       flag_TXCOMPLETE = true;
+       break;
+diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
+--- orig/STM32_LORA_utility.ino	2026-11-06 17:15:12.499341630 +0100
++++ neu/STM32_LORA_utility.ino	2026-11-06 17:15:12.497306035 +0100
+@@ -1,3 +1,7 @@
++// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
++//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
++//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
++
+ //20.10.2021 STM32_LORA
+ // 02.11.2021 calc wakeup
+ // 01.12.2021 Service switch led blink code
+@@ -143,6 +147,15 @@
+   //debugprintln("STM32F103C8");
+ #error " STM32F103C8 not enough memory for LORA"
+ #endif
++#ifndef LOGGER_NAME
++#define LOGGER_NAME "?"
++#endif
++  {  // Geräte-Kennung: Name, 96-Bit-UID, DevAddr
++    char id_line[80];
++    snprintf(id_line, sizeof(id_line), "Name: %s UID: %08lX%08lX%08lX DevAddr: %08lX", LOGGER_NAME,
++             (unsigned long)HAL_GetUIDw2(), (unsigned long)HAL_GetUIDw1(), (unsigned long)HAL_GetUIDw0(), (unsigned long)DEVADDR);
++    debugprintln(id_line);
++  }
+ 
+   /*
+     debugprint(EEProm_Size);
+@@ -355,6 +368,7 @@
+       }
+ #endif
+     }
++    if (FernIntervall) IntervallMinuten = FernIntervall;  // Downlink ersetzt Tag/Nacht/Winter, nicht Akkusparmodus
+   }
+   if (akku_save == 1) {
+     IntervallMinuten = AlternativIntervallMinuten;
+@@ -447,6 +461,7 @@
+     reg = getBackupRegister(5);
+     stuck_switch = (uint8_t) (reg & 0x001f);    // lower five bits  0 ... 31
+     if (reg & 0x0100) akku_save = 1;            // upper one bit 0 / 1
++    FernIntervall = ((reg >> 9) & 0x3f) * 5;    // bit 9-14: Downlink-Intervall / 5 (alte Firmware: 0)
+ 
+ #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
+     reg = (uint16_t)getBackupRegister(1);
+@@ -493,6 +508,7 @@
+ 
+   reg = 0; if (akku_save)reg = 0x0100;      // set upper bit
+   reg = reg | (stuck_switch & 0x001f);      // lower five bits  0 ... 31
++  reg = reg | ((uint32_t)(FernIntervall / 5) << 9);  // bit 9-14
+   setBackupRegister(5, reg);
+ 
+ #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
+@@ -546,6 +562,8 @@
+   //  debugprint(send_cycle);
+   debugprint(" Interval: ");
+   debugprint(WeckIntervallMinuten);
++  debugprint("min  DL: ");
++  debugprint(FernIntervall);
+   debugprint("min  t-on: ");
+   debugprint(time_on);
+   //  debugprint("s  dly: ");

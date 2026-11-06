@@ -1,0 +1,14 @@
+# Build
+.pio/
+*.bin
+*.elf
+*.hex
+# Lokale Sicherungen (enthalten kompilierte Schlüssel)
+backup/
+# LoRaWAN-Schlüssel: nur lokal. Vorlage: src/Config_LORA.h.example
+src/Config_LORA.h
+src/Config_LORA.h.bak*
+# Gerätekonfiguration mit Passwörtern/Standorten: nur lokal. Vorlagen: *.example
+src/Config_MULTI.h
+# Private Notizen (Standorte, Kontakte, Pfade)
+docs/privat/

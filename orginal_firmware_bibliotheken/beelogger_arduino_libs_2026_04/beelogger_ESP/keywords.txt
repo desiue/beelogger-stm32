@@ -1,0 +1,23 @@
+###########################################
+# Syntax Coloring Map for beelogger_ESP-library
+###########################################
+
+###########################################
+# Datatypes (KEYWORD1)
+###########################################
+
+C_WLAN_ESP01	KEYWORD1
+
+###########################################
+# Methods and Functions (KEYWORD2)
+###########################################
+
+init	KEYWORD2
+join	KEYWORD2
+quit	KEYWORD2
+Connect	KEYWORD2
+disConnect	KEYWORD2
+prep_send	KEYWORD2
+send	KEYWORD2
+end	KEYWORD2
+

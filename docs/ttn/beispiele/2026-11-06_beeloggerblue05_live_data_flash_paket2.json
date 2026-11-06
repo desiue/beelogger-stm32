@@ -1,0 +1,1170 @@
+[
+  {
+    "name": "as.up.data.forward",
+    "time": "2026-11-06T16:01:55.742220546Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "eui-70B3D57ED00XXXXX",
+          "application_ids": {
+            "application_id": "beeloggerblue05"
+          },
+          "dev_eui": "70B3D57ED00XXXXX",
+          "dev_addr": "260B6573"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+      "end_device_ids": {
+        "device_id": "eui-70B3D57ED00XXXXX",
+        "application_ids": {
+          "application_id": "beeloggerblue05"
+        },
+        "dev_eui": "70B3D57ED00XXXXX",
+        "dev_addr": "260B6573"
+      },
+      "correlation_ids": [
+        "gs:uplink:01M6RSGQT67Q1H1ZXBERNV559D"
+      ],
+      "received_at": "2026-11-06T16:01:55.737871128Z",
+      "uplink_message": {
+        "f_port": 1,
+        "f_cnt": 1,
+        "frm_payload": "CYsQUgFdAAD/nAAAAAAHWS0=",
+        "decoded_payload": {
+          "Gewicht": 0,
+          "Gewicht2": -1,
+          "Gewicht3": 0,
+          "Gewicht4": 0,
+          "Service": 7,
+          "TempOut": 24.43,
+          "VBatt": 4.178,
+          "VSolar": 0.349
+        },
+        "rx_metadata": [
+          {
+            "gateway_ids": {
+              "gateway_id": "eui-EIGENES-GATEWAY",
+              "eui": "EIGENES-GATEWAY"
+            },
+            "time": "2026-11-06T16:01:47.750999Z",
+            "timestamp": 876729435,
+            "rssi": -61,
+            "channel_rssi": -61,
+            "snr": 7.5,
+            "channel_index": 2,
+            "received_at": "2026-11-06T16:01:55.509535203Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQTTBX67K7VXBD0KM61H",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A000975D",
+              "forwarder_gateway_id": "eui-00800000a000975d",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.475103Z",
+            "rssi": -104,
+            "channel_rssi": -104,
+            "snr": 5,
+            "received_at": "2026-11-06T16:01:55.544241087Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQTTW7352ANS77WBBKHJ",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074A6",
+              "forwarder_gateway_id": "00800000a00074a6",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.475099Z",
+            "rssi": -96,
+            "channel_rssi": -96,
+            "snr": 7.25,
+            "received_at": "2026-11-06T16:01:55.544925274Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQTXQ0CXT026N3097AVY",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074B0",
+              "forwarder_gateway_id": "00800000a00074b0",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.475099Z",
+            "rssi": -91,
+            "channel_rssi": -91,
+            "snr": 6,
+            "received_at": "2026-11-06T16:01:55.547495971Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQTXD3VGAYBYCMFDYNNV",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074AF",
+              "forwarder_gateway_id": "00800000a00074af",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.475099Z",
+            "rssi": -85,
+            "channel_rssi": -85,
+            "snr": 7.25,
+            "received_at": "2026-11-06T16:01:55.547575358Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQV0CGMK22CE2KR3AAC4",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074AC",
+              "forwarder_gateway_id": "eui-00800000a00074ac",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.475109Z",
+            "rssi": -109,
+            "channel_rssi": -109,
+            "snr": -2,
+            "received_at": "2026-11-06T16:01:55.550144835Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQTZCK883KWSKE5NW9E5",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000D0001D7C",
+              "forwarder_gateway_id": "eui00800000d0001d7c",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.472093105Z",
+            "rssi": -110,
+            "channel_rssi": -110,
+            "snr": 4,
+            "received_at": "2026-11-06T16:01:55.549467377Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQTZQDHQ9FCACC554S7T",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074C1",
+              "forwarder_gateway_id": "eui-00800000a00074c1",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.475104Z",
+            "rssi": -109,
+            "channel_rssi": -109,
+            "snr": -6.75,
+            "received_at": "2026-11-06T16:01:55.549811419Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQV042W7A3VF6QT8J0JB",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074C2",
+              "forwarder_gateway_id": "eui-00800000a00074c2",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.475109Z",
+            "rssi": -109,
+            "channel_rssi": -109,
+            "snr": -5.75,
+            "received_at": "2026-11-06T16:01:55.551194589Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGQV059KG10KTX3S6RXGF",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074A5",
+              "forwarder_gateway_id": "00800000a00074a5",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.475104Z",
+            "rssi": -95,
+            "channel_rssi": -95,
+            "snr": 6.75,
+            "received_at": "2026-11-06T16:01:55.549622010Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RSGR02BYCHFTZ9NAS2NAZX",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "0080000000029007",
+              "forwarder_gateway_id": "eui-0080000000029007",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T16:01:55.447419881Z",
+            "rssi": -109,
+            "channel_rssi": -109,
+            "snr": -9.75,
+            "received_at": "2026-11-06T16:01:55.710640405Z"
+          }
+        ],
+        "settings": {
+          "data_rate": {
+            "lora": {
+              "bandwidth": 125000,
+              "spreading_factor": 7,
+              "coding_rate": "4/5"
+            }
+          },
+          "frequency": "868500000",
+          "timestamp": 876729435,
+          "time": "2026-11-06T16:01:47.750999Z"
+        },
+        "received_at": "2026-11-06T16:01:55.527242010Z",
+        "consumed_airtime": "0.071936s",
+        "network_ids": {
+          "net_id": "000013",
+          "ns_id": "EC656E0000000181",
+          "tenant_id": "ttn",
+          "cluster_id": "eu1",
+          "cluster_address": "eu1.cloud.thethings.network"
+        }
+      }
+    },
+    "correlation_ids": [
+      "gs:uplink:01M6RSGQT67Q1H1ZXBERNV559D"
+    ],
+    "origin": "ip-10-100-12-183.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01M6RSGR0YR3ZSV9K1B98AT56X"
+  },
+  {
+    "name": "as.up.data.forward",
+    "time": "2026-11-06T15:50:20.144267204Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "eui-70B3D57ED00XXXXX",
+          "application_ids": {
+            "application_id": "beeloggerblue05"
+          },
+          "dev_eui": "70B3D57ED00XXXXX",
+          "dev_addr": "260B6573"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+      "end_device_ids": {
+        "device_id": "eui-70B3D57ED00XXXXX",
+        "application_ids": {
+          "application_id": "beeloggerblue05"
+        },
+        "dev_eui": "70B3D57ED00XXXXX",
+        "dev_addr": "260B6573"
+      },
+      "correlation_ids": [
+        "gs:uplink:01M6RRVGGVGVNYAY8N8DAXJZAQ"
+      ],
+      "received_at": "2026-11-06T15:50:20.140191919Z",
+      "uplink_message": {
+        "f_port": 1,
+        "frm_payload": "DOQQaQE2/5z/nP+c/5wAAAAAAdkt",
+        "decoded_payload": {
+          "Aux3": 1,
+          "Gewicht": -1,
+          "Gewicht2": -1,
+          "Gewicht3": -1,
+          "Gewicht4": -1,
+          "Service": 0,
+          "TempOut": 33,
+          "VBatt": 4.201,
+          "VSolar": 0.31
+        },
+        "rx_metadata": [
+          {
+            "gateway_ids": {
+              "gateway_id": "eui-EIGENES-GATEWAY",
+              "eui": "EIGENES-GATEWAY"
+            },
+            "time": "2026-11-06T15:50:12.170246Z",
+            "timestamp": 181147035,
+            "rssi": -78,
+            "channel_rssi": -78,
+            "snr": 8.75,
+            "received_at": "2026-11-06T15:50:19.905361982Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRVGHM19FTHFPPM77V0Z8N",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A000975D",
+              "forwarder_gateway_id": "eui-00800000a000975d",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:50:19.893097Z",
+            "rssi": -111,
+            "channel_rssi": -111,
+            "snr": 0.25,
+            "received_at": "2026-11-06T15:50:19.955243614Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRVGHPFEMZ9VZGSD53ED3V",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074AF",
+              "forwarder_gateway_id": "00800000a00074af",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:50:19.893094Z",
+            "rssi": -87,
+            "channel_rssi": -87,
+            "snr": 10.5,
+            "received_at": "2026-11-06T15:50:19.955698770Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRVGHQFHT2R514XNDMNQPN",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074A6",
+              "forwarder_gateway_id": "00800000a00074a6",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:50:19.893093Z",
+            "rssi": -97,
+            "channel_rssi": -97,
+            "snr": 9.75,
+            "received_at": "2026-11-06T15:50:19.957012276Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRVGHPKB00BPPRPAG4EK7G",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074A5",
+              "forwarder_gateway_id": "00800000a00074a5",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:50:19.893092Z",
+            "rssi": -109,
+            "channel_rssi": -109,
+            "snr": 4,
+            "received_at": "2026-11-06T15:50:19.956848559Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRVGHY1NPTB0HKTR3KM1YP",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074AC",
+              "forwarder_gateway_id": "eui-00800000a00074ac",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:50:19.893096Z",
+            "rssi": -109,
+            "channel_rssi": -109,
+            "snr": -2.5,
+            "received_at": "2026-11-06T15:50:19.964692593Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRVGHX6AMFTHQY2075G5DQ",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074B0",
+              "forwarder_gateway_id": "00800000a00074b0",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:50:19.893091Z",
+            "rssi": -85,
+            "channel_rssi": -85,
+            "snr": 8.5,
+            "received_at": "2026-11-06T15:50:19.964018663Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRVGJ0F40CBRMHAMFVP931",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "0080000000029007",
+              "forwarder_gateway_id": "eui-0080000000029007",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:50:19.867542028Z",
+            "rssi": -113,
+            "channel_rssi": -113,
+            "snr": -9.75,
+            "received_at": "2026-11-06T15:50:19.965881829Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRVGNCZ0PXJYVM5M9C9R1Y",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000D0001D7C",
+              "forwarder_gateway_id": "eui00800000d0001d7c",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:50:19.890870094Z",
+            "rssi": -107,
+            "channel_rssi": -107,
+            "snr": 7.5,
+            "received_at": "2026-11-06T15:50:20.074659744Z"
+          }
+        ],
+        "settings": {
+          "data_rate": {
+            "lora": {
+              "bandwidth": 125000,
+              "spreading_factor": 7,
+              "coding_rate": "4/5"
+            }
+          },
+          "frequency": "868100000",
+          "timestamp": 181147035,
+          "time": "2026-11-06T15:50:12.170246Z"
+        },
+        "received_at": "2026-11-06T15:50:19.932051453Z",
+        "consumed_airtime": "0.077056s",
+        "network_ids": {
+          "net_id": "000013",
+          "ns_id": "EC656E0000000181",
+          "tenant_id": "ttn",
+          "cluster_id": "eu1",
+          "cluster_address": "eu1.cloud.thethings.network"
+        }
+      }
+    },
+    "correlation_ids": [
+      "gs:uplink:01M6RRVGGVGVNYAY8N8DAXJZAQ"
+    ],
+    "origin": "ip-10-100-6-93.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01M6RRVGQG1H182Z8R4ETS049D"
+  },
+  {
+    "name": "as.up.data.forward",
+    "time": "2026-11-06T15:46:44.959502922Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "eui-70B3D57ED00XXXXX",
+          "application_ids": {
+            "application_id": "beeloggerblue05"
+          },
+          "dev_eui": "70B3D57ED00XXXXX",
+          "dev_addr": "260B6573"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+      "end_device_ids": {
+        "device_id": "eui-70B3D57ED00XXXXX",
+        "application_ids": {
+          "application_id": "beeloggerblue05"
+        },
+        "dev_eui": "70B3D57ED00XXXXX",
+        "dev_addr": "260B6573"
+      },
+      "correlation_ids": [
+        "gs:uplink:01M6RRMYCE4N1EKX7JSP2M41J6"
+      ],
+      "received_at": "2026-11-06T15:46:44.956883731Z",
+      "uplink_message": {
+        "f_port": 1,
+        "f_cnt": 1,
+        "frm_payload": "CUcQbQE6/5z/nP+c/5wNAAAAAdkt",
+        "decoded_payload": {
+          "Aux3": 1,
+          "Gewicht": -1,
+          "Gewicht2": -1,
+          "Gewicht3": -1,
+          "Gewicht4": -1,
+          "Service": 13,
+          "TempOut": 23.75,
+          "VBatt": 4.205,
+          "VSolar": 0.314
+        },
+        "rx_metadata": [
+          {
+            "gateway_ids": {
+              "gateway_id": "eui-EIGENES-GATEWAY",
+              "eui": "EIGENES-GATEWAY"
+            },
+            "time": "2026-11-06T15:46:36.978490Z",
+            "timestamp": 4260923971,
+            "rssi": -73,
+            "channel_rssi": -73,
+            "snr": 9.5,
+            "received_at": "2026-11-06T15:46:44.730018542Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRMYCV27MX3XH5E07D3FE6",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000D0001D7C",
+              "forwarder_gateway_id": "eui00800000d0001d7c",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:46:44.684007883Z",
+            "rssi": -103,
+            "channel_rssi": -103,
+            "snr": 9.75,
+            "received_at": "2026-11-06T15:46:44.760314738Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRMYD2AX3W8EWPJN6NRYSN",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074B0",
+              "forwarder_gateway_id": "00800000a00074b0",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:46:44.702859Z",
+            "rssi": -81,
+            "channel_rssi": -81,
+            "snr": 9.5,
+            "received_at": "2026-11-06T15:46:44.768486094Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRMYD8PGQSGB7FK8V0TD52",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "0080000000029007",
+              "forwarder_gateway_id": "eui-0080000000029007",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:46:44.681423902Z",
+            "rssi": -113,
+            "channel_rssi": -113,
+            "snr": -5.75,
+            "received_at": "2026-11-06T15:46:44.774503780Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRMYDC6ZDT4AX72JJB1JGD",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A000975D",
+              "forwarder_gateway_id": "eui-00800000a000975d",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:46:44.702853Z",
+            "rssi": -108,
+            "channel_rssi": -108,
+            "snr": 3.25,
+            "received_at": "2026-11-06T15:46:44.778199627Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRMYEENJ4HF0F2CWQSPS6V",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074A6",
+              "forwarder_gateway_id": "00800000a00074a6",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:46:44.702851Z",
+            "rssi": -93,
+            "channel_rssi": -93,
+            "snr": 8.5,
+            "received_at": "2026-11-06T15:46:44.775320549Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRMYEG9R37PM6WSRV63BR6",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074A5",
+              "forwarder_gateway_id": "00800000a00074a5",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:46:44.702856Z",
+            "rssi": -107,
+            "channel_rssi": -107,
+            "snr": 4.5,
+            "received_at": "2026-11-06T15:46:44.775113134Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRMYFC125GW48R3ZR33E24",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074AF",
+              "forwarder_gateway_id": "00800000a00074af",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:46:44.702853Z",
+            "rssi": -84,
+            "channel_rssi": -84,
+            "snr": 9.5,
+            "received_at": "2026-11-06T15:46:44.784133569Z"
+          }
+        ],
+        "settings": {
+          "data_rate": {
+            "lora": {
+              "bandwidth": 125000,
+              "spreading_factor": 7,
+              "coding_rate": "4/5"
+            }
+          },
+          "frequency": "868100000",
+          "timestamp": 4260923971,
+          "time": "2026-11-06T15:46:36.978490Z"
+        },
+        "received_at": "2026-11-06T15:46:44.751227627Z",
+        "consumed_airtime": "0.077056s",
+        "network_ids": {
+          "net_id": "000013",
+          "ns_id": "EC656E0000000181",
+          "tenant_id": "ttn",
+          "cluster_id": "eu1",
+          "cluster_address": "eu1.cloud.thethings.network"
+        }
+      }
+    },
+    "correlation_ids": [
+      "gs:uplink:01M6RRMYCE4N1EKX7JSP2M41J6"
+    ],
+    "origin": "ip-10-100-12-183.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01M6RRMYJZ71BRA75RW6PGTJGR"
+  },
+  {
+    "time": "2026-11-06T15:43:15.644Z",
+    "name": "synthetic.status.reconnected",
+    "isError": false,
+    "isSynthetic": true,
+    "unique_id": "synthetic.1793979795644"
+  },
+  {
+    "time": "2026-11-06T15:43:09.461Z",
+    "name": "synthetic.status.closed",
+    "isError": false,
+    "isSynthetic": true,
+    "unique_id": "synthetic.1793979789461"
+  },
+  {
+    "time": "2026-11-06T15:43:09.435Z",
+    "name": "synthetic.error.network_error",
+    "isError": true,
+    "isSynthetic": true,
+    "unique_id": "synthetic.1793979789435",
+    "data": {
+      "error": {
+        "name": "ConnectionError",
+        "message": "WebSocket connection error"
+      }
+    }
+  },
+  {
+    "name": "as.up.data.forward",
+    "time": "2026-11-06T15:41:44.697278851Z",
+    "identifiers": [
+      {
+        "device_ids": {
+          "device_id": "eui-70B3D57ED00XXXXX",
+          "application_ids": {
+            "application_id": "beeloggerblue05"
+          },
+          "dev_eui": "70B3D57ED00XXXXX",
+          "dev_addr": "260B6573"
+        }
+      }
+    ],
+    "data": {
+      "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+      "end_device_ids": {
+        "device_id": "eui-70B3D57ED00XXXXX",
+        "application_ids": {
+          "application_id": "beeloggerblue05"
+        },
+        "dev_eui": "70B3D57ED00XXXXX",
+        "dev_addr": "260B6573"
+      },
+      "correlation_ids": [
+        "gs:uplink:01M6RRBS522R59FZMFBS8E8C7E"
+      ],
+      "received_at": "2026-11-06T15:41:44.694499798Z",
+      "uplink_message": {
+        "f_port": 1,
+        "frm_payload": "CZ4QaQCB/5z/nP+c/5wAAAAAAdkt",
+        "decoded_payload": {
+          "Aux3": 1,
+          "Gewicht": -1,
+          "Gewicht2": -1,
+          "Gewicht3": -1,
+          "Gewicht4": -1,
+          "Service": 0,
+          "TempOut": 24.62,
+          "VBatt": 4.201,
+          "VSolar": 0.129
+        },
+        "rx_metadata": [
+          {
+            "gateway_ids": {
+              "gateway_id": "eui-EIGENES-GATEWAY",
+              "eui": "EIGENES-GATEWAY"
+            },
+            "time": "2026-11-06T15:41:36.728780Z",
+            "timestamp": 3960669163,
+            "rssi": -77,
+            "channel_rssi": -77,
+            "snr": 10.25,
+            "received_at": "2026-11-06T15:41:44.462107411Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "eui-7076ff0056080a13",
+              "eui": "7076FF0056080A13"
+            },
+            "time": "2026-11-06T15:41:44.448Z",
+            "timestamp": 143163564,
+            "rssi": -117,
+            "channel_rssi": -117,
+            "snr": -4.8,
+            "channel_index": 5,
+            "gps_time": "2026-11-06T15:41:44.448Z",
+            "received_at": "2026-11-06T15:41:44.518932821Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "eui-7076ff0056070d71",
+              "eui": "7076FF0056070D71"
+            },
+            "time": "2026-11-06T15:41:44.448Z",
+            "timestamp": 415143212,
+            "rssi": -112,
+            "channel_rssi": -112,
+            "snr": -10,
+            "channel_index": 5,
+            "gps_time": "2026-11-06T15:41:44.448Z",
+            "received_at": "2026-11-06T15:41:44.239862193Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS67NJHB6VXKZHSDETV7",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074AC",
+              "forwarder_gateway_id": "eui-00800000a00074ac",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.448219Z",
+            "rssi": -105,
+            "channel_rssi": -105,
+            "snr": 2.25,
+            "received_at": "2026-11-06T15:41:44.518138842Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS67GMQEXX2FAB02MWDZ",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "0080000000029007",
+              "forwarder_gateway_id": "eui-0080000000029007",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.412091016Z",
+            "rssi": -113,
+            "channel_rssi": -113,
+            "snr": -2,
+            "received_at": "2026-11-06T15:41:44.517299524Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS69DMV4162GMQ778SJP",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000D0001D7C",
+              "forwarder_gateway_id": "eui00800000d0001d7c",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.432888984Z",
+            "rssi": -110,
+            "channel_rssi": -110,
+            "snr": 5.5,
+            "received_at": "2026-11-06T15:41:44.519196813Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS6BWEBE5QFWWMNJ940V",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074B0",
+              "forwarder_gateway_id": "00800000a00074b0",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.448215Z",
+            "rssi": -81,
+            "channel_rssi": -81,
+            "snr": 9,
+            "received_at": "2026-11-06T15:41:44.520739489Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS6853MMXRF2HVF91YMQ",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A000975D",
+              "forwarder_gateway_id": "eui-00800000a000975d",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.448220Z",
+            "rssi": -107,
+            "channel_rssi": -107,
+            "snr": 5,
+            "received_at": "2026-11-06T15:41:44.519027548Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS69DMV4162GMV71S7DX",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "new-ag",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "7076FF0056070D71",
+              "forwarder_gateway_id": "eui-7076ff0056070d71",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.448Z",
+            "rssi": -112,
+            "channel_rssi": -112,
+            "snr": -10,
+            "received_at": "2026-11-06T15:41:44.520302066Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS6D3G494PWHMFVHNF20",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "new-ag",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "7076FF0056080A13",
+              "forwarder_gateway_id": "eui-7076ff0056080a13",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.448Z",
+            "rssi": -117,
+            "channel_rssi": -117,
+            "snr": -4.8,
+            "received_at": "2026-11-06T15:41:44.520380836Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS6KZBZVX9YHHM9RM42D",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074AF",
+              "forwarder_gateway_id": "00800000a00074af",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.448215Z",
+            "rssi": -84,
+            "channel_rssi": -84,
+            "snr": 8.25,
+            "received_at": "2026-11-06T15:41:44.524059565Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS6REFPWDZC7XXX3BB4V",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074A5",
+              "forwarder_gateway_id": "00800000a00074a5",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.448218Z",
+            "rssi": -103,
+            "channel_rssi": -103,
+            "snr": 8.25,
+            "received_at": "2026-11-06T15:41:44.524820857Z"
+          },
+          {
+            "gateway_ids": {
+              "gateway_id": "packetbroker"
+            },
+            "packet_broker": {
+              "message_id": "01M6RRBS71CMXN0HDSGBZS8JE2",
+              "forwarder_net_id": "000013",
+              "forwarder_tenant_id": "swk-connect",
+              "forwarder_cluster_id": "eu1.cloud.thethings.industries",
+              "forwarder_gateway_eui": "00800000A00074A6",
+              "forwarder_gateway_id": "00800000a00074a6",
+              "home_network_net_id": "000013",
+              "home_network_tenant_id": "ttn",
+              "home_network_cluster_id": "eu1.cloud.thethings.network"
+            },
+            "time": "2026-11-06T15:41:44.448215Z",
+            "rssi": -97,
+            "channel_rssi": -97,
+            "snr": 7.5,
+            "received_at": "2026-11-06T15:41:44.540624463Z"
+          }
+        ],
+        "settings": {
+          "data_rate": {
+            "lora": {
+              "bandwidth": 125000,
+              "spreading_factor": 7,
+              "coding_rate": "4/5"
+            }
+          },
+          "frequency": "868100000",
+          "timestamp": 3960669163,
+          "time": "2026-11-06T15:41:36.728780Z"
+        },
+        "received_at": "2026-11-06T15:41:44.483597393Z",
+        "consumed_airtime": "0.077056s",
+        "network_ids": {
+          "net_id": "000013",
+          "ns_id": "EC656E0000000181",
+          "tenant_id": "ttn",
+          "cluster_id": "eu1",
+          "cluster_address": "eu1.cloud.thethings.network"
+        }
+      }
+    },
+    "correlation_ids": [
+      "gs:uplink:01M6RRBS522R59FZMFBS8E8C7E"
+    ],
+    "origin": "ip-10-100-12-183.eu-west-1.compute.internal",
+    "context": {
+      "tenant-id": "CgN0dG4="
+    },
+    "visibility": {
+      "rights": [
+        "RIGHT_APPLICATION_TRAFFIC_READ"
+      ]
+    },
+    "unique_id": "01M6RRBSBS5693EWBTJ7PB157J"
+  }
+]

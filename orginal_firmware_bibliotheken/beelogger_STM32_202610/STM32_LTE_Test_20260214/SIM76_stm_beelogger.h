@@ -1,0 +1,102 @@
+/*************************************************************************
+* SIM7600E TCPIP Library
+* based on SIM800 GPRS/HTTP Library
+* Distributed under GPL v2.0
+* Written by Stanley Huang <stanleyhuangyc@gmail.com>
+* For more information, please visit http://arduinodev.com
+*
+* Modified for use with SIM7600E
+*
+*
+*************************************************************************/
+
+
+// Debug Information Datenempfang aktivieren, Serial.begin() muss in Hauptsketch
+#define SIM7600__DEBUG 0
+
+
+#if SIM7600__DEBUG
+  #define DEB_data 0
+// erweiterte Debuginformationen
+  #define DEB_more 1
+  #define DEB_cmd  1
+#else
+  #define DEB_data 0
+// erweiterte Debuginformationen
+  #define DEB_more 0
+  #define DEB_cmd  0
+#endif
+
+
+#include <Arduino.h>
+
+#ifndef __SIM7600_STM__
+#define __SIM7600_STM__
+
+#if defined(ARDUINO_BLACKPILL_F411CE) || defined(ARDUINO_BLACKPILL_F401CC) || defined(ARDUINO_BLACKPILL_F401CE)
+#define _RX_TX  Serial1
+//#pragma message "stm32_f4"
+#else
+#define _RX_TX  Serial
+//#pragma message "stm32_f1"
+#endif
+
+typedef struct {
+  float lat;
+  float lon;
+  uint8_t year; /* year past 2000, e.g. 15 for 2015 */
+  uint8_t month;
+  uint8_t day;
+  uint8_t hour;
+  uint8_t minute;
+  uint8_t second;
+} GSM_LOCATION;
+
+
+class CLTE_SIM76_STM {
+public:
+
+    // initialize the module
+    bool init();
+    // close software Serial
+    void shutdown();
+
+    // APN connection
+	uint8_t start(const char* apn,const char* usr,const char* pw);  //prepare PDP context
+
+	uint8_t tcp_start(const char* apn,const char* usr,const char* pw,uint8_t a_7600=0);  //prepare PDP context
+	void stop();
+
+    // http commandos
+	uint8_t ssl_init();					// prepare SSL transparent mode
+
+	uint8_t ssl_start();        // start SSL, activate PDP context	
+	uint8_t ssl_stop();					// stop SSL
+
+	uint8_t ssl_open(const char* url);      // Open connection
+	uint8_t ssl_close();                    // close connection
+	void ssl_data(const char* data);     // write data to module
+	
+	// Connect/disConnect TCP via CIP
+	bool Connect(const char* host_name);
+	void disConnect();
+	
+	// prepare and send data
+	bool prep_send();
+    void send(const char* data);
+
+    // get signal quality level (in dB)
+    int getSignalQuality();
+    bool getLocation(GSM_LOCATION* loc);
+	
+    // send AT command and check for expected response
+    uint8_t sendCommand(const char* cmd, unsigned int timeout = 10000, const char* expected = 0);
+
+	//void recv();  // read module tx buffer, use for debug 
+    
+	char buffer[128];
+private:
+    // empty serial in buffer
+    void purgeSerial();
+};
+#endif

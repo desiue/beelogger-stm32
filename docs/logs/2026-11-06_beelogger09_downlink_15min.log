@@ -1,0 +1,44 @@
+ 
+STM32_LORA_
+260705STM32F411CE
+Name: beelogger09 UID: 353439323337510600410066 DevAddr: 260BD691
+RST
+  LoRaSeq_Nr:14 Interval: 0min  DL: 0min  t-on: 7  sw: 0 0
+Datum:    01.01.2022 00:49:59
+ADC-bits: 1681  Bat. [V]: 4.20
+ADC-bits: 1199  Sol. [V]: 2.99
+System On: 1
+  LoRaSeq_Nr:14 Interval: 0min  DL: 0min  t-on: 1640998199  sw: 0 0
+ADC-bits: 1680  Bat. [V]: 4.19
+ADC-bits: 1199  Sol. [V]: 2.99
+ sw:0
+Vdd. [V]: 3.30
+T - STM32 [C]: 28.59
+DS18B20
+ [C]: 23.25
+HX711
+W 1 [kg] 0.01
+W 2 [kg] -0.16
+W 3 [kg] 0.01
+W 4 [kg] 0.01
+
+LoRa:
+ setup done!
+Data:
+temperature: 921
+batt.: 1697
+solar: 11177
+weight 1: 00
+weight 2: 255240
+weight 3: 00
+weight 4: 00
+info:7
+HDR: 22829
+ 
+payload length: 17
+payload: 9 15 10 61 B B1 0 0 FF F0 0 0 0 0 7 59 2D  
+LoRa-frame counter: 14
+296587: TX done!
+DL Port 10: 15
+ Weckzeit 01.01.2022 01:04:59
+  LoRaSeq_Nr:15 Interval: 0min  DL: 15min  t-on: 5  sw: 0 0
