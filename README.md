@@ -12,7 +12,7 @@ Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler
 |---|---|
 | `src/` | Firmware (Sketch 260705 mit Änderungen, siehe unten) |
 | `src/Config_LORA.h.example`, `src/Config_MULTI.h.example` | Vorlagen für LoRa- und Sensorkonfiguration (nur Platzhalter) |
-| `lib/` | beelogger-Bibliotheken 2026_04, unverändert |
+| `lib/` | beelogger-Bibliotheken 2026_04; geändert nur LMIC (`lib/beelogger_arduino-lmic-master/src/lmic/`: Join-Code an, Link-Check, `LMIC_restoreJoin`), siehe Diff |
 | `orginal_firmware_bibliotheken/` | Originale von beelogger.de zum Vergleich (Sketche 202610, Bibliotheken 2026_04, WLAN/LTE 230928) |
 | `platformio.ini` | Boards BluePill F103CB, BlackPill F411CE, BlackPill F401CC |
 | `docs/flashen.md` | Bauen, Flashen über FTDI (stm32loader), Gerätetabelle |
@@ -31,7 +31,7 @@ Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler
    cp src/Config_LORA.h.example src/Config_LORA.h
    cp src/Config_MULTI.h.example src/Config_MULTI.h
    ```
-4. **`src/Config_LORA.h` ausfüllen:** `LOGGER_NAME`, `DEVADDR`, `NWKSKEY`, `APPSKEY` aus der TTN-Konsole (ABP), Sendeintervalle `WeckIntervall_*`. `LORA_CHANNELS` (1, 3 oder 8) muss zu den Frequenzen in TTN passen.
+4. **`src/Config_LORA.h` ausfüllen:** `LOGGER_NAME`; Variante wählen mit `#define LORA_OTAA` (siehe „ABP oder OTAA“). ABP (`0`): `DEVADDR`, `NWKSKEY`, `APPSKEY` aus der TTN-Konsole. OTAA (`1`): `DEVEUI`, `APPEUI` (JoinEUI), `APPKEY` – DevEUI und JoinEUI in LSB-Reihenfolge, AppKey in MSB (in der TTN-Konsole umschaltbar). Sendeintervalle `WeckIntervall_*`. `LORA_CHANNELS` (1, 3 oder 8) muss zu den Frequenzen in TTN passen.
 5. **`src/Config_MULTI.h` ausfüllen:** Sensoren, Waagen-Kalibrierung, wie bei der Original-Firmware.
 6. **Board wählen** (unten in der PlatformIO-Leiste oder per Befehl):
    - BluePill (STM32F103, „Blue“): `bluepill_f103c8`
@@ -47,6 +47,53 @@ Hinweise:
 - BluePill: Board `bluepill_f103c8_128k` mit `-DARDUINO_BLUEPILL_F103CB` (die Firmware braucht 128 KB).
 - Flash-Belegung (Paket 2): F103CB 53 884 B, F411CE 53 176 B.
 - `pio run -t upload` geht beim F411 nicht (stm32flash kennt die Chip-ID 0x431 nicht), deshalb stm32loader.
+
+## Eine Firmware, vier Varianten
+
+| | ABP (`LORA_OTAA 0`) | OTAA (`LORA_OTAA 1`) |
+|---|---|---|
+| **BluePill** F103 (`bluepill_f103c8`) | läuft (beeloggerblue05, beelogger011) | **noch offen**: Build bricht mit `#error` ab, Session-Speicher im Flash fehlt |
+| **BlackPill** F411/F401 (`blackpill_f411ce`, `blackpill_f401cc`) | läuft (beelogger09) | läuft (beelogger08) |
+
+Board = PlatformIO-Umgebung, ABP/OTAA = Schalter im Geräteblock von `Config_LORA.h`. Sonst ist der Code gleich, Korrekturen gelten für alle Varianten.
+
+## ABP oder OTAA
+
+**ABP** (Activation by Personalization): DevAddr und Sitzungsschlüssel stehen fest in der Firmware. Das Gerät sendet sofort.
+**OTAA** (Over-the-Air Activation): In der Firmware steht nur ein Stammschlüssel (AppKey). Beim Start meldet sich das Gerät an („Join“), TTN vergibt DevAddr und Sitzungsschlüssel neu.
+
+| | ABP | OTAA |
+|---|---|---|
+| Start | sendet sofort | Join beim ersten Start und nach Stromausfall: ein Downlink, ca. 8 s länger wach (gemessen: 19 s statt sonst ca. 18 s mit 4 Waagen) |
+| Gateway beim Start | egal | muss erreichbar sein, sonst kein Join und kein Uplink |
+| Schlüssel | Sitzungsschlüssel fest, gelten für immer | bei jedem Join neu; im Gerät nur AppKey |
+| Zähler nach Akku-ab | fängt bei 0 an → in TTN „Resets frame counters“ nötig (schwächt den Schutz gegen wiederholte Nachrichten) | neuer Join, neue Session – kein Zähler-Reset in TTN nötig |
+| TTN-Einstellungen (Rx1/Rx2) | müssen genau zur Firmware passen, sonst Downlink-Schleife; Änderung erst nach „Reset session and MAC state“ | kommen mit dem Join-Accept ins Gerät |
+| Netzausfall erkennen | nein | ja: 1 Link-Check pro Tag, nach 3 Tagen ohne Antwort Neu-Join (kostet 1 Downlink/Tag von 10 erlaubten) |
+| Gerät in andere TTN-App umziehen | neu flashen | in TTN neu anlegen, Join |
+| Boards | Blue und Black | bisher nur Black |
+| Strom | – | gleich (beelogger08: Schlaf 18,1 µA, wach 24–34 mA, wie mit alter FW) |
+
+**Warum beide:** Die vorhandenen Feldgeräte laufen mit ABP und sollen nach dem Update ohne Neuanlage in TTN weiterlaufen. Neue Geräte sollen OTAA nutzen: sicherer, weniger Fehlerquellen bei den TTN-Einstellungen, und ein Netzausfall wird erkannt. Beides aus einer Codebasis, damit Korrekturen nur einmal nötig sind.
+
+OTAA-Gerät in TTN anlegen: LoRaWAN 1.0.2, RP 1.0.2 rev B, Frequenzplan EU_863_870_TTN, ADR aus. Die Session (DevAddr, Nonces, Rx-Werte) liegt bei der BlackPill in RTC-Backup-Registern und übersteht den Tiefschlaf; die Sitzungsschlüssel werden daraus neu berechnet und nicht gespeichert. Neu-Join nach Stromausfall (POR), unbekanntem Frame-Zähler, FCnt ≥ 16000 (vor dem Überlauf des 14-Bit-Zählers), ungültiger Prüfsumme der Session oder 3 Tagen ohne Link-Check-Antwort.
+
+Mitschnitt OTAA (beelogger08, BlackPill, nach Akku ab/an):
+```
+Name: beelogger08 UID: 3534393233375105006E0030 DevAddr: 00000000
+POR
+...
+LoRa-frame counter: 0
+OTAA: Join
+546276: Joining
+1045852: Joined DevAddr: 638256495        (= 0x260B056F)
+1180909: TX done!
+ Weckzeit 01.01.2022 00:04:59
+  LoRaSeq_Nr:1 Interval: 5min  DL: 0min  t-on: 19  sw: 0 0
+```
+Nach einem normalen Neustart (Reset, Tiefschlaf) zeigt die Startzeile die gespeicherte DevAddr, und es gibt keinen Join.
+
+TTN-Live-Daten als Beispiel (Export aus der Konsole, ABP): `docs/ttn/beispiele/` – z. B. `2026-11-06_beelogger09_live_data_2h.json` (Uplinks mit dekodierter Payload) und `…_downlink_15min.json` (Intervall-Downlink). Payload-Decoder: `docs/ttn/payload_decoder_ttn.js`.
 
 ## Serielle Konsole und Startzeile
 
@@ -96,6 +143,8 @@ Vollständig in `docs/aenderungen_gegen_260705.diff`. Kurz:
 | „Reset session and MAC state“ setzt nur den Zähler im Network Server zurück, nicht im Application Server | Downlink bleibt verworfen, obwohl die Konsole 0 zeigt | beide Zähler per API zurücksetzen |
 
 ## TTN-Einstellungen (ABP, LMIC dieser Firmware)
+
+Gilt für ABP. Bei OTAA kommen Rx1-Delay und Rx2 mit dem Join; Frequenzplan, LoRaWAN-Version und ADR aus wie unten.
 
 Die Firmware startet nach jedem Zyklus neu (`LowPower.shutdown()`) und beantwortet keine MAC-Befehle. TTN muss deshalb genau die Werte kennen, die die Firmware fest benutzt. Sonst hängt TTN an jeden Downlink MAC-Befehle („Downlink-Schleife“).
 
@@ -151,4 +200,4 @@ Kein offizielles Projekt von beelogger.de. Original: https://beelogger.de
 ## Stand
 
 Siehe `docs/planung_otaa_downlink.md`, Abschnitte „Arbeitspakete“ und „Verlauf“.
-Paket 1 (Grundlage) und Paket 2 (Downlink-Intervall, ABP) fertig. Paket 3 (OTAA): BlackPill läuft (beelogger08), BluePill offen.
+Paket 1 (Grundlage) und Paket 2 (Downlink-Intervall, ABP) fertig. Paket 3 (OTAA): BlackPill läuft und ist abgenommen (beelogger08: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Strom gleich). BluePill offen.
