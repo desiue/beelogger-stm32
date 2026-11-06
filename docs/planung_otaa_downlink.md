@@ -111,7 +111,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 | 1 | Grundlage: Build der unveränderten 260705 für Blue und Black, Flash-Größe/-Belegung, `monitor_speed` 9600, Startzeile mit Name + UID + Chip + FW + DevAddr, flashen aufs Testgerät | Ein Zyklus mit `LoRa:`-Block im Log und Uplink in TTN; Build-Größen notiert |
 | 2 | Downlink-Empfang + Sendeintervall (ABP), Aux3-Fehler beheben | Downlink aus TTN-Konsole ändert Intervall am Testgerät, Logausgabe |
 | 3 | OTAA mit Schalter `LORA_OTAA`, Session im Flash (F1) / Backup-Register (F4), Neu-Join-Regel | Join, Neustart ohne Neu-Join, Akku ab → Neu-Join |
-| 4 | Doku: Wiki aktualisieren (03, 06, Abschnitt 3 der Projektseite), TTN-Anleitung OTAA | Wiki-Seiten geändert |
+| 4 | Doku: Wiki aktualisieren (03, 06, Abschnitt 3 der Projektseite). **TTN-Anleitung mit Screenshots je Variante** (ABP neu, ABP Altgerät umstellen, OTAA): Gerät anlegen, Advanced MAC settings (Rx1 delay 1/1, Rx2 DR 3/3, Frequenzen, Resets frame counters, ADR aus), „Reset session and MAC state“, Downlink FPort 10 senden, Prüfung mit `scripts/ttn-status.sh`. Für Nutzer von beelogger, ins Repo (`docs/ttn/anleitung_*.md` + Bilder) und ins Wiki | Anleitung im Repo, Wiki-Seiten geändert |
 | später | Waagenkonfiguration per Downlink | – |
 
 ## Verlauf
@@ -159,15 +159,44 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
   - BluePill **beeloggerblue05** (TTN-App `beeloggerblue05`, DevAddr 260B6573, F103CB 128 KB, UID 5BB6-1A5A-00000000-30003F2A, Reset-Taster defekt → R gegen G): 16:01 UTC mit Paket-2-Firmware geflasht. Startzeile ok, `TX done!` FCnt 1. `Interval: 5min` (Altwert der alten Firmware in Register 4), `DL: 0min` → Altwert stört wie geplant nicht.
   - Serielles Log dauerhaft: `scripts/seriell-log.sh` → `~/beelogger-logs/seriell.log` (vor dem Flashen `stop`).
   - Downlink-Test blue05 16:06 UTC: TTN sendete um 16:11 (RX1), Gerät verwarf ihn ohne Meldung. Ursache: FCntDown in TTN 224647 (Altlast der Downlink-Schleife seit 2023); LMIC startet nach jedem Aufwachen mit FCntDown 0 und ergänzt nur 16 Bit → MIC falsch. Abhilfe: „Reset session and MAC state“ in TTN. Für OTAA (Paket 3) beachten: FCntDown im gespeicherten Session-Block mitführen oder nach Join bei 0 lassen.
-  - Offen: Downlink-Test blue05 nach Session-Reset wiederholen; Rückmeldung des aktiven Intervalls im Uplink (offene Frage).
+  - 16:19 UTC Nutzer: RX2 3/3 und „Reset session and MAC state“ bei beiden Geräten. `scripts/ttn-status.sh` zeigt danach FCntDown 0, RX2 3/3.
+  - 16:22 UTC `0F` an blue05 erneut: TTN sendet um 16:26, **wieder nicht empfangen**. FCntDown springt auf **224648**: Der Reset setzt nur den Network Server zurück, der **Application Server** (verschlüsselt den Downlink) zählt mit seinem alten Stand weiter. beelogger09 betrifft das nicht (Zähler klein).
+  - Bei der Übergabe: Paket 2 auf F411 abgenommen (15 min und Rückstellen 00), auf F103 Uplink ok, Downlink wegen TTN-Zähler offen.
+  - Doku/Repo: öffentlich als github.com/desiue/beelogger-stm32 (GPL v3, `docs/lizenz.md`); Config_MULTI.h mit WLAN-/Server-Passwörtern aus dem Repo genommen, Repo neu angelegt (ein Commit). Private Angaben in `docs/privat/` (lokal). TTN-Export der Konsole kann vollständige API-Keys enthalten (Ereignis `application.api-key.create`) → vor dem Ablegen filtern.
 
-## Offene Fragen
+## Offene Punkte (Stand 06.11.2026, Ende Sitzung 2)
 
-- [ ] Serielle Konsole zum Laufen bringen (Verkabelung).
+**Paket 2 (Rest)**
+- [ ] blue05: Application-Server-Downlink-Zähler (224648) zurücksetzen. Wege prüfen: Konsole → Gerät → Application layer bzw. ABP-Session (AppSKey neu speichern), sonst Gerät in TTN löschen und mit gleichen ABP-Daten neu anlegen. Danach `0F` erneut, Abnahme F103.
+- [ ] In die TTN-Anleitung: FCntDown muss < 65536 sein, in NS **und** AS; `scripts/ttn-status.sh` zeigt nur den NS-Wert → Skript um AS-Wert ergänzen, falls per API lesbar.
+- [ ] **Firmware-Version kenntlich machen:** `l_ID` steht noch auf 260705 (Aux3 und Debug). Eigene Kennung festlegen (z. B. 260705 + Variante/Build-Nr. oder Datum) und in Startzeile, Aux3 und Doku führen.
+- [ ] Rückmeldung an den Server, welches Intervall aktiv ist (z. B. in jedem 10. Uplink wie die ID)?
+
+**Doku / Repo**
+- [ ] README-Startseite überarbeiten: Ziel des Projekts in 3 Sätzen; **Schritt-für-Schritt „Firmware selbst bauen“** (Repo laden, VS Code + PlatformIO, Vorlagen kopieren, Env wählen BluePill/BlackPill, Schalter ABP/OTAA (`LORA_OTAA`, ab Paket 3), bauen, flashen); Startzeile `Name/UID/DevAddr` erklären (steht bisher nur knapp unter „Änderungen“).
+- [ ] DevAddr/DevEUI wieder unverändert lassen (Nutzer 06.11.: nicht geheim, hilft beim Nachvollziehen). Neutralisierung der DevEUIs in `docs/ttn/` beim nächsten Export nicht mehr machen; Standorte/Namen/URLs/Passwörter bleiben draußen.
+- [ ] Abschnitt **„Gefundene Fehler“** (Repo-Doku): Aux3 in jedem Uplink (seqnoUp), Register 4 `WeckIntervallMinuten` gespeichert aber unbenutzt, FCntDown > 65535 → Downlink verworfen, AS-Zähler übersteht MAC-Reset, RX2-SF9 vs. TTN-Vorgabe SF12.
+- [ ] Abschnitt **Fair Use Policy** (TTN: 30 s Airtime/Tag, 10 Downlinks/Tag) mit Paketgrößen und Intervallen; Material aus Wiki `projekte:beelogger_doku` übernehmen.
+- [ ] Entscheiden: DokuWiki-Seiten zu beelogger (Payload/Bitaufteilung, Verschlüsselung, TTN 06/06a) ins Repo übernehmen (Markdown, ohne Privates)?
+- [ ] Downlink aus der Server-Software: Doku für beelogger-Entwickler, wie ihr Server per TTN-API Downlinks schickt (`POST /api/v3/as/applications/<app>/devices/<dev>/down/push`, API-Key mit „Write downlink application traffic“, FPort 10, Base64-Payload) – Beispiel curl/PHP.
+- [ ] TTN-Anleitung mit Screenshots je Variante (siehe Paket 4).
+
+**Messen / Hardware**
+- [ ] Wachzeit und Stromverbrauch pro Zyklus messen, **vor und nach** dem Flash der neuen Firmware: am **beelogger08** (vor dem Update!). Log `t-on` und `TX done`-Zeit (ms) vergleichen; Strom mit Multimeter/USB-Meter.
+- [ ] LoRa-Kanäle (`LORA_CHANNELS` 1/3/8): Entscheidung ans Ende, wenn die Firmware fertig ist. Empfehlung bisher 8 (TTN-Standard).
+- [ ] Seriell-Log läuft dauerhaft (`scripts/seriell-log.sh`, `~/beelogger-logs/seriell.log`) – vor dem Flashen stoppen.
+
+**Später / Ideen**
+- [ ] **beeloggerHexa**: 6 (oder 8) Waagen. Klären: Payload-Größe je Waage/Temperatur, maximale Sendehäufigkeit unter der Fair Use Policy bei SF7…SF12, ob Aufteilung auf mehrere Pakete nötig.
+- [ ] Waagenkonfiguration per Downlink.
+
+## Offene Fragen (Planung)
+
+- [x] Serielle Konsole läuft (FTDI, 9600 Baud).
 - [ ] Flash-Größe des Test-Chips (64 oder 128 KB) und ob der Build mit Join-Code passt.
-- [x] Intervall-Fernwert auf dem F1: **Flash** (nur bei Änderung geschrieben), entschieden 06.11.2026. Gleicher Flash-Block wie die OTAA-Session.
+- [x] Intervall-Fernwert: entschieden 06.11.2026 (Sitzung 2) **Backup-Register 5, Bit 9–14** (F1 und F4), nicht Flash.
 - [ ] Neu-Join-Regel: nach wie vielen Uplinks ohne Netzantwort (Link-Check)?
-- [ ] Rückmeldung an den Server, welches Intervall aktiv ist (z. B. in jedem 10. Uplink, wie die ID)?
+
 
 ## Fragen und Antworten aus der Planung
 
