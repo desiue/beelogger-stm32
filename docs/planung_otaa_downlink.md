@@ -204,7 +204,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [x] (06.11. Nutzer: **nein**, bleiben im Wiki) Entscheiden: DokuWiki-Seiten zu beelogger (Payload/Bitaufteilung, Verschlüsselung, TTN 06/06a) ins Repo übernehmen (Markdown, ohne Privates)?
 - [ ] Downlink aus der Server-Software: Doku für beelogger-Entwickler, wie ihr Server per TTN-API Downlinks schickt (`POST /api/v3/as/applications/<app>/devices/<dev>/down/push`, API-Key mit „Write downlink application traffic“, FPort 10, Base64-Payload) – Beispiel curl/PHP.
 - [ ] TTN-Anleitung mit Screenshots je Variante (siehe Paket 4).
-- [ ] Doku (Nutzer 06.11.): Vor- und Nachteile OTAA vs. ABP erklären – warum es beide Varianten gibt.
+- [x] (README, 06.11.) Doku (Nutzer 06.11.): Vor- und Nachteile OTAA vs. ABP erklären – warum es beide Varianten gibt.
 - [ ] Doku (Nutzer 06.11.): In Beispielen echte Live-Daten aus der TTN-Konsole zeigen (z. B. Uplink von beelogger08), damit neue Nutzer sehen, wie die Daten dort aussehen müssen. Dazu passende Auszüge aus der seriellen Konsole (Startzeile, Join, Uplink, TX done).
 
 **Messen / Hardware**
