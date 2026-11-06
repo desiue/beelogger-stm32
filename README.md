@@ -40,7 +40,7 @@ Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler
 8. **Flashen** über FTDI-Adapter mit stm32loader: siehe [`docs/flashen.md`](docs/flashen.md). Vorher an der Startzeile prüfen, welches Gerät am Kabel hängt.
 9. **TTN einstellen** wie unter „TTN-Einstellungen“, sonst kommen Downlinks nicht an.
 
-OTAA (Paket 3) kommt später als Schalter `#define LORA_OTAA` in `Config_LORA.h`. Bis dahin nur ABP.
+ABP oder OTAA per Schalter `#define LORA_OTAA` (0/1) im Geräteblock von `Config_LORA.h`. OTAA geht bisher nur auf der BlackPill (F4); auf der BluePill bricht der Build mit `#error` ab, bis der Session-Speicher im Flash fertig ist.
 
 Hinweise:
 - STM32-Core 2.6.0 (`framework-arduinoststm32@~4.20600`), in `platformio.ini` festgelegt.
@@ -78,6 +78,11 @@ Vollständig in `docs/aenderungen_gegen_260705.diff`. Kurz:
    - Getestet auf BlackPill F411 (beelogger09) und BluePill F103 (beeloggerblue05).
 3. **Sketch-ID-Fehler behoben** (Feld Aux2, siehe „Gefundene Fehler“; in älteren Notizen „Aux3“ genannt).
 4. `Config_LORA.h`: `LOGGER_NAME` je Geräteblock.
+6. **OTAA** (`#define LORA_OTAA 1`, Werte `DEVEUI`, `APPEUI` = JoinEUI, beide LSB, `APPKEY` MSB; TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B):
+   - Join beim ersten Versand. Gespeichert werden nur DevAddr, NetID, AppNonce, DevNonce, Rx1-Delay und Rx2-DR (RTC-Backup-Register 10–13, mit Version und Prüfsumme). Die Session-Schlüssel rechnet der Logger nach jedem Aufwachen aus dem AppKey neu (`LMIC_restoreJoin`).
+   - Neu-Join: nach Power-On-Reset (Akku ab), bei ungültigem Datum, ab FCnt 16000 und nach 3 Tagen ohne Antwort auf den täglichen LinkCheckReq (1 Downlink/Tag).
+   - Join-Versuch höchstens 60 s pro Zyklus; ohne Erfolg neuer Versuch im nächsten Zyklus.
+   - LMIC: Join-Code eingeschaltet (`DISABLE_JOIN` aus), LinkCheckReq/-Ans ergänzt. ABP-Geräte joinen nie (DevAddr ist gesetzt), Build ca. 0,7 KB größer.
 5. **Firmware-Kennung** `l_ID` = **261106** (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 
 ## Gefundene Fehler
@@ -146,4 +151,4 @@ Kein offizielles Projekt von beelogger.de. Original: https://beelogger.de
 ## Stand
 
 Siehe `docs/planung_otaa_downlink.md`, Abschnitte „Arbeitspakete“ und „Verlauf“.
-Paket 1 (Grundlage) und Paket 2 (Downlink-Intervall, ABP) fertig. Paket 3 (OTAA) offen.
+Paket 1 (Grundlage) und Paket 2 (Downlink-Intervall, ABP) fertig. Paket 3 (OTAA): BlackPill läuft (beelogger08), BluePill offen.

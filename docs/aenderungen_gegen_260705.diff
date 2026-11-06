@@ -1,7 +1,7 @@
 diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
---- orig/Config_LORA.h	2026-11-06 19:59:05.314664101 +0100
-+++ neu/Config_LORA.h	2026-11-06 19:59:05.321066801 +0100
-@@ -1,68 +1,73 @@
+--- orig/Config_LORA.h	2026-11-06 22:27:51.211252953 +0100
++++ neu/Config_LORA.h	2026-11-06 22:27:51.228576628 +0100
+@@ -1,68 +1,82 @@
 -/****************************************************************/
 -// LORA Konfiguration
 -/****************************************************************/
@@ -100,6 +100,15 @@ diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
 +static const u4_t DEVADDR = 0x12345678;
 +#define LOGGER_NAME "beelogger"  // erscheint in der Startzeile (seriell), je Gerät anpassen
 +
++// Aktivierung: 0 = ABP (DEVADDR, NWKSKEY, APPSKEY oben), 1 = OTAA (die drei Werte unten; nur BlackPill F4)
++// OTAA in TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B. DEVEUI und APPEUI (JoinEUI) LSB zuerst, APPKEY MSB (wie TTN-Konsole).
++#define LORA_OTAA 0
++#if LORA_OTAA
++static const u1_t PROGMEM DEVEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
++static const u1_t PROGMEM APPEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
++static const u1_t PROGMEM APPKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
++#endif
++
 +// LoRaWAN Network Prefix
 +static const uint16_t PREFIX =   0x13;     //   https://www.thethingsnetwork.org/docs/lorawan/prefix-assignments.html  
 +// example: 0x13 = TTN
@@ -143,9 +152,79 @@ diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
 +
 +// 
 +#define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht
+diff --color -ruN orig/lmic/config.h neu/lmic/config.h
+--- orig/lmic/config.h	2026-11-06 22:27:51.230355017 +0100
++++ neu/lmic/config.h	2026-11-06 22:27:51.233326676 +0100
+@@ -38,7 +38,7 @@
+ #define LMIC_FAILURE_TO Serial
+ 
+ // Uncomment this to disable all code related to joining
+-#define DISABLE_JOIN  //mod
++//#define DISABLE_JOIN  //mod  beelogger: Join für OTAA (ABP-Geräte joinen nie, DevAddr != 0)
+ // Uncomment this to disable all code related to ping
+ #define DISABLE_PING  //mod
+ // Uncomment this to disable all code related to beacon tracking.
+diff --color -ruN orig/lmic/lmic.c neu/lmic/lmic.c
+--- orig/lmic/lmic.c	2026-11-06 22:27:51.235355064 +0100
++++ neu/lmic/lmic.c	2026-11-06 22:27:51.239355102 +0100
+@@ -1144,6 +1144,7 @@
+         case MCMD_LCHK_ANS: {
+             //int gwmargin = opts[oidx+1];
+             //int ngws = opts[oidx+2];
++            LMIC.lchkReq = 3;  // beelogger
+             oidx += 3;
+             continue;
+         }
+@@ -1642,6 +1643,11 @@
+         LMIC.dn2Ans = 0;
+     }
+ #endif // !DISABLE_MCMD_DN2P_SET
++    if( LMIC.lchkReq == 1 ) {  // beelogger: link check request
++        LMIC.frame[end] = MCMD_LCHK_REQ;
++        end += 1;
++        LMIC.lchkReq = 2;
++    }
+     if( LMIC.devsAns ) {  // answer to device status
+         LMIC.frame[end+0] = MCMD_DEVS_ANS;
+         LMIC.frame[end+1] = os_getBattLevel();
+@@ -2361,6 +2367,15 @@
+     DO_DEVDB(LMIC.seqnoDn, seqnoDn);
+ }
+ 
++// beelogger: OTAA-Session aus gespeicherten Join-Werten wiederherstellen.
++// artnonce_netid = AppNonce (3) + NetID (3) wie im Join-Accept (LSB zuerst);
++// devnonce = DevNonce des erfolgreichen Join-Request. Schlüssel kommen aus os_getDevKey().
++void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid) {
++    u1_t nwk[16], art[16];
++    aes_sessKeys(devnonce, artnonce_netid, nwk, art);
++    LMIC_setSession(netid, devaddr, nwk, art);
++}
++
+ // Enable/disable link check validation.
+ // LMIC sets the ADRACKREQ bit in UP frames if there were no DN frames
+ // for a while. It expects the network to provide a DN message to prove
+diff --color -ruN orig/lmic/lmic.h neu/lmic/lmic.h
+--- orig/lmic/lmic.h	2026-11-06 22:27:51.242355130 +0100
++++ neu/lmic/lmic.h	2026-11-06 22:27:51.245355158 +0100
+@@ -215,6 +215,7 @@
+     u1_t        margin;
+     bit_t       ladrAns;      // link adr adapt answer pending
+     bit_t       devsAns;      // device status answer pending
++    u1_t        lchkReq;      // beelogger: 1 = LinkCheckReq senden, 2 = gesendet, 3 = LinkCheckAns erhalten
+     u1_t        adrEnabled;
+     u1_t        moreData;     // NWK has more data pending
+ #if !defined(DISABLE_MCMD_DCAP_REQ)
+@@ -304,6 +305,7 @@
+ 
+ void LMIC_setSession (u4_t netid, devaddr_t devaddr, xref2u1_t nwkKey, xref2u1_t artKey);
+ void LMIC_setLinkCheckMode (bit_t enabled);
++void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid);
+ void LMIC_setClockError(u2_t error);
+ 
+ // Declare onEvent() function, to make sure any definition will have the
 diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
---- orig/STM32_LORA_260705.ino	2026-11-06 19:59:05.316199980 +0100
-+++ neu/STM32_LORA_260705.ino	2026-11-06 19:59:05.316951227 +0100
+--- orig/STM32_LORA_260705.ino	2026-11-06 22:27:51.213354856 +0100
++++ neu/STM32_LORA_260705.ino	2026-11-06 22:27:51.222354941 +0100
 @@ -1,3 +1,7 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
@@ -172,17 +251,158 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
  uint8_t nr_to_measure = 1;    // POR_RST
  uint16_t LoRaSeqCounter = 0;  // TTN Sequence numbber
 diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
---- orig/STM32_LORA.ino	2026-11-06 19:59:05.317696244 +0100
-+++ neu/STM32_LORA.ino	2026-11-06 19:59:05.318464321 +0100
-@@ -1,3 +1,7 @@
+--- orig/STM32_LORA.ino	2026-11-06 22:27:51.216354885 +0100
++++ neu/STM32_LORA.ino	2026-11-06 22:28:23.269627149 +0100
+@@ -1,3 +1,8 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
++//   2026-11-06, desiue: OTAA per #define LORA_OTAA (Join, Session in Backup-Registern 10-13, Link-Check 1x/Tag).
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  /****************************************************************/
  // Funktion LORA - Daten Senden
  /****************************************************************/
-@@ -537,7 +541,7 @@
+@@ -51,6 +56,68 @@
+ bool flag_TXCOMPLETE = false;
+ uint8_t payload[64];
+ 
++#ifndef LORA_OTAA
++#define LORA_OTAA 0  // 0 = ABP (DEVADDR, NWKSKEY, APPSKEY), 1 = OTAA (DEVEUI, APPEUI, APPKEY)
++#endif
++
++#if LORA_OTAA
++#if defined(STM32F1xx)
++#error "LORA_OTAA: Session-Speicher fuer F1 (Flash) fehlt noch"
++#endif
++#define JOIN_TM_OUT 60000    // Join + erster Uplink; ohne Erfolg neuer Versuch im nächsten Zyklus
++#define OTAA_VERSION 1       // Version des Session-Blocks
++#define OTAA_FCNT_MAX 16000  // vor dem Überlauf von LoRaSeqCounter (16384) neu joinen
++
++void os_getArtEui(u1_t* buf) { memcpy_P(buf, APPEUI, 8); }
++void os_getDevEui(u1_t* buf) { memcpy_P(buf, DEVEUI, 8); }
++void os_getDevKey(u1_t* buf) { memcpy_P(buf, APPKEY, 16); }
++
++// Session-Block in Backup-Registern (F4, 32 Bit), Schlüssel werden aus APPKEY neu berechnet:
++// 10 DevAddr | 11 NetID, Bit 24-31 RxDelay<<4 | Rx2-DR | 12 AppNonce, Bit 24-31 Version
++// 13 DevNonce, Bit 16-20 Tag des letzten Link-Checks, Bit 21-22 Fehlversuche, Bit 24-31 Prüfsumme
++uint8_t otaa_sum(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
++  uint8_t s = 0x5A;
++  for (uint8_t i = 0; i < 32; i += 8) s += (uint8_t)(a >> i) + (uint8_t)(b >> i) + (uint8_t)(c >> i) + (uint8_t)(d >> i);
++  return s;
++}
++
++void otaa_clear() {  // nächster Versand joint neu
++  enableBackupDomain();
++  setBackupRegister(10, 0);
++}
++
++bool otaa_load() {  // gültige Session -> LMIC, sonst false (LMIC joint dann selbst, DevAddr = 0)
++  uint32_t r10 = getBackupRegister(10), r11 = getBackupRegister(11), r12 = getBackupRegister(12), r13 = getBackupRegister(13);
++  if (r10 == 0 || (r12 >> 24) != OTAA_VERSION || (r13 >> 24) != otaa_sum(r10, r11, r12, r13 & 0xFFFF)) return false;
++  if (LoRaSeqCounter >= OTAA_FCNT_MAX) return false;
++  u1_t an[6];  // AppNonce + NetID, LSB zuerst wie im Join-Accept
++  for (uint8_t i = 0; i < 3; i++) {
++    an[i] = r12 >> (8 * i);
++    an[3 + i] = r11 >> (8 * i);
++  }
++  LMIC_restoreJoin(r11 & 0xFFFFFF, r10, (u2_t)r13, an);
++  return true;
++}
++
++void otaa_save_join() {  // bei EV_JOINED: LMIC.frame enthält noch den entschlüsselten Join-Accept
++  const u1_t* f = &LMIC.frame[OFF_JA_ARTNONCE];
++  uint32_t r10 = LMIC.devaddr;
++  uint32_t r11 = (LMIC.netid & 0xFFFFFF) | (uint32_t)(((LMIC.rxDelay & 0x0F) << 4) | (LMIC.dn2Dr & 0x0F)) << 24;
++  uint32_t r12 = f[0] | (uint32_t)f[1] << 8 | (uint32_t)f[2] << 16 | (uint32_t)OTAA_VERSION << 24;
++  uint32_t dn = (u2_t)(LMIC.devNonce - 1);  // LMIC zählt nach dem Join-Request hoch
++  enableBackupDomain();
++  setBackupRegister(10, r10);
++  setBackupRegister(11, r11);
++  setBackupRegister(12, r12);
++  setBackupRegister(13, dn | (uint32_t)rtc_stm.getDay() << 16 | (uint32_t)otaa_sum(r10, r11, r12, dn) << 24);
++}
++#else
++// ABP: LMIC enthält den Join-Code, ruft ihn aber nie auf (DevAddr gesetzt)
++void os_getArtEui(u1_t*) {}
++void os_getDevEui(u1_t*) {}
++void os_getDevKey(u1_t*) {}
++#endif
++
+ //#define eeAddress  0x20 // EE-Prom Adress wear leveling
+ //#define eeAd_data  0x30 // EE-Prom Adress LoRa sequence number
+ //uint16_t LoRaSeqCounter = 0;      // TTN Sequence numbber
+@@ -124,11 +191,15 @@
+   // These values are stored in flash and only copied to RAM once.
+   // Copy them to a temporary buffer here, LMIC_setSession will
+   // copy them into a buffer of its own again.
++#if LORA_OTAA
++  bool otaa_ok = otaa_load();
++#else
+   uint8_t appskey[sizeof(APPSKEY)];
+   uint8_t nwkskey[sizeof(NWKSKEY)];
+   memcpy_P(appskey, APPSKEY, sizeof(APPSKEY));
+   memcpy_P(nwkskey, NWKSKEY, sizeof(NWKSKEY));
+   LMIC_setSession(PREFIX, DEVADDR, nwkskey, appskey);
++#endif
+ 
+   //#if defined(CFG_eu868)
+   // Set up the channels used by the Things Network, which corresponds
+@@ -175,6 +246,13 @@
+ 
+   // TTN uses SF9 for its RX2 window.
+   LMIC.dn2Dr = DR_SF9;
++#if LORA_OTAA
++  if (otaa_ok) {  // Rx-Werte aus dem Join-Accept
++    uint8_t dl = getBackupRegister(11) >> 24;
++    LMIC.dn2Dr = dl & 0x0F;
++    LMIC.rxDelay = dl >> 4;
++  }
++#endif
+ 
+   // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)
+   LMIC_setDrTxpow(DR_SF7, 14);  //Low-Power
+@@ -299,16 +377,39 @@
+ #endif
+ 
+     LMIC.seqnoUp = LoRaSeqCounter;
++#if LORA_OTAA
++    // 1 Link-Check pro Tag; 3 ohne Antwort -> Neu-Join
++    uint8_t heute = rtc_stm.getDay();
++    uint32_t r13 = getBackupRegister(13);
++    bool lchk = LMIC.devaddr != 0 && ((r13 >> 16) & 0x1F) != heute;
++    if (lchk) LMIC.lchkReq = 1;
++    uint32_t tm_out = LMIC.devaddr ? SERVER_TM_OUT : JOIN_TM_OUT;
++    if (LMIC.devaddr == 0) debugprintlnF("OTAA: Join");
++#else
++    uint32_t tm_out = SERVER_TM_OUT;
++#endif
+     LMIC_setTxData2(1, payload, cnt, 0);
+ 
+     //Run LMIC loop until he as finish or timeout
+     long send_loop = millis();
+-    while ((flag_TXCOMPLETE == false) && ((millis() - send_loop) < SERVER_TM_OUT)) {
++    while ((flag_TXCOMPLETE == false) && ((millis() - send_loop) < tm_out)) {
+       os_runloop_once();
+     }
+     if (flag_TXCOMPLETE == false) {
+       debugprintlnF(".tout");
+     }
++#if LORA_OTAA
++    if (lchk) {
++      uint8_t fail = (LMIC.lchkReq == 3) ? 0 : ((r13 >> 21) & 3) + 1;
++      debugprintF("Link-Check Fehlversuche: ");
++      debugprintln(fail);
++      if (fail >= 3) otaa_clear();
++      else {
++        enableBackupDomain();
++        setBackupRegister(13, (r13 & 0xFF00FFFF) | (uint32_t)heute << 16 | (uint32_t)fail << 21);
++      }
++    }
++#endif
+   } else {
+     debugprintlnF("err");
+   }
+@@ -537,7 +638,7 @@
    cnt_pld++;
    debugprintF("info:");  debugprintln(svc);
  
@@ -191,7 +411,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
      //payload[cnt_pld] = TYPE_AUX2;
      //cnt_pld++;
      PayloadHeader |= TYPE_AUX2;
-@@ -599,6 +603,13 @@
+@@ -599,9 +700,27 @@
  
              }
        */
@@ -205,18 +425,43 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
        inc_LoRaSeq();
        flag_TXCOMPLETE = true;
        break;
++#if LORA_OTAA
++    case EV_JOINING:
++      debugprintlnF("Joining");
++      break;
++    case EV_JOINED:
++      otaa_save_join();
++      LoRaSeqCounter = 0;  // neue Session, LMIC sendet den wartenden Uplink mit FCnt 0
++      debugprintF("Joined DevAddr: ");
++      debugprintln(LMIC.devaddr);
++      break;
++#endif
+     case EV_RXCOMPLETE:
+       // data received in ping slot
+       debugprintlnF("RX !");
 diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
---- orig/STM32_LORA_utility.ino	2026-11-06 19:59:05.319521991 +0100
-+++ neu/STM32_LORA_utility.ino	2026-11-06 19:59:05.320325294 +0100
-@@ -1,3 +1,7 @@
+--- orig/STM32_LORA_utility.ino	2026-11-06 22:27:51.219354913 +0100
++++ neu/STM32_LORA_utility.ino	2026-11-06 22:28:23.269695940 +0100
+@@ -1,3 +1,8 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
++//   2026-11-06, desiue: OTAA - Session nach Power-On-Reset/ungültigem Datum verwerfen, DevAddr in Startzeile aus Join.
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  //20.10.2021 STM32_LORA
  // 02.11.2021 calc wakeup
  // 01.12.2021 Service switch led blink code
-@@ -143,6 +147,15 @@
+@@ -106,6 +111,9 @@
+     rtc_stm.setMonth(1);
+     rtc_stm.setDay(1);
+     LoRaSeqCounter = 0;   // reset framecounter / sequence number
++#if LORA_OTAA
++    otaa_clear();         // Stromausfall -> Neu-Join
++#endif
+   }
+   else { // Reset Wakeup STM32 after shutdown
+     nr_to_measure = 1;    // LORA send immediate
+@@ -143,6 +151,20 @@
    //debugprintln("STM32F103C8");
  #error " STM32F103C8 not enough memory for LORA"
  #endif
@@ -226,13 +471,18 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
 +  {  // Geräte-Kennung: Name, 96-Bit-UID, DevAddr
 +    char id_line[80];
 +    snprintf(id_line, sizeof(id_line), "Name: %s UID: %08lX%08lX%08lX DevAddr: %08lX", LOGGER_NAME,
-+             (unsigned long)HAL_GetUIDw2(), (unsigned long)HAL_GetUIDw1(), (unsigned long)HAL_GetUIDw0(), (unsigned long)DEVADDR);
++             (unsigned long)HAL_GetUIDw2(), (unsigned long)HAL_GetUIDw1(), (unsigned long)HAL_GetUIDw0(),
++#if LORA_OTAA
++             (unsigned long)getBackupRegister(10));  // DevAddr des letzten Join, 0 = Join steht aus
++#else
++             (unsigned long)DEVADDR);
++#endif
 +    debugprintln(id_line);
 +  }
  
    /*
      debugprint(EEProm_Size);
-@@ -355,6 +368,7 @@
+@@ -355,6 +377,7 @@
        }
  #endif
      }
@@ -240,7 +490,17 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    }
    if (akku_save == 1) {
      IntervallMinuten = AlternativIntervallMinuten;
-@@ -447,6 +461,7 @@
+@@ -434,6 +457,9 @@
+     rtc_stm.setYear(22);  // LORA w/o server response
+     rtc_stm.setMonth(1);
+     rtc_stm.setDay(1);
++#if LORA_OTAA
++    otaa_clear();  // FCnt unbekannt -> Neu-Join
++#endif
+   }
+   else {
+ 
+@@ -447,6 +473,7 @@
      reg = getBackupRegister(5);
      stuck_switch = (uint8_t) (reg & 0x001f);    // lower five bits  0 ... 31
      if (reg & 0x0100) akku_save = 1;            // upper one bit 0 / 1
@@ -248,7 +508,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
  
  #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
      reg = (uint16_t)getBackupRegister(1);
-@@ -493,6 +508,7 @@
+@@ -493,6 +520,7 @@
  
    reg = 0; if (akku_save)reg = 0x0100;      // set upper bit
    reg = reg | (stuck_switch & 0x001f);      // lower five bits  0 ... 31
@@ -256,7 +516,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    setBackupRegister(5, reg);
  
  #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
-@@ -546,6 +562,8 @@
+@@ -546,6 +574,8 @@
    //  debugprint(send_cycle);
    debugprint(" Interval: ");
    debugprint(WeckIntervallMinuten);

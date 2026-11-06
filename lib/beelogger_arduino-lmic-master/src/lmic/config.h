@@ -38,7 +38,7 @@
 #define LMIC_FAILURE_TO Serial
 
 // Uncomment this to disable all code related to joining
-#define DISABLE_JOIN  //mod
+//#define DISABLE_JOIN  //mod  beelogger: Join für OTAA (ABP-Geräte joinen nie, DevAddr != 0)
 // Uncomment this to disable all code related to ping
 #define DISABLE_PING  //mod
 // Uncomment this to disable all code related to beacon tracking.

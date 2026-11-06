@@ -1,5 +1,6 @@
 // Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
+//   2026-11-06, desiue: OTAA per #define LORA_OTAA (Join, Session in Backup-Registern 10-13, Link-Check 1x/Tag).
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 /****************************************************************/
@@ -54,6 +55,68 @@ const lmic_pinmap lmic_pins = {
 // LORA Datenhandling
 bool flag_TXCOMPLETE = false;
 uint8_t payload[64];
+
+#ifndef LORA_OTAA
+#define LORA_OTAA 0  // 0 = ABP (DEVADDR, NWKSKEY, APPSKEY), 1 = OTAA (DEVEUI, APPEUI, APPKEY)
+#endif
+
+#if LORA_OTAA
+#if defined(STM32F1xx)
+#error "LORA_OTAA: Session-Speicher fuer F1 (Flash) fehlt noch"
+#endif
+#define JOIN_TM_OUT 60000    // Join + erster Uplink; ohne Erfolg neuer Versuch im nächsten Zyklus
+#define OTAA_VERSION 1       // Version des Session-Blocks
+#define OTAA_FCNT_MAX 16000  // vor dem Überlauf von LoRaSeqCounter (16384) neu joinen
+
+void os_getArtEui(u1_t* buf) { memcpy_P(buf, APPEUI, 8); }
+void os_getDevEui(u1_t* buf) { memcpy_P(buf, DEVEUI, 8); }
+void os_getDevKey(u1_t* buf) { memcpy_P(buf, APPKEY, 16); }
+
+// Session-Block in Backup-Registern (F4, 32 Bit), Schlüssel werden aus APPKEY neu berechnet:
+// 10 DevAddr | 11 NetID, Bit 24-31 RxDelay<<4 | Rx2-DR | 12 AppNonce, Bit 24-31 Version
+// 13 DevNonce, Bit 16-20 Tag des letzten Link-Checks, Bit 21-22 Fehlversuche, Bit 24-31 Prüfsumme
+uint8_t otaa_sum(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+  uint8_t s = 0x5A;
+  for (uint8_t i = 0; i < 32; i += 8) s += (uint8_t)(a >> i) + (uint8_t)(b >> i) + (uint8_t)(c >> i) + (uint8_t)(d >> i);
+  return s;
+}
+
+void otaa_clear() {  // nächster Versand joint neu
+  enableBackupDomain();
+  setBackupRegister(10, 0);
+}
+
+bool otaa_load() {  // gültige Session -> LMIC, sonst false (LMIC joint dann selbst, DevAddr = 0)
+  uint32_t r10 = getBackupRegister(10), r11 = getBackupRegister(11), r12 = getBackupRegister(12), r13 = getBackupRegister(13);
+  if (r10 == 0 || (r12 >> 24) != OTAA_VERSION || (r13 >> 24) != otaa_sum(r10, r11, r12, r13 & 0xFFFF)) return false;
+  if (LoRaSeqCounter >= OTAA_FCNT_MAX) return false;
+  u1_t an[6];  // AppNonce + NetID, LSB zuerst wie im Join-Accept
+  for (uint8_t i = 0; i < 3; i++) {
+    an[i] = r12 >> (8 * i);
+    an[3 + i] = r11 >> (8 * i);
+  }
+  LMIC_restoreJoin(r11 & 0xFFFFFF, r10, (u2_t)r13, an);
+  return true;
+}
+
+void otaa_save_join() {  // bei EV_JOINED: LMIC.frame enthält noch den entschlüsselten Join-Accept
+  const u1_t* f = &LMIC.frame[OFF_JA_ARTNONCE];
+  uint32_t r10 = LMIC.devaddr;
+  uint32_t r11 = (LMIC.netid & 0xFFFFFF) | (uint32_t)(((LMIC.rxDelay & 0x0F) << 4) | (LMIC.dn2Dr & 0x0F)) << 24;
+  uint32_t r12 = f[0] | (uint32_t)f[1] << 8 | (uint32_t)f[2] << 16 | (uint32_t)OTAA_VERSION << 24;
+  uint32_t dn = (u2_t)(LMIC.devNonce - 1);  // LMIC zählt nach dem Join-Request hoch
+  enableBackupDomain();
+  setBackupRegister(10, r10);
+  setBackupRegister(11, r11);
+  setBackupRegister(12, r12);
+  setBackupRegister(13, dn | (uint32_t)rtc_stm.getDay() << 16 | (uint32_t)otaa_sum(r10, r11, r12, dn) << 24);
+}
+#else
+// ABP: LMIC enthält den Join-Code, ruft ihn aber nie auf (DevAddr gesetzt)
+void os_getArtEui(u1_t*) {}
+void os_getDevEui(u1_t*) {}
+void os_getDevKey(u1_t*) {}
+#endif
 
 //#define eeAddress  0x20 // EE-Prom Adress wear leveling
 //#define eeAd_data  0x30 // EE-Prom Adress LoRa sequence number
@@ -128,11 +191,15 @@ void setup_LORA() {
   // These values are stored in flash and only copied to RAM once.
   // Copy them to a temporary buffer here, LMIC_setSession will
   // copy them into a buffer of its own again.
+#if LORA_OTAA
+  bool otaa_ok = otaa_load();
+#else
   uint8_t appskey[sizeof(APPSKEY)];
   uint8_t nwkskey[sizeof(NWKSKEY)];
   memcpy_P(appskey, APPSKEY, sizeof(APPSKEY));
   memcpy_P(nwkskey, NWKSKEY, sizeof(NWKSKEY));
   LMIC_setSession(PREFIX, DEVADDR, nwkskey, appskey);
+#endif
 
   //#if defined(CFG_eu868)
   // Set up the channels used by the Things Network, which corresponds
@@ -179,6 +246,13 @@ void setup_LORA() {
 
   // TTN uses SF9 for its RX2 window.
   LMIC.dn2Dr = DR_SF9;
+#if LORA_OTAA
+  if (otaa_ok) {  // Rx-Werte aus dem Join-Accept
+    uint8_t dl = getBackupRegister(11) >> 24;
+    LMIC.dn2Dr = dl & 0x0F;
+    LMIC.rxDelay = dl >> 4;
+  }
+#endif
 
   // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)
   LMIC_setDrTxpow(DR_SF7, 14);  //Low-Power
@@ -303,16 +377,39 @@ void Daten_Senden() {
 #endif
 
     LMIC.seqnoUp = LoRaSeqCounter;
+#if LORA_OTAA
+    // 1 Link-Check pro Tag; 3 ohne Antwort -> Neu-Join
+    uint8_t heute = rtc_stm.getDay();
+    uint32_t r13 = getBackupRegister(13);
+    bool lchk = LMIC.devaddr != 0 && ((r13 >> 16) & 0x1F) != heute;
+    if (lchk) LMIC.lchkReq = 1;
+    uint32_t tm_out = LMIC.devaddr ? SERVER_TM_OUT : JOIN_TM_OUT;
+    if (LMIC.devaddr == 0) debugprintlnF("OTAA: Join");
+#else
+    uint32_t tm_out = SERVER_TM_OUT;
+#endif
     LMIC_setTxData2(1, payload, cnt, 0);
 
     //Run LMIC loop until he as finish or timeout
     long send_loop = millis();
-    while ((flag_TXCOMPLETE == false) && ((millis() - send_loop) < SERVER_TM_OUT)) {
+    while ((flag_TXCOMPLETE == false) && ((millis() - send_loop) < tm_out)) {
       os_runloop_once();
     }
     if (flag_TXCOMPLETE == false) {
       debugprintlnF(".tout");
     }
+#if LORA_OTAA
+    if (lchk) {
+      uint8_t fail = (LMIC.lchkReq == 3) ? 0 : ((r13 >> 21) & 3) + 1;
+      debugprintF("Link-Check Fehlversuche: ");
+      debugprintln(fail);
+      if (fail >= 3) otaa_clear();
+      else {
+        enableBackupDomain();
+        setBackupRegister(13, (r13 & 0xFF00FFFF) | (uint32_t)heute << 16 | (uint32_t)fail << 21);
+      }
+    }
+#endif
   } else {
     debugprintlnF("err");
   }
@@ -613,6 +710,17 @@ void onEvent(ev_t ev) {
       inc_LoRaSeq();
       flag_TXCOMPLETE = true;
       break;
+#if LORA_OTAA
+    case EV_JOINING:
+      debugprintlnF("Joining");
+      break;
+    case EV_JOINED:
+      otaa_save_join();
+      LoRaSeqCounter = 0;  // neue Session, LMIC sendet den wartenden Uplink mit FCnt 0
+      debugprintF("Joined DevAddr: ");
+      debugprintln(LMIC.devaddr);
+      break;
+#endif
     case EV_RXCOMPLETE:
       // data received in ping slot
       debugprintlnF("RX !");

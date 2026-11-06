@@ -28,6 +28,15 @@ static const u1_t PROGMEM APPSKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
 static const u4_t DEVADDR = 0x12345678;
 #define LOGGER_NAME "beelogger"  // erscheint in der Startzeile (seriell), je Gerät anpassen
 
+// Aktivierung: 0 = ABP (DEVADDR, NWKSKEY, APPSKEY oben), 1 = OTAA (die drei Werte unten; nur BlackPill F4)
+// OTAA in TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B. DEVEUI und APPEUI (JoinEUI) LSB zuerst, APPKEY MSB (wie TTN-Konsole).
+#define LORA_OTAA 0
+#if LORA_OTAA
+static const u1_t PROGMEM DEVEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+static const u1_t PROGMEM APPEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+static const u1_t PROGMEM APPKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+#endif
+
 // LoRaWAN Network Prefix
 static const uint16_t PREFIX =   0x13;     //   https://www.thethingsnetwork.org/docs/lorawan/prefix-assignments.html  
 // example: 0x13 = TTN

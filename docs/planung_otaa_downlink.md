@@ -167,7 +167,25 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
   - Bei der Übergabe: Paket 2 auf F411 abgenommen (15 min und Rückstellen 00), auf F103 Uplink ok, Downlink wegen TTN-Zähler offen.
   - Doku/Repo: öffentlich als github.com/desiue/beelogger-stm32 (GPL v3, `docs/lizenz.md`); Config_MULTI.h mit WLAN-/Server-Passwörtern aus dem Repo genommen, Repo neu angelegt (ein Commit). Private Angaben in `docs/privat/` (lokal). TTN-Export der Konsole kann vollständige API-Keys enthalten (Ereignis `application.api-key.create`) → vor dem Ablegen filtern.
 
-## Offene Punkte (Stand 06.11.2026, Ende Sitzung 2)
+- 06.11.2026, Sitzung 3 (Paket 3, Teil BlackPill):
+  - LMIC: `DISABLE_JOIN` aus (`config.h`), `LMIC_restoreJoin()` (Schlüssel per `aes_sessKeys` aus AppKey + gespeicherten Werten), `LMIC.lchkReq` für LinkCheckReq/-Ans (`lmic.c`, `lmic.h`). ABP joint nie (DevAddr gesetzt); leere Callbacks `os_getDevKey` usw. für ABP.
+  - Sketch: `LORA_OTAA` (Vorgabe 0). Session-Block Backup-Register 10–13 (F4): DevAddr | NetID + RxDelay/Rx2-DR | AppNonce + Version | DevNonce, Link-Check-Tag, Fehlversuche, Prüfsumme (über Bit 0–15 von Reg. 13 und Reg. 10–12). FCntDown wird nicht gespeichert (wie ABP, 16-Bit-Erweiterung ab 0).
+  - Neu-Join: Power-On-Reset, ungültiges Datum, FCnt ≥ 16000, 3 Tage ohne LinkCheckAns. Join-Timeout 60 s.
+  - F1: `#error` bei `LORA_OTAA` – Flash-Speicher folgt (beelogger011).
+  - Build: F103CB ABP 55 172 B, F411CE ABP 54 440 B, F411CE OTAA 55 256 B.
+  - TTN: Gerät `beelogger08-otaa` per API angelegt (DevEUI von TTN 70B3D57ED0079D78, JoinEUI 0, AppKey zufällig, direkt in `Config_LORA.h`; LoRaWAN 1.0.2, RP 1.0.2 rev B, Rx1 delay 1, Rx2 DR 3, ADR aus, kein FCnt-Reset). Skript: `scripts/ttn-otaa-anlegen.py <app> <device_id> <LOGGER_NAME> src/Config_LORA.h` (Konto-Key).
+  - beelogger08 geflasht (vier Fehlversuche: BOOT zu früh losgelassen, siehe `flashen.md`). 21:26:29 UTC Join, erster Uplink FCnt 0. 21:28 UTC Neustart per Reset **ohne Neu-Join**, Uplink FCnt 1 in derselben Session → Schlüssel-Neuberechnung stimmt. **Abnahme Paket 3 auf F4: Join und Neustart ohne Join erfüllt; Akku-ab → Neu-Join noch testen.**
+  - Zweitmeinung (`ask review`) zum Diff: nur Fehlalarme.
+
+## Offene Punkte (Stand 06.11.2026, Ende Sitzung 3)
+
+- [ ] beelogger08: Akku kurz ab → Startzeile DevAddr 0, neuer Join (neue DevAddr in TTN).
+- [ ] beelogger08: Link-Check am nächsten Tag im Log (`Link-Check Fehlversuche: 0`).
+- [ ] beelogger08: Strom/Wachzeit mit neuer FW messen (gleicher Aufbau wie Basismessung) und Spannungsanzeige gegen Multimeter prüfen (Kalibrierung vorerst Black-Wert 4120 mV / 1650 Bit).
+- [ ] beelogger08: altes ABP-Gerät `beelogger08` in TTN löschen, wenn OTAA stabil läuft.
+- [ ] Paket 3 auf F1 (beelogger011): Session im Flash (letzte Seite, nur beim Join schreiben, Akkuspannung prüfen); F103C8 meldet 128 KB, Build mit OTAA prüfen.
+
+### Aus Sitzung 2
 
 **Paket 2 (Rest)**
 - [x] blue05: AS- und NS-Downlink-Zähler per API auf 0 gesetzt (PUT `/api/v3/as/…` und `/api/v3/ns/…` mit Feldmaske `session.last_a_f_cnt_down` bzw. `session.last_n_f_cnt_down`, Key mit „Edit devices“). 18:51 UTC `DL Port 10: 15`, `DL: 15min`, Weckzeit +15 min. **Paket 2 auf F103 abgenommen.**

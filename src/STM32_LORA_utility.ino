@@ -1,5 +1,6 @@
 // Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
+//   2026-11-06, desiue: OTAA - Session nach Power-On-Reset/ungültigem Datum verwerfen, DevAddr in Startzeile aus Join.
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 //20.10.2021 STM32_LORA
@@ -110,6 +111,9 @@ void System_Init() {
     rtc_stm.setMonth(1);
     rtc_stm.setDay(1);
     LoRaSeqCounter = 0;   // reset framecounter / sequence number
+#if LORA_OTAA
+    otaa_clear();         // Stromausfall -> Neu-Join
+#endif
   }
   else { // Reset Wakeup STM32 after shutdown
     nr_to_measure = 1;    // LORA send immediate
@@ -153,7 +157,12 @@ void System_Init() {
   {  // Geräte-Kennung: Name, 96-Bit-UID, DevAddr
     char id_line[80];
     snprintf(id_line, sizeof(id_line), "Name: %s UID: %08lX%08lX%08lX DevAddr: %08lX", LOGGER_NAME,
-             (unsigned long)HAL_GetUIDw2(), (unsigned long)HAL_GetUIDw1(), (unsigned long)HAL_GetUIDw0(), (unsigned long)DEVADDR);
+             (unsigned long)HAL_GetUIDw2(), (unsigned long)HAL_GetUIDw1(), (unsigned long)HAL_GetUIDw0(),
+#if LORA_OTAA
+             (unsigned long)getBackupRegister(10));  // DevAddr des letzten Join, 0 = Join steht aus
+#else
+             (unsigned long)DEVADDR);
+#endif
     debugprintln(id_line);
   }
 
@@ -448,6 +457,9 @@ void get_data_from_ram() {
     rtc_stm.setYear(22);  // LORA w/o server response
     rtc_stm.setMonth(1);
     rtc_stm.setDay(1);
+#if LORA_OTAA
+    otaa_clear();  // FCnt unbekannt -> Neu-Join
+#endif
   }
   else {
 
