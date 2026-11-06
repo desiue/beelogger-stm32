@@ -47,6 +47,7 @@ Vollständig in `docs/aenderungen_gegen_260705.diff`. Kurz:
    - Class A: wirkt ab dem Zyklus nach dem Uplink, in dessen Empfangsfenster der Downlink kam.
 3. **Aux3-Fehler behoben**: `prep_payload()` prüfte `LMIC.seqnoUp % 10`, bevor `seqnoUp` gesetzt war → Sketch-ID in jedem Uplink. Jetzt `LoRaSeqCounter % 10`.
 4. `Config_LORA.h`: `LOGGER_NAME` je Geräteblock.
+5. **Firmware-Kennung** `l_ID` = **261106** (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 
 ## TTN-Einstellungen (ABP, LMIC dieser Firmware)
 

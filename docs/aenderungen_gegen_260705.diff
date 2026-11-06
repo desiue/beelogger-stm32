@@ -1,6 +1,6 @@
 diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
---- orig/Config_LORA.h	2026-11-06 17:15:12.499229539 +0100
-+++ neu/Config_LORA.h	2026-11-06 17:15:12.497967311 +0100
+--- orig/Config_LORA.h	2026-11-06 19:59:05.314664101 +0100
++++ neu/Config_LORA.h	2026-11-06 19:59:05.321066801 +0100
 @@ -1,68 +1,73 @@
 -/****************************************************************/
 -// LORA Konfiguration
@@ -144,15 +144,24 @@ diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
 +// 
 +#define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht
 diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
---- orig/STM32_LORA_260705.ino	2026-11-06 17:15:12.499319559 +0100
-+++ neu/STM32_LORA_260705.ino	2026-11-06 17:15:12.497256434 +0100
+--- orig/STM32_LORA_260705.ino	2026-11-06 19:59:05.316199980 +0100
++++ neu/STM32_LORA_260705.ino	2026-11-06 19:59:05.316951227 +0100
 @@ -1,3 +1,7 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
-+//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink).
++//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  /*
     (C) 2024 R.Schick - beelogger.de
+ 
+@@ -94,7 +98,7 @@
+ 
+ 
+ char ID_ID[16] = "STM32_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
+-long l_ID = 260705;
++long l_ID = 261106;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
+ 
+ #define CFG_noassert 1  // supress error messages in LMIC-library
  
 @@ -131,6 +135,7 @@
  uint8_t stuck_switch = 0;  // Service Switch permanent on
@@ -163,8 +172,8 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
  uint8_t nr_to_measure = 1;    // POR_RST
  uint16_t LoRaSeqCounter = 0;  // TTN Sequence numbber
 diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
---- orig/STM32_LORA.ino	2026-11-06 17:15:12.499300901 +0100
-+++ neu/STM32_LORA.ino	2026-11-06 17:15:12.497278852 +0100
+--- orig/STM32_LORA.ino	2026-11-06 19:59:05.317696244 +0100
++++ neu/STM32_LORA.ino	2026-11-06 19:59:05.318464321 +0100
 @@ -1,3 +1,7 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
@@ -197,8 +206,8 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
        flag_TXCOMPLETE = true;
        break;
 diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
---- orig/STM32_LORA_utility.ino	2026-11-06 17:15:12.499341630 +0100
-+++ neu/STM32_LORA_utility.ino	2026-11-06 17:15:12.497306035 +0100
+--- orig/STM32_LORA_utility.ino	2026-11-06 19:59:05.319521991 +0100
++++ neu/STM32_LORA_utility.ino	2026-11-06 19:59:05.320325294 +0100
 @@ -1,3 +1,7 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
