@@ -76,7 +76,7 @@ Braucht einen API-Key in `~/.config/ttn/konto.key` (siehe Abschnitt 6). Der Bloc
 Bauen und flashen: README und [`flashen.md`](flashen.md). Danach:
 
 1. **Serielle Konsole** (9600 Baud): Startzeile mit Name und DevAddr. OTAA: nach dem ersten Start Join (einige Sekunden), danach steht die neue DevAddr in der Startzeile.
-2. **TTN → Gerät → Live data**: OTAA zeigt „Accept join-request“, dann den ersten Uplink mit FCnt 0. ABP: Uplinks direkt.
+2. **TTN → Gerät → Live data**: OTAA zeigt „Accept join-request“, dann den ersten Uplink mit FCnt 0. ABP: Uplinks direkt. Live data zeigt nur die letzten Meldungen; den Join sieht man nur, wenn die Seite beim Einschalten des Loggers offen ist. Im Bild: Uplinks mit dekodierter Payload (Gewicht, TempOut, VBatt …) alle 5 min.
    ![Live data](ttn/bilder/08_live_data.png)
    Beispiele, wie es aussehen muss: [`ttn/beispiele/`](ttn/beispiele/) (OTAA-Join: `2026-11-06_beelogger08_otaa_live_data_join.json`).
 3. **Skript** prüft die wichtigen Werte (ohne Schlüssel):
