@@ -28,7 +28,7 @@ static const u1_t PROGMEM APPSKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x
 static const u4_t DEVADDR = 0x12345678;
 #define LOGGER_NAME "beelogger"  // erscheint in der Startzeile (seriell), je Gerät anpassen
 
-// Aktivierung: 0 = ABP (DEVADDR, NWKSKEY, APPSKEY oben), 1 = OTAA (die drei Werte unten; nur BlackPill F4)
+// Aktivierung: 0 = ABP (DEVADDR, NWKSKEY, APPSKEY oben), 1 = OTAA (die drei Werte unten; alle Boards)
 // OTAA in TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B. DEVEUI und APPEUI (JoinEUI) LSB zuerst, APPKEY MSB (wie TTN-Konsole).
 #define LORA_OTAA 0
 #if LORA_OTAA

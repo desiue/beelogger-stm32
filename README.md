@@ -16,6 +16,7 @@ Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler
 | `orginal_firmware_bibliotheken/` | Originale von beelogger.de zum Vergleich (Sketche 202610, Bibliotheken 2026_04, WLAN/LTE 230928) |
 | `platformio.ini` | Boards BluePill F103CB, BlackPill F411CE, BlackPill F401CC |
 | `docs/flashen.md` | Bauen, Flashen über FTDI (stm32loader), Gerätetabelle |
+| `docs/ttn_anleitung.md` | TTN Schritt für Schritt: Application, Gerät ABP/OTAA, Prüfen, Downlink, Fehlersuche, API-Keys |
 | `docs/planung_otaa_downlink.md` | Plan, Entscheidungen und Verlauf der Arbeitspakete |
 | `docs/aenderungen_gegen_260705.diff` | Alle Änderungen gegenüber dem Original-Sketch 260705 |
 | `docs/ttn/` | TTN-Einstellungen (JSON aus der TTN-API), Payload-Decoder, Beispielnachrichten |
