@@ -1,6 +1,8 @@
 # Vorschlag: Payload-Erweiterung (Intervall-Rückmeldung, Waage 5–8)
 
-Stand 07.11.2026, **Entwurf zur Abstimmung mit den beelogger-Entwicklern**. Noch nichts davon ist in der Firmware umgesetzt.
+Stand 07.11.2026, **Entwurf**. Noch nichts davon ist in der Firmware umgesetzt.
+
+**Einordnung (07.11.):** Nicht für `main` und nicht für den Community-Server. Eine andere Payload oder Waage 5–8 kommt in einen **eigenen Branch** und wird auf einem eigenen beelogger-Server getestet. Die Fragen unten sind für den Fall gesammelt, dass die Entwickler später Interesse haben.
 
 **Reihenfolge:** Das ist der zweite Schritt. Zuerst kommen die Varianten ohne Änderung an Server und Payload (Rückmeldung über Zeitabstand und Service-Quittung, Plan über Solar/Temperatur, öfter wiegen), siehe [`idee_sendeplan_schwarmalarm.md`](idee_sendeplan_schwarmalarm.md).
 

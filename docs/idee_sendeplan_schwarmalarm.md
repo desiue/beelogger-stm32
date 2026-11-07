@@ -2,6 +2,8 @@
 
 Stand 07.11.2026, **zur Diskussion**, nichts davon ist umgesetzt.
 
+**Einordnung (07.11.):** `main` bleibt maximal kompatibel zum Original-beelogger und zum Community-Server. Was hier beschrieben ist und Daten oder Verhalten am Server berührt (Zusatz-Uplinks, Service-Quittung, eigener Sendeplan), wird zuerst in einem **eigenen Branch** gebaut und auf einem eigenen beelogger-Server getestet. In `main` kommt es nur, wenn die Entwickler es ausdrücklich wollen.
+
 **Korrektur 07.11. (nach Lesen der Server-Skripte M40_261004):** Die frühere Annahme „ein Zusatz-Uplink ab 200 s wird gespeichert“ war falsch. Der Server stempelt jede Meldung mit seiner eigenen Uhr, **auf die Minute abgerundet**. Sicher gespeichert wird erst ab **240 s** Abstand, wir planen mit **250 s**. Außerdem hat der Server schon eine eigene Sendeintervall-Steuerung, die bei LoRa nur nicht beim Logger ankommt (Abschnitt „Was die Firmware heute schon kann“).
 
 ## Grundsatz und Reihenfolge

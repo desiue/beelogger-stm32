@@ -4,7 +4,7 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 
 **Auf einen Blick**
 
-- **Minimal-invasiv:** Messablauf, Waagenzahl, Payload-Format und beelogger-Server bleiben wie beim Original 260705. Neu sind nur Downlinks (ABP und OTAA) und Fehlerkorrekturen. Weitergehende Ideen erst nach Abstimmung mit den Entwicklern ([Idee](docs/idee_sendeplan_schwarmalarm.md)).
+- **Maximal kompatibel zum Original:** Messablauf, Waagenzahl, Payload-Format und beelogger-Server bleiben wie beim Original 260705. Neu sind nur Downlinks (ABP und OTAA) und Fehlerkorrekturen. Weitergehende Ideen (mehr Waagen, andere Payload, eigener Sendeplan) kommen nicht in `main`, sondern in einen eigenen Branch mit eigenem Server ([Idee](docs/idee_sendeplan_schwarmalarm.md), [Payload](docs/vorschlag_payload_erweiterung.md)).
 - **Sendeintervall aus der Ferne** per TTN-Downlink (FPort 10, 5–180 min), mit ABP und OTAA.
 - **OTAA** für neue Geräte, ABP für vorhandene Feldgeräte – eine Codebasis, umschaltbar per `#define LORA_OTAA`.
 - **BluePill (F103) und BlackPill (F411/F401)**, alle vier Kombinationen auf Testgeräten abgenommen.
@@ -28,8 +28,8 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 | **Anleitungen** | |
 | [`docs/flashen.md`](docs/flashen.md) | Bauen, Flashen über FTDI (stm32loader), Kalibrieren, Gerätetabelle |
 | [`docs/ttn_anleitung.md`](docs/ttn_anleitung.md) | TTN Schritt für Schritt: Application, Gerät ABP/OTAA, Prüfen, Downlink, Fehlersuche, API-Keys |
-| **Zur Abstimmung** | |
-| [`docs/vorschlag_payload_erweiterung.md`](docs/vorschlag_payload_erweiterung.md) | Entwurf für die Entwickler: Intervall-Rückmeldung und Waage 5–8 per Erweiterungsbyte, Airtime je SF |
+| **Ideen (nicht für `main`)** | |
+| [`docs/vorschlag_payload_erweiterung.md`](docs/vorschlag_payload_erweiterung.md) | Entwurf für einen eigenen Branch: Intervall-Rückmeldung und Waage 5–8 per Erweiterungsbyte, Airtime je SF |
 | [`docs/idee_sendeplan_schwarmalarm.md`](docs/idee_sendeplan_schwarmalarm.md) | Idee zum Besprechen: Reihenfolge (erst ohne Server-Änderung), Sendeplan über Solarspannung/Temperatur statt Uhr, öfter wiegen statt öfter senden, Service-Quittung, Fragen an die Entwickler, Testaufbau |
 | **Nachweise** | |
 | [`docs/planung_otaa_downlink.md`](docs/planung_otaa_downlink.md) | Plan, Entscheidungen und Verlauf der Arbeitspakete |
@@ -233,6 +233,6 @@ Kein offizielles Projekt von beelogger.de. Original: https://beelogger.de
 | 4 | Doku: TTN-Anleitung, Wiki | Anleitung als Text fertig; Bildschirmfotos und Wiki folgen |
 | – | ADR aus (Kennung 261107) | gebaut, Test auf Gerät folgt |
 | – | ATmega-LoRa 250326 → 261107 (Sketch-ID, ADR) | baut für Pro Mini 8/16 MHz und Nano, Test auf einem ATmega-Logger offen |
-| 5 | Was per Downlink verstellbar sein soll | Abstimmung mit den beelogger-Entwicklern: zuerst Varianten ohne Server- und Payload-Änderung ([Idee](docs/idee_sendeplan_schwarmalarm.md)), danach [Payload-Erweiterung](docs/vorschlag_payload_erweiterung.md) |
+| 5 | Weitergehende Ideen (Sendeplan, Zusatz-Uplinks, Waage 5–8, Payload) | nicht in `main`; eigener Branch, Test auf eigenem beelogger-Server ([Idee](docs/idee_sendeplan_schwarmalarm.md), [Payload](docs/vorschlag_payload_erweiterung.md)) |
 
 Einzelheiten, offene Punkte und Verlauf: [`docs/planung_otaa_downlink.md`](docs/planung_otaa_downlink.md).

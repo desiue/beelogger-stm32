@@ -26,6 +26,7 @@ Alte Firmware wird nicht gesichert (Entscheidung Nutzer, 06.11.2026): Es wird je
 | 06.11.2026 | Paket 3 mit 1 Blue + 1 Black, beide neu als OTAA-Gerät in TTN | beide Speicherwege (Flash F1, Backup-Register F4) testen |
 | 06.11.2026 | 4 Testgeräte: ABP = beelogger09 (Black, 260BD691), beeloggerblue05 (Blue, 260B6573, TTN-Gerät eui-70b3d57ed005f5e0); OTAA = beelogger011 (Blue, 260BF6FE, F103C8 meldet 128 KB), beelogger08 (Black, 260B2D40, vorher Strom/Wachzeit messen) | Nutzerentscheid |
 | 06.11.2026 | Neu-Join: ohne gültige Session oder nach Stromausfall (FCnt-Register leer); dazu 1 Link-Check pro Tag, 3 ohne Antwort in Folge → Neu-Join | Netzausfall erkennen, kostet nur 1 von 10 Downlinks pro Tag |
+| 07.11.2026 | `main` bleibt **maximal kompatibel** zum Original-beelogger und zum Community-Server (Payload, Waagenzahl, Speicherung). Mehr Waagen (Hexa/Octa), andere Payload, Sendeplan-Experimente → **eigener Branch**, Test auf eigenem beelogger-Server des Nutzers | Hunderte Community-Nutzer; Entwickler nicht mit Themen belasten, die sie nicht im Fokus haben (Nutzer) |
 
 ## Dauerregeln
 
