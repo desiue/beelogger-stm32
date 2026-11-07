@@ -121,8 +121,7 @@ TTN-Live-Daten als Beispiel: OTAA mit zwei Joins (Join-Request, Join-Accept, ers
 9600 Baud, BluePill an `Serial` (PA9/PA10), BlackPill an `Serial1`. Nach jedem Start (also jedem Zyklus) erscheint:
 
 ```
-STM32_LORA_
-261107STM32F411CE
+STM32_LORA_261107 - STM32F411CE
 Name: beelogger09 UID: 353439323337510600410066 DevAddr: 260BD691
 ```
 

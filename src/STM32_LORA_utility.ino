@@ -134,7 +134,7 @@ void System_Init() {
 #if myDEBUG
   while (!MONITOR_RX_TX) {};         // Wait for serial port open
 #endif
-  debugprintln(" "); debugprintln(ID_ID); debugprint(l_ID);
+  debugprintln(" "); debugprint(ID_ID); debugprint(l_ID); debugprint(" - ");
 #if defined(ARDUINO_BLACKPILL_F411CE)
   debugprintln("STM32F411CE");
 #endif
