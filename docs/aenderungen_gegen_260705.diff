@@ -225,24 +225,25 @@ diff --color -ruN orig/lmic/lmic.h neu/lmic/lmic.h
 diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
 --- orig/STM32_LORA_260705.ino	2026-11-07 01:24:01.299499849 +0100
 +++ neu/STM32_LORA_260705.ino	2026-11-07 01:24:01.303226964 +0100
-@@ -1,3 +1,7 @@
+@@ -1,3 +1,8 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
++//   2026-11-07, desiue: ADR aus (LMIC_setAdrMode(0) in STM32_LORA.ino); l_ID 261107.
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  /*
     (C) 2024 R.Schick - beelogger.de
  
-@@ -94,7 +98,7 @@
+@@ -94,7 +99,7 @@
  
  
  char ID_ID[16] = "STM32_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
 -long l_ID = 260705;
-+long l_ID = 261106;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
++long l_ID = 261107;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
  
  #define CFG_noassert 1  // supress error messages in LMIC-library
  
-@@ -131,6 +135,7 @@
+@@ -131,6 +136,7 @@
  uint8_t stuck_switch = 0;  // Service Switch permanent on
  uint8_t s_alarm = 0;       // Schwarmalarm
  uint8_t akku_save = 0;     // in Akku Save Mode

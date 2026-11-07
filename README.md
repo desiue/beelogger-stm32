@@ -109,11 +109,11 @@ TTN-Live-Daten als Beispiel: OTAA mit zwei Joins (Join-Request, Join-Accept, ers
 
 ```
 STM32_LORA_
-261106STM32F411CE
+261107STM32F411CE
 Name: beelogger09 UID: 353439323337510600410066 DevAddr: 260BD691
 ```
 
-- `261106`: Firmware-Kennung (`l_ID`), danach der Chip-Typ.
+- `261107`: Firmware-Kennung (`l_ID`), danach der Chip-Typ.
 - `Name`: `LOGGER_NAME` aus `Config_LORA.h`.
 - `UID`: 96-Bit-Seriennummer des Chips, eindeutig je Board.
 - `DevAddr`: LoRaWAN-Adresse, unter der das Gerät in TTN steht.
@@ -139,7 +139,7 @@ Vollständig in `docs/aenderungen_gegen_260705.diff`. Kurz:
    - Join-Versuch höchstens 60 s pro Zyklus; ohne Erfolg neuer Versuch im nächsten Zyklus.
    - LMIC: Join-Code eingeschaltet (`DISABLE_JOIN` aus), LinkCheckReq/-Ans ergänzt. ABP-Geräte joinen nie (DevAddr ist gesetzt), Build ca. 0,7 KB größer.
 7. **ADR aus** (`LMIC_setAdrMode(0)` in `setup_LORA()`): Die LMIC schaltet ADR in `LMIC_reset()` ein, die Firmware beantwortet aber keine LinkADRReq. Uplinks tragen kein ADR-Bit mehr. TTN-Einstellung „ADR Disabled“ bleibt empfohlen für Altgeräte. Noch nicht auf Gerät getestet.
-5. **Firmware-Kennung** `l_ID` = **261106** (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
+5. **Firmware-Kennung** `l_ID` = **261107** (261106: ohne ADR-aus) (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 
 ## Gefundene Fehler
 

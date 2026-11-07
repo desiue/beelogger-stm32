@@ -1,5 +1,6 @@
 // Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
+//   2026-11-07, desiue: ADR aus (LMIC_setAdrMode(0) in STM32_LORA.ino); l_ID 261107.
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 /*
@@ -98,7 +99,7 @@
 
 
 char ID_ID[16] = "STM32_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
-long l_ID = 261106;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
+long l_ID = 261107;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
 
 #define CFG_noassert 1  // supress error messages in LMIC-library
 

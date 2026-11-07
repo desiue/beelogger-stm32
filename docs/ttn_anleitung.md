@@ -1,6 +1,6 @@
 # TTN-Anleitung: beelogger in The Things Network anlegen
 
-Für diese Firmware (Kennung 261106, LMIC 1.5). Gilt für alle vier Varianten (BluePill F103, BlackPill F411/F401, jeweils ABP oder OTAA). Welche Variante passt: README, Abschnitt „ABP oder OTAA“.
+Für diese Firmware (Kennung 261107, LMIC 1.5). Gilt für alle vier Varianten (BluePill F103, BlackPill F411/F401, jeweils ABP oder OTAA). Welche Variante passt: README, Abschnitt „ABP oder OTAA“.
 
 Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 
