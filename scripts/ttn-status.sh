@@ -27,9 +27,11 @@ for k,soll in (("rx1_delay",1),("rx2_data_rate_index",3)):
     print(ok(a==soll and b==soll)+"Einstellung %s: %s / desired %s (soll %s)"%(k,a,b,soll))
 r2c=cur.get("rx2_data_rate_index",0); r2d=des.get("rx2_data_rate_index",0)
 print(ok(r2c==3 and r2d==3)+"laufende Session RX2-DR: %s / %s (nach Settings-Änderung: MAC-Reset)"%(r2c,r2d))
-print(ok(m.get("resets_f_cnt",False))+"Resets frame counters:", m.get("resets_f_cnt",False))
+if not d.get("supports_join"):  # nur ABP; OTAA setzt Zähler per Join zurück
+    print(ok(m.get("resets_f_cnt",False))+"Resets frame counters:", m.get("resets_f_cnt",False))
 print(ok("disabled" in m.get("adr",{}))+"ADR aus:", "disabled" in m.get("adr",{}))
-up=[(u["received_at"][11:19],u["payload"]["mac_payload"]["f_hdr"].get("f_cnt",0)) for u in st.get("recent_uplinks",[])]
+# Join-Request hat kein mac_payload
+up=[(u.get("received_at","")[11:19],u.get("payload",{}).get("mac_payload",{}).get("f_hdr",{}).get("f_cnt",0) if "mac_payload" in u.get("payload",{}) else "Join") for u in st.get("recent_uplinks",[])]
 print("   letzte Uplinks (UTC, FCnt):", up[-5:])
 '
 # Application Server zählt Downlinks selbst weiter; "Reset session and MAC state" setzt ihn nicht zurück
