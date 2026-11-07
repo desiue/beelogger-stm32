@@ -18,6 +18,7 @@ Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler
 | `docs/flashen.md` | Bauen, Flashen über FTDI (stm32loader), Gerätetabelle |
 | `docs/ttn_anleitung.md` | TTN Schritt für Schritt: Application, Gerät ABP/OTAA, Prüfen, Downlink, Fehlersuche, API-Keys |
 | `docs/vorschlag_payload_erweiterung.md` | Entwurf zur Abstimmung: Intervall-Rückmeldung und Waage 5–8 per Erweiterungsbyte, Airtime je SF |
+| `docs/idee_sendeplan_schwarmalarm.md` | Idee zum Besprechen: Sendeplan nach Jahreszeit, Schwarmalarm auf Ereignis, was aus der Ferne verstellbar sein soll |
 | `docs/planung_otaa_downlink.md` | Plan, Entscheidungen und Verlauf der Arbeitspakete |
 | `docs/aenderungen_gegen_260705.diff` | Alle Änderungen gegenüber dem Original-Sketch 260705 |
 | `docs/ttn/` | TTN-Einstellungen (JSON aus der TTN-API), Payload-Decoder, Beispielnachrichten |
