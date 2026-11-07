@@ -38,20 +38,31 @@ Kürzer als 3 min am Tag geht unter Fair Use nicht. Unter 5 min müsste außerde
 
 Gewinn für den Schwarmalarm: Von 5 auf 3 Minuten wird der Alarm höchstens 2 Minuten früher gemeldet, auf Kosten fast der ganzen Sendezeit.
 
-## Besser: Schwarmalarm auf Ereignis
+## Besser: oft wiegen, nur bei Änderung senden
 
-Der Logger wiegt im normalen Takt. Fällt eine Waage seit der letzten Messung um mehr als einen Schwellwert (Vorschlag 0,5 kg; ein Schwarm nimmt meist 1–3 kg mit), sendet er:
+Heute stellt der **Server** die Alarmschwelle (Gewichtsdifferenz) ein und benachrichtigt. Das bleibt so.
+
+Neu wäre: Der Logger wiegt in der Schwarmzeit z. B. **jede Minute**, sendet aber nur im normalen Takt. Fällt eine Waage seit der letzten Wiegung um mehr als eine **Sendeschwelle**, sendet er:
 
 1. **sofort** einen zusätzlichen Uplink (gleiches Payload-Format),
 2. danach für eine Weile (z. B. 30 min) schneller, um den Verlauf zu zeigen, dann zurück zum Plan.
 
-Vorteile: Ohne Ereignis kostet das keine Sendezeit. Die Reaktionszeit hängt am Messtakt, nicht am Sendetakt. Zum Messtakt siehe die offenen Fragen.
+Damit kommt der Alarm nach höchstens etwa einer Minute, ohne Ereignis kostet das keine Sendezeit.
+
+Zwei Schwellen, getrennte Aufgaben:
+
+| Schwelle | Wo | Aufgabe |
+|---|---|---|
+| Alarmschwelle | Server (wie heute) | Ist es ein Schwarm? Benachrichtigen. |
+| Sendeschwelle | Logger (neu) | Außer der Reihe senden? Muss **kleiner** als die Alarmschwelle sein (Vorschlag 0,3 kg; ein Schwarm nimmt meist 1–3 kg mit), damit der Server jedes relevante Ereignis sieht. |
+
+Die Sendeschwelle kann fest sein. Aus der Ferne einstellbar lohnt sich vor allem bei unruhigen Waagen (Wind), die zu oft außer der Reihe senden.
 
 Zu klären:
 - Letztes Gewicht je Waage muss den Tiefschlaf überstehen. Backup-Register sind knapp (F1: 10 × 16 Bit, mehrere schon belegt). 16 Bit in 10-g-Schritten reichen für 0–655 kg.
-- Fehlalarme: Imker am Stock, Honigernte, Wind, Schnee. Ein Fehlalarm am Tag kostet wenig (72 ms). Wichtig ist, dass der Server ihn nicht als Schwarm meldet, ohne dass es plausibel ist.
+- Fehlauslöser: Imker am Stock, Honigernte, Wind, Schnee. Ein zusätzlicher Uplink kostet wenig (72 ms); ob es ein Schwarm ist, entscheidet weiter der Server.
 - Kennzeichnung im Uplink, z. B. eigener FPort. Dann kann der Server sofort benachrichtigen. **Betrifft Server und Decoder → mit den Entwicklern abstimmen.**
-- Schneller *messen* (z. B. alle 2 min, aber nur bei Ereignis senden) kostet Strom, aber keine Sendezeit. Im Sommer tagsüber mit Solar wohl tragbar.
+- Jede Minute wiegen kostet Strom (Aufwachen, Waagen einschwingen), aber keine Sendezeit. Im Sommer tagsüber mit Solar laut Nutzer kein Problem. Messen und Senden müssen in der Firmware getrennt werden, heute ist jede Messung ein Uplink; Weckzeit-Raster 5 min → 1 min.
 
 ## Was soll dann noch aus der Ferne verstellbar sein?
 
@@ -60,7 +71,7 @@ Wenn Plan und Schwarmalarm im Logger stecken, ist das Fern-Intervall in seiner h
 | Fern-Einstellung | Nutzen | Bewertung |
 |---|---|---|
 | Plan-Werte ändern (Tag/Nacht/Winter, Monatsgrenzen, Nachtzeit) | Logger steht am Stand, kein Kabel, kein Neu-Flashen | **hoch**, vor allem für Nutzer ohne Programmiergerät |
-| Schwellwert Schwarmalarm, ein/aus | an Volk und Waage anpassen, Fehlalarme abstellen | **hoch** |
+| Sendeschwelle (Logger), Schnell-Wiegen ein/aus | unruhige Waagen beruhigen, außerhalb der Schwarmzeit aus | mittel (Alarmschwelle bleibt am Server) |
 | vorübergehend schneller, **mit Ablaufzeit** (z. B. 6 h) | Kontrolle nach Eingriff, Wanderung, Fehlersuche; fällt von selbst zurück | mittel |
 | vorübergehend langsamer / Pause | Akku schwach im Winter, Fair Use überschritten, Logger im Lager | mittel |
 | festes Intervall wie heute (ohne Ablauf) | einfach, gibt es schon | gering, Risiko: bleibt aus Versehen stehen |
@@ -73,8 +84,8 @@ Gemeinsame Voraussetzungen:
 ## Offene Fragen zum Besprechen
 
 1. Reicht der Plan aus dem Original (Tag/Nacht + Winter), oder braucht es einen eigenen Zeitraum Schwarmzeit?
-2. Schwarmalarm: welcher Schwellwert, wie lange danach schneller, eigener FPort? (mit Entwicklern)
-3. Wie oft wiegen in der Schwarmzeit, wenn nur bei Ereignis gesendet wird? Strom messen.
+2. Sendeschwelle im Logger: fester Wert oder einstellbar? Wie lange danach schneller, eigener FPort? (mit Entwicklern, Alarmschwelle bleibt am Server)
+3. Jede Minute wiegen in der Schwarmzeit: Strom messen (Wachzeit pro Wiegung), auch bei schlechtem Wetter mehrere Tage.
 4. Fern-Intervall heute behalten, durch „schneller/langsamer mit Ablauf“ ersetzen oder beides?
 5. Welche Fern-Einstellungen müssen den Akku-Wechsel überstehen (→ Flash)?
 6. Reihenfolge: zuerst die Rückmeldung (ohne sie weiß niemand, was am Logger gilt), dann Plan per Downlink, dann Schwarmalarm?
