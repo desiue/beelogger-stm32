@@ -22,15 +22,22 @@ Vollständiger Diff: [`aenderungen_gegen_250326.diff`](aenderungen_gegen_250326.
 | Pro Mini 16 MHz (Universal 1.x) | Flash 26 292 B, RAM 1 439 B | Flash 26 280 B, RAM 1 439 B |
 | Nano 16 MHz (Universal 1.x) | Flash 26 292 B, RAM 1 439 B | Flash 26 280 B, RAM 1 439 B |
 
-Verfügbar: 30 720 B Flash (32 KB minus Bootloader), 2 048 B RAM. Der Speicherbedarf bleibt praktisch gleich. Mit der Arduino IDE oder einer eigenen `Config_MULTI.h` können die Werte etwas abweichen.
+Verfügbar: 30 720 B Flash (32 KB minus Bootloader), 2 048 B RAM. Der Speicherbedarf bleibt praktisch gleich. Die absoluten Werte hängen auch vom Ablageort ab, weil die LMIC für ihre Fehlermeldungen die Dateipfade einbaut (ein frischer Klon unter einem längeren Pfad: 26 406 B). Auch die Arduino IDE oder eine eigene `Config_MULTI.h` ergeben etwas andere Werte.
 
-## Übernehmen
+## Selbst bauen
 
-1. Eigene `Config_LORA.h` und `Config_MULTI.h` behalten. Die Dateien in diesem Ordner sind die Platzhalter aus dem Download.
-2. Entweder die beiden Zeilen im eigenen Sketch ändern (siehe Tabelle) oder die `.ino`-Dateien aus [`beelogger_LORA_261107/`](beelogger_LORA_261107/) nehmen und die eigenen Config-Dateien dazulegen.
-3. Mit der Arduino IDE wie gewohnt aufspielen. Der Frame-Counter im EEPROM bleibt erhalten.
+**Arduino IDE** (wie beim Original, siehe [Programme laden](https://beelogger.de/systeme/universal/alle_programmcodes/programme_laden/)):
+1. Repo holen: `git clone https://github.com/desiue/beelogger-stm32.git` oder auf GitHub „Code → Download ZIP“.
+2. beelogger-Bibliotheken installieren, falls noch nicht vorhanden. Gebaut wurde mit dem Paket 2026_04 von [beelogger.de](https://beelogger.de/?page_id=201159), eine Kopie liegt unter [`orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/`](../orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/).
+3. Ordner `atmega_lora/beelogger_LORA_261107/` öffnen (`beelogger_LORA_261107.ino`).
+4. Eigene `Config_LORA.h` und `Config_MULTI.h` hineinkopieren. Die Dateien im Ordner sind die Platzhalter aus dem Download.
+5. Board wie beim Original wählen: beeloggerSMD = Arduino Pro Mini 3,3 V 8 MHz, Universal 1.x = Pro Mini 5 V 16 MHz oder Nano. Hochladen.
 
-Nur bauen ohne Aufspielen: `pio run` in diesem Ordner (Umgebungen `promini8`, `promini16`, `nano`).
+Wer schon einen eigenen Sketch 250326 hat, kann stattdessen nur die zwei Zeilen aus der Tabelle oben ändern.
+
+**PlatformIO** (nur zum Prüfen, ob es baut und in den Speicher passt): im Ordner `atmega_lora/` `pio run` aufrufen (Umgebungen `promini8`, `promini16`, `nano`). Die Bibliotheken kommen aus dem Repo. Aufgespielt wird mit der Arduino IDE.
+
+Der Frame-Counter liegt im EEPROM. Beim Aufspielen über den Bootloader (USB-Seriell, wie üblich) bleibt er erhalten. Ein ISP-Programmer kann das EEPROM löschen. Dann den Zähler mit `Set_LORA_Seq` aus dem Original-Paket setzen oder in TTN zurücksetzen.
 
 ## Test auf einem Logger
 

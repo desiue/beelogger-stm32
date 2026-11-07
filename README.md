@@ -9,6 +9,7 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 - **OTAA** für neue Geräte, ABP für vorhandene Feldgeräte – eine Codebasis, umschaltbar per `#define LORA_OTAA`.
 - **BluePill (F103) und BlackPill (F411/F401)**, alle vier Kombinationen auf Testgeräten abgenommen.
 - **Fehler behoben:** Sketch-ID in jedem Uplink, TTN-Downlink-Schleife (Einstellungen dokumentiert), ADR-Bit.
+- **ATmega-Logger (Universal 1.x, beeloggerSMD):** Vorschlag mit denselben zwei kleinen Änderungen (Sketch-ID, ADR) für den Original-Sketch 250326, sonst unverändert (ABP). Baut, auf einem Logger noch ungetestet → [`atmega_lora/`](atmega_lora/).
 - **Startzeile** mit Firmware-Kennung, Name, Chip-UID und DevAddr – man sieht sofort, welches Gerät am Kabel hängt.
 - **Keine Schlüssel oder Passwörter im Repo** (siehe [Schlüssel](#schlüssel)).
 
@@ -55,6 +56,8 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 7. **Bauen:** Häkchen in der PlatformIO-Leiste oder `pio run -e blackpill_f411ce`. Ergebnis: `.pio/build/<board>/firmware.bin`.
 8. **Flashen** über FTDI-Adapter mit stm32loader: siehe [`docs/flashen.md`](docs/flashen.md). Vorher an der Startzeile prüfen, welches Gerät am Kabel hängt.
 9. **TTN einstellen** wie unter [TTN-Einstellungen](#ttn-einstellungen-abp-lmic-dieser-firmware) bzw. in der [TTN-Anleitung](docs/ttn_anleitung.md), sonst kommen Downlinks nicht an.
+
+**ATmega-Logger** (Universal 1.x, beeloggerSMD): eigener Ordner mit eigener Anleitung, siehe [`atmega_lora/README.md`](atmega_lora/README.md#selbst-bauen).
 
 > **Tipp:** Vor dem Flashen an der [Startzeile](#serielle-konsole-und-startzeile) prüfen, welches Gerät am Kabel hängt – sonst landen die Schlüssel des falschen Geräts auf dem Board.
 
