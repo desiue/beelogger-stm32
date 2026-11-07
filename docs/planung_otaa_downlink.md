@@ -193,11 +193,11 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 
 **Paket 2 (Rest)**
 - [x] blue05: AS- und NS-Downlink-Zähler per API auf 0 gesetzt (PUT `/api/v3/as/…` und `/api/v3/ns/…` mit Feldmaske `session.last_a_f_cnt_down` bzw. `session.last_n_f_cnt_down`, Key mit „Edit devices“). 18:51 UTC `DL Port 10: 15`, `DL: 15min`, Weckzeit +15 min. **Paket 2 auf F103 abgenommen.**
-- [ ] In die TTN-Anleitung: FCntDown muss < 65536 sein, in NS **und** AS (`scripts/ttn-status.sh` zeigt beide). Zurücksetzen per API (siehe oben) oder Gerät neu anlegen. beelogger09: AS 39426 – ok, aber im Blick behalten.
+- [x] (07.11., `ttn_anleitung.md` Abschnitt 5) In die TTN-Anleitung: FCntDown muss < 65536 sein, in NS **und** AS (`scripts/ttn-status.sh` zeigt beide). Zurücksetzen per API (siehe oben) oder Gerät neu anlegen. beelogger09: AS 39426 – ok, aber im Blick behalten.
 - [x] **Firmware-Version kenntlich machen:** `l_ID` = 261106 (JJMMTT, Nutzerentscheid 06.11.), README Punkt 5, Diff neu erzeugt. Noch nicht geflasht.
-- [ ] Rückmeldung an den Server, welches Intervall aktiv ist (z. B. in jedem 10. Uplink wie die ID)?
+- [ ] Rückmeldung an den Server (07.11.: Entwurf `docs/vorschlag_payload_erweiterung.md`, wartet auf Rückmeldung der Entwickler), welches Intervall aktiv ist (z. B. in jedem 10. Uplink wie die ID)?
 
-- [ ] In die TTN-Anleitung: „Reset session and MAC state“ per API = `PATCH /api/v3/ns/applications/<app>/devices/<dev>` mit Body `{"field_mask":{"paths":["session","mac_state"]}}` (nicht `/reset`, das gibt 404); Beispiel: App beelogger011, Gerät beelogger011. Setzt NS-FCntDown auf 0, AS-Zähler extra per PUT. 06.11. an beelogger011 gemacht.
+- [x] (07.11., `ttn_anleitung.md` Abschnitt 5) In die TTN-Anleitung: „Reset session and MAC state“ per API = `PATCH /api/v3/ns/applications/<app>/devices/<dev>` mit Body `{"field_mask":{"paths":["session","mac_state"]}}` (nicht `/reset`, das gibt 404); Beispiel: App beelogger011, Gerät beelogger011. Setzt NS-FCntDown auf 0, AS-Zähler extra per PUT. 06.11. an beelogger011 gemacht.
 
 **Doku / Repo**
 - [x] (06.11., README neu) README-Startseite überarbeiten: Ziel des Projekts in 3 Sätzen; **Schritt-für-Schritt „Firmware selbst bauen“** (Repo laden, VS Code + PlatformIO, Vorlagen kopieren, Env wählen BluePill/BlackPill, Schalter ABP/OTAA (`LORA_OTAA`, ab Paket 3), bauen, flashen); Startzeile `Name/UID/DevAddr` erklären (steht bisher nur knapp unter „Änderungen“).
@@ -208,7 +208,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [x] (07.11., `docs/ttn_anleitung.md` Abschnitt 4, `down/replace` getestet: beelogger011-otaa `0F`, 02:08 MEZ `DL Port 10: 15`, Weckzeit +15 min) Downlink aus der Server-Software: Doku für beelogger-Entwickler, wie ihr Server per TTN-API Downlinks schickt (`POST /api/v3/as/applications/<app>/devices/<dev>/down/push`, API-Key mit „Write downlink application traffic“, FPort 10, Base64-Payload) – Beispiel curl/PHP.
 - [x] TTN-Anleitung mit Screenshots je Variante (siehe Paket 4). 07.11.: `docs/ttn_anleitung.md`, Bilder 01–09.
 - [x] (README, 06.11.) Doku (Nutzer 06.11.): Vor- und Nachteile OTAA vs. ABP erklären – warum es beide Varianten gibt.
-- [ ] Doku (Nutzer 06.11.): In Beispielen echte Live-Daten aus der TTN-Konsole zeigen (z. B. Uplink von beelogger08), damit neue Nutzer sehen, wie die Daten dort aussehen müssen. Dazu passende Auszüge aus der seriellen Konsole (Startzeile, Join, Uplink, TX done).
+- [x] (07.11., `ttn_anleitung.md` Abschnitt 3: Bild 08 Live data, Auszug serielle Konsole mit Join und Downlink) Doku (Nutzer 06.11.): In Beispielen echte Live-Daten aus der TTN-Konsole zeigen (z. B. Uplink von beelogger08), damit neue Nutzer sehen, wie die Daten dort aussehen müssen. Dazu passende Auszüge aus der seriellen Konsole (Startzeile, Join, Uplink, TX done).
 
 **Messen / Hardware**
 - [x] Wachzeit und Stromverbrauch pro Zyklus messen, **vor und nach** dem Flash der neuen Firmware: am **beelogger08** (vor dem Update!). Log `t-on` und `TX done`-Zeit (ms) vergleichen; Strom mit Multimeter/USB-Meter. 07.11.: neue FW gleich (Schlaf 18,09 µA, wach 24–34 mA).
@@ -217,7 +217,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [ ] Seriell-Log läuft dauerhaft (`scripts/seriell-log.sh`, `~/beelogger-logs/seriell.log`) – vor dem Flashen stoppen.
 
 **Später / Ideen**
-- [ ] **beeloggerHexa**: 6 (oder 8) Waagen. Klären: Payload-Größe je Waage/Temperatur, maximale Sendehäufigkeit unter der Fair Use Policy bei SF7…SF12, ob Aufteilung auf mehrere Pakete nötig.
+- [ ] **beeloggerHexa** (07.11.: Entwurf `docs/vorschlag_payload_erweiterung.md`, wartet auf Rückmeldung der Entwickler): 6 (oder 8) Waagen. Klären: Payload-Größe je Waage/Temperatur, maximale Sendehäufigkeit unter der Fair Use Policy bei SF7…SF12, ob Aufteilung auf mehrere Pakete nötig.
 - [ ] Waagenkonfiguration per Downlink.
 
 ## Offene Fragen (Planung)

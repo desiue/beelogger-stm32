@@ -38,7 +38,7 @@ Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 2. In `src/Config_LORA.h` eintragen, beide Schlüssel in **MSB**-Reihenfolge (Schalter `<>` in der Konsole, Format „C-style“):
    - `DEVADDR = 0x260B….` (Device address)
    - `NWKSKEY[16]`, `APPSKEY[16]`
-3. **General settings → Network layer → Custom MAC settings** genau wie in der Tabelle im README („TTN-Einstellungen“), dazu wie bei OTAA (2b Schritt 4) Status count/time periodicity 0. Wichtig: **Resets frame counters an**, **Rx2 data rate index 3**, **ADR Disabled**, Rx1 delay 1 s. Aktuelle und „Desired“-Werte gleich.
+3. **General settings → Network layer → Custom MAC settings** genau wie in der Tabelle im README („TTN-Einstellungen“), dazu wie bei OTAA (2b Schritt 4) Status count/time periodicity 0. Wichtig: **Resets frame counters an**, **Rx2 data rate index 3**, **ADR Disabled**, Rx1 delay 1 s. Aktuelle und „Desired“-Werte gleich. **Altgeräte mit alter Firmware** (Feld-Logger, nicht neu geflasht): Rx2 data rate index **0 / 0** wie im Wiki (Kapitel 06a), dann Reset session and MAC state. Entscheidend ist, dass Einstellung, Desired und laufende Session übereinstimmen; das Skript prüft das.
 4. Wurden die MAC-Einstellungen bei einem laufenden Gerät geändert: **Reset session and MAC state** (siehe Abschnitt 5), sonst gelten die alten Werte weiter.
 
 ### 2b. OTAA (`#define LORA_OTAA 1`)
@@ -119,13 +119,16 @@ Bauen und flashen: README und [`flashen.md`](flashen.md). Danach:
 
    ```
    beelogger011-otaa MAC_V1_0_2 OTAA
-   ok FCntDown 0 (muss < 65536 sein, sonst Session/MAC-Reset)
+   ok FCntDown 1 (muss < 65536 sein, sonst Session/MAC-Reset)
+      Session seit 2026-11-07T00:57:32 letzter FCntUp 3
    ok Einstellung rx1_delay: 1 / desired 1 (soll 1)
-   ok Einstellung rx2_data_rate_index: 3 / desired 3 (soll 3)
-   ok laufende Session RX2-DR: 3 / 3 (nach Settings-Änderung: MAC-Reset)
+   ok Einstellung rx2_data_rate_index: 3 / desired 3 (gleich der Firmware: neue FW 3)
+   ok laufende Session RX2-DR: 3 / 3 (ungleich Einstellung: MAC-Reset)
+   ok offene MAC-Befehle: keine
    ok ADR aus: True
-      letzte Uplinks (UTC, FCnt): [('00:18:29', 'Join'), ('00:18:35', 0), ('00:23:29', 1)]
-   ok AS-FCntDown 0 (muss < 65536 sein; sonst AS-Zähler zurücksetzen)
+   ok Status periodicity count/time: 0 / 0s (soll 0 / 0s)
+      letzte Uplinks (UTC, FCnt): [('00:57:27', 'Join'), ('00:57:32', 0), ('00:58:29', 1), ('01:03:29', 2), ('01:08:29', 3)]
+   ok AS-FCntDown 2 (muss < 65536 sein; sonst AS-Zähler zurücksetzen)
    ```
 
 ## 4. Sendeintervall per Downlink
@@ -197,7 +200,7 @@ Hinweise:
 
 | Zeichen | Ursache | Abhilfe |
 |---|---|---|
-| Unter jedem Uplink ein Downlink, den niemand geschickt hat („Downlink-Schleife“) | MAC-Einstellungen in TTN passen nicht zur Firmware | Advanced MAC settings prüfen, dann Reset session and MAC state |
+| Unter jedem Uplink ein Downlink, den niemand geschickt hat („Downlink-Schleife“) | MAC-Einstellungen in TTN passen nicht zur Firmware, oder nach dem Ändern fehlt der Reset | `ttn-status.sh` zeigt „offene MAC-Befehle“; Custom MAC settings prüfen, dann **Reset session and MAC state** |
 | Downlink geschickt, kommt nie an | FCntDown in TTN über 65535 | `ttn-status.sh`; beide Zähler zurücksetzen (siehe unten) |
 | ABP: Uplinks nach Akkuwechsel verworfen | Resets frame counters aus | einschalten |
 | OTAA: Join-Requests ohne Antwort | DevEUI/JoinEUI nicht LSB oder AppKey nicht MSB | Reihenfolge prüfen, neu flashen |
