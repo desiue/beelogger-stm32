@@ -186,8 +186,8 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [ ] beelogger08: altes ABP-Gerät `beelogger08` in TTN löschen, wenn OTAA stabil läuft.
 - [x] Paket 3 auf F1 (beelogger011), 07.11.: Session im Flash 0x0800FC00 (63 KB), nur bei Änderung geschrieben; TTN-Gerät beelogger011-otaa per Skript; Join 01:18:34 (260B21D9), Wiederanlauf 01:23 ohne Join. Akkuspannung nicht extra geprüft (Versand nur über VMinimum).
 - [ ] beelogger011: Link-Check am nächsten Tag (Flash-Schreiben 1x/Tag), altes ABP-Gerät beelogger011 löschen, wenn stabil.
-- [ ] ADR: Firmware setzt ADR-Bit im Uplink (`"adr": true`, LMIC-Vorgabe, kein `LMIC_setAdrMode(0)`); TTN-Einstellung ADR aus verhindert ADR-Befehle. Prüfen: `LMIC_setAdrMode(0)` ergänzen.
-- [ ] `scripts/ttn-status.sh` stürzt bei Join-Einträgen in recent_uplinks ab (kein mac_payload).
+- [x] ADR: Firmware setzt ADR-Bit im Uplink (`"adr": true`, LMIC-Vorgabe, kein `LMIC_setAdrMode(0)`); TTN-Einstellung ADR aus verhindert ADR-Befehle. 07.11.: Kein Handlungsbedarf, Gerät bleibt fest auf SF7, ADR-Rückfall der LMIC ist durch `LMIC_setLinkCheckMode(0)` bei jedem Aufwachen aus. Zeile höchstens beim nächsten Flashen.
+- [x] `scripts/ttn-status.sh` stürzt bei Join-Einträgen in recent_uplinks ab (kein mac_payload). 07.11. behoben (e398458).
 
 ### Aus Sitzung 2
 
