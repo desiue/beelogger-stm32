@@ -213,7 +213,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 **Messen / Hardware**
 - [x] Wachzeit und Stromverbrauch pro Zyklus messen, **vor und nach** dem Flash der neuen Firmware: am **beelogger08** (vor dem Update!). Log `t-on` und `TX done`-Zeit (ms) vergleichen; Strom mit Multimeter/USB-Meter. 07.11.: neue FW gleich (Schlaf 18,09 µA, wach 24–34 mA).
   - 06.11. **Basis alte FW, beelogger08** (Black F411CE, Messaufbau zu Hause: 2 HX711 ohne Wägezellen, 4 Waagen konfiguriert, Akku 4,21 V = Anzeige 4,21 V): Wachzeit **18 s** (`t-on: 18`; Waage 1/2 `fail` je ~2 s, Waage 3/4 je ~5 s, Senden ~2 s). Ohne HX711 14 s. Strom (Multimeter in Reihe): wach 24–36 mA, Schlaf 18,2 µA → pro Zyklus ca. 0,15 mAh; bei 5 min ca. 44 mAh/Tag, bei 15 min ca. 15 mAh/Tag (Schlaf nur 0,44 mAh/Tag; Sendespitze vom Multimeter nicht erfasst). Gleicher Aufbau für die Messung nach dem Update.
-- [ ] LoRa-Kanäle (`LORA_CHANNELS` 1/3/8): Entscheidung ans Ende, wenn die Firmware fertig ist. Empfehlung bisher 8 (TTN-Standard).
+- [ ] LoRa-Kanäle (`LORA_CHANNELS` 1/3/8): Entscheidung ans Ende, wenn die Firmware fertig ist. Empfehlung bisher 8 (TTN-Standard). Vorher prüfen: Übernimmt die Firmware bei OTAA die Kanäle aus dem Join-Accept (CFList) oder setzt sie danach wieder ihre eigenen (`LMIC_setupChannel`, STM32_LORA.ino ~238)? 8 Kanäle bringen keine zusätzliche Airtime (alle im selben 1-%-Band), nur weniger Kollisionen.
 - [ ] Seriell-Log läuft dauerhaft (`scripts/seriell-log.sh`, `~/beelogger-logs/seriell.log`) – vor dem Flashen stoppen.
 
 **Später / Ideen**
