@@ -53,6 +53,18 @@ Alte Firmware wird nicht gesichert (Entscheidung Nutzer, 06.11.2026): Es wird je
 - `projekte:beelogger` Abschnitt 3 sagt „OTAA (STM32)“. Laut Code nutzen die STM32-Logger **ABP**. Wiki-Angabe korrigieren.
 - TTN-App des Testgeräts: `beeloggerblue01` („Testumgebung Black“).
 
+## Fakten aus den Server-Skripten (M40_261004, `beelogger1/beelogger_log.php`, gelesen 07.11.2026)
+
+Ordner `M40_261004_ServerSkripte/` liegt lokal im Projekt, **nicht im Repo** (fremder Code). Die Skripte gelten für alle beelogger (LoRa, WLAN, GSM, STM, Arduino).
+- LoRa kommt über den TTN-Webhook (`?LORA`, Helium-Format geht auch). Werte aus `decoded_payload`, keine Prüfsumme. RSSI aus `rx_metadata` → Aux2, Aux3 → Sketch-ID. TempOut gilt auch als Wägetemperatur.
+- **Zeitstempel = Serverzeit, auf die Minute abgerundet** (`date("Y/m/d H:i:00")`). Logger-Uhr egal.
+- Speichern (Z. 761–764): > 200 s nach der letzten Zeile in `week.csv` → wegen Abrundung **erst ab 4 min sicher** (ab 240 s echtem Abstand immer, 181–239 s je nach Sekunde). Ausnahmen: Service = 99 (nächste Minute), Service < 0 (110 s), Kalibriertemperatur `99.9` (55 s).
+- Temperaturkompensation (Z. 527–535): `korr = roh + (T − KalibrierTemperatur) × Korrekturwert`. Mit `99.9` falsch, sobald Korrekturwert ≠ 0 (**bestätigt**).
+- Schwarmalarm (Z. 882 ff.): nur bei > 200 s Abstand; Verlust zwischen DifferenzGewicht und DifferenzGewichtMax gegenüber letztem gespeicherten Gewicht, hält er nach ReferenzZeit (min) an → Mail/Push/Telegram + Anmerkung. Gesperrt, wenn Service ≥ 99 in aktueller oder letzter Zeile (2 Meldungen). Service 99 oder > 240 → Durchsicht-Icon (alle 40 min). Service 90 neutral.
+- Intervall-Steuerung (`ServerZeitSteuerung()`, Web-Konfiguration): zeit-/licht-/solarspannungsgesteuert Tag/Nacht, Winter nach Datum, max. 60 min. Antwort `<Zeit>T<Intervall>B<Service>ok *` erreicht nur WLAN/GSM; bei LoRa verwirft TTN die Webhook-Antwort. Weitergabe per Downlink bräuchte eine Server-Änderung.
+- Firmware dazu: `Sensor_Gewicht()` erkennt > 1 kg Verlust (`Alarm_Gewicht`), Rückgabe wird nicht genutzt, `s_alarm` unbenutzt. Andere beelogger senden laut Server-Hilfe dann 5 Messungen sofort.
+- **Irrtum korrigiert:** Bisher stand (aus Wiki 08) „Zusatz-Uplink ab 200 s wird gespeichert“. Richtig: ab 4 min, wir planen 250 s. Ebenso: „Plan nur über Solar/Temperatur, weil keine Uhr“ gilt nur für den Logger, der Server hat Uhr und Datum.
+
 ## Speicher
 
 | Speicher | Übersteht Deep Sleep | Übersteht Stromausfall | Abnutzung |
@@ -237,7 +249,14 @@ Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgen
 **Später / Ideen**
 - [ ] **beeloggerHexa** (07.11.: Entwurf `docs/vorschlag_payload_erweiterung.md`, wartet auf Rückmeldung der Entwickler): 6 (oder 8) Waagen. Klären: Payload-Größe je Waage/Temperatur, maximale Sendehäufigkeit unter der Fair Use Policy bei SF7…SF12, ob Aufteilung auf mehrere Pakete nötig.
 - [ ] Waagenkonfiguration per Downlink.
-- [ ] **Zum Besprechen:** Sendeplan nach Jahreszeit, Schwarmalarm auf Ereignis (Gewichtssturz → sofort Uplink), und was aus der Ferne überhaupt verstellbar sein soll (Plan-Werte, Schwellwert, vorübergehend schneller/langsamer mit Ablauf). Ausarbeitung `docs/idee_sendeplan_schwarmalarm.md` (07.11.). Kürzer als 3 min am Tag passt nicht in Fair Use. 07.11. (Gespräch mit Nutzer): erst minimal-invasiv bleiben, als Nächstes nur Varianten ohne Server-/Payload-Änderung mit den Entwicklern abstimmen (Fragenliste in der Idee-Datei). Richtung: Plan über Solarspannung/Temperatur statt Uhr (LoRa-Logger hat keine echte Uhrzeit), öfter wiegen statt öfter senden (Server-Regel 200 s beachten), Rückmeldung über Zeitabstand + Service-Quittung 81–98 (Service ≥ 99 schaltet den Schwarmalarm am Server ab). Testaufbau einige Wochen statt ein Jahr.
+- [ ] **Zum Besprechen:** Sendeplan nach Jahreszeit, Schwarmalarm auf Ereignis (Gewichtssturz → sofort Uplink), und was aus der Ferne überhaupt verstellbar sein soll (Plan-Werte, Schwellwert, vorübergehend schneller/langsamer mit Ablauf). Ausarbeitung `docs/idee_sendeplan_schwarmalarm.md` (07.11.). Kürzer als 3 min am Tag passt nicht in Fair Use. 07.11. (Gespräch mit Nutzer): erst minimal-invasiv bleiben, als Nächstes nur Varianten ohne Server-/Payload-Änderung mit den Entwicklern abstimmen (Fragenliste in der Idee-Datei). Richtung: Plan über Solarspannung/Temperatur statt Uhr (LoRa-Logger hat keine echte Uhrzeit), öfter wiegen statt öfter senden (Server speichert erst ab 4 min Abstand, Zusatz-Uplink ≥ 250 s; 07.11. korrigiert, vorher 200 s), Rückmeldung über Zeitabstand + Service-Quittung 81–98 (Service ≥ 99 schaltet den Schwarmalarm am Server ab). Testaufbau einige Wochen statt ein Jahr.
+- [ ] **Wiki nachziehen (Server-Erkenntnisse 07.11.)**, über die Web-Oberfläche wie beim Abgleich 07.11. (lokale Kopie `~/wiki-pages` kann veraltet sein, vorher frisch lesen):
+  - `08_server`: Speicherregel um „Zeitstempel auf Minute abgerundet → effektiv 4 min“ ergänzen; Schwarmprüfung nur bei > 200 s; Service-Auswertung (99/>240 Icon, ≥ 99 sperrt 2 Meldungen, < 0 = RSSI, −1 leer, > 1000 → 99); Kompensation mit 99.9 als **geprüft** statt Lesart; Intervall-Steuerung des Servers und dass sie LoRa nicht erreicht. Quelle M40_261004 `beelogger_log.php` nennen.
+  - `09_betrieb_test` Z. ~32: „> 200 s“ → „ab 4 min (Serverzeit auf Minute abgerundet)“.
+  - `03_firmware`: Schwarmerkennung `Sensor_Gewicht()`/`Alarm_Gewicht` vorhanden, Ergebnis ungenutzt.
+  - `05_lorawan`/`04_payload` nur prüfen, ob dort 200 s oder Service-Bedeutungen stehen.
+  - Seitenkopf „Letzte inhaltliche Änderung“ setzen (`regeln:konventionen`).
+- [ ] E-Mail an die Entwickler aktualisieren (Entwurf vom 07.11. war nur im Chat): Frage 3 jetzt „250 s statt 200 s, einverstanden?“, Service-Auswertung als geprüft, neue Fragen 5 (ungenutzte 1-kg-Erkennung) und 6 (Server-Intervallsteuerung per Downlink für LoRa) aus `docs/idee_sendeplan_schwarmalarm.md`. Irrtum offen nennen.
 
 ## Offene Fragen (Planung)
 
