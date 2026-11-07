@@ -30,6 +30,9 @@ print(ok(r2c==3 and r2d==3)+"laufende Session RX2-DR: %s / %s (nach Settings-Än
 if not d.get("supports_join"):  # nur ABP; OTAA setzt Zähler per Join zurück
     print(ok(m.get("resets_f_cnt",False))+"Resets frame counters:", m.get("resets_f_cnt",False))
 print(ok("disabled" in m.get("adr",{}))+"ADR aus:", "disabled" in m.get("adr",{}))
+# fehlt das Feld, gilt die TTN-Vorgabe 200 / 86400 s (Statusabfrage, die die Firmware nicht beantwortet)
+sc=m.get("status_count_periodicity"); stp=m.get("status_time_periodicity")
+print(ok(sc==0 and stp in ("0s","0")) +"Status periodicity count/time: %s / %s (soll 0 / 0s)"%(sc,stp))
 # Join-Request hat kein mac_payload
 up=[(u.get("received_at","")[11:19],u.get("payload",{}).get("mac_payload",{}).get("f_hdr",{}).get("f_cnt",0) if "mac_payload" in u.get("payload",{}) else "Join") for u in st.get("recent_uplinks",[])]
 print("   letzte Uplinks (UTC, FCnt):", up[-5:])

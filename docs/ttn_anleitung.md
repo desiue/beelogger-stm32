@@ -76,6 +76,36 @@ Braucht einen API-Key in `~/.config/ttn/konto.key` (siehe Abschnitt 6). Der Bloc
 Bauen und flashen: README und [`flashen.md`](flashen.md). Danach:
 
 1. **Serielle Konsole** (9600 Baud): Startzeile mit Name und DevAddr. OTAA: nach dem ersten Start Join (einige Sekunden), danach steht die neue DevAddr in der Startzeile.
+
+   Auszug beelogger011 (OTAA, F103), Akku ab und an, gekürzt (`…`). Zeit links = PC-Uhr (MEZ), die Zahl vor `Joining`/`TX done` = LMIC-Zeit seit dem Aufwachen in Ticks zu 16 µs (62 500 = 1 s):
+
+   ```
+   01:57:24 261106STM32F103CB                      ← Firmware-Kennung, Board
+   01:57:24 Name: beelogger011 UID: … DevAddr: 00000000   ← noch keine Session
+   01:57:24 POR                                    ← Power-On-Reset: Akku war ab
+   01:57:24   LoRaSeq_Nr:0 Interval: 5min  DL: 0min …
+   …                                               ← Messwerte (Akku, Solar, Temperatur, Waagen)
+   01:57:25 payload length: 21                     ← erster Uplink nach dem Einschalten: 4 Byte Firmware-Kennung mehr
+   01:57:25 LoRa-frame counter: 0
+   01:57:25 OTAA: Join
+   01:57:26 117922: Joining
+   01:57:32 510786: Joined DevAddr: 638312553      ← dezimal = 0x260BE069
+   01:57:34 645782: TX done!                       ← Uplink FCnt 0 gesendet, Rx-Fenster vorbei
+   01:57:34  Weckzeit 01.01.2022 00:39:59          ← nächstes Aufwachen (RTC-Zeit, nicht gestellt)
+
+   01:58:27 Name: beelogger011 UID: … DevAddr: 260BE069   ← Session aus dem Speicher, kein Join
+   01:58:27 RST                                    ← normales Aufwachen
+   …
+   01:58:29 payload length: 17
+   01:58:29 LoRa-frame counter: 1
+   01:58:31 249694: TX done!                       ← ohne Join nach 4 s statt 10 s
+
+   02:08:30 DL Port 10: 15                         ← Downlink 0F im Rx-Fenster empfangen
+   02:08:30  Weckzeit 01.01.2022 01:04:59          ← jetzt 15 min statt 5 min
+   02:08:30   LoRaSeq_Nr:4 Interval: 5min  DL: 15min …
+   ```
+
+   Ohne `Joined` nach 30 s: Schlüssel und Byte-Reihenfolge prüfen (Abschnitt 5). ABP: kein `OTAA: Join`, DevAddr steht von Anfang an in der Startzeile.
 2. **TTN → Gerät → Live data**: OTAA zeigt „Accept join-request“, dann den ersten Uplink mit FCnt 0. ABP: Uplinks direkt. Live data zeigt nur die letzten Meldungen; den Join sieht man nur, wenn die Seite beim Einschalten des Loggers offen ist. Im Bild (von unten nach oben): Uplinks alle 5 min, Akku ab und an, „Receive join-request“, „Accept join-request“ mit neuer DevAddr, nach etwa 4 s der erste Uplink mit `Aux3: 261106` (Firmware-Kennung nach dem Einschalten).
    ![Live data](ttn/bilder/08_live_data.png)
    Beispiele, wie es aussehen muss: [`ttn/beispiele/`](ttn/beispiele/) (OTAA-Join: `2026-11-06_beelogger08_otaa_live_data_join.json`).
@@ -105,6 +135,63 @@ Bauen und flashen: README und [`flashen.md`](flashen.md). Danach:
 ![Downlink](ttn/bilder/09_downlink.png)
 
 Fair Use Policy: höchstens 10 Downlinks am Tag (README, „TTN Fair Use Policy“).
+
+### Downlink aus der Server-Software (TTN-API)
+
+Für beelogger-Server, die das Intervall selbst umstellen sollen. TTN reiht den Downlink ein und schickt ihn im Empfangsfenster nach dem nächsten Uplink; er wirkt also ab dem übernächsten Zyklus.
+
+- API-Key: **Application → API keys**, Recht **„Write downlink application traffic“**, sonst nichts. Key nur auf dem Server ablegen.
+- Endpunkt (Cluster `eu1`):
+  - `POST https://eu1.cloud.thethings.network/api/v3/as/applications/<app>/devices/<dev>/down/push` hängt an die Warteschlange an,
+  - `…/down/replace` ersetzt sie. Für das Intervall besser `replace`: Wird mehrmals umgestellt, kommt nur der letzte Wert an und kein Downlink-Stau.
+- Body: FPort 10, `frm_payload` = 1 Byte **Base64**.
+
+| Intervall | hex | Base64 |
+|---|---|---|
+| Firmware-Vorgabe | `00` | `AA==` |
+| 5 min | `05` | `BQ==` |
+| 15 min | `0F` | `Dw==` |
+| 30 min | `1E` | `Hg==` |
+| 60 min | `3C` | `PA==` |
+
+Gültig sind 0 und 5–180, andere Werte verwirft die Firmware ohne Meldung.
+
+curl:
+```bash
+curl -X POST "https://eu1.cloud.thethings.network/api/v3/as/applications/beelogger011/devices/beelogger011-otaa/down/replace" \
+  -H "Authorization: Bearer $TTN_KEY" -H "Content-Type: application/json" \
+  -d '{"downlinks":[{"f_port":10,"frm_payload":"Dw==","priority":"NORMAL"}]}'
+```
+Antwort bei Erfolg: `{}` (HTTP 200).
+
+PHP:
+```php
+function beelogger_intervall($app, $dev, $minuten, $key) {
+    if ($minuten != 0 && ($minuten < 5 || $minuten > 180)) return false;
+    $url  = "https://eu1.cloud.thethings.network/api/v3/as/applications/$app/devices/$dev/down/replace";
+    $body = json_encode(["downlinks" => [[
+        "f_port" => 10,
+        "frm_payload" => base64_encode(chr($minuten)),
+        "priority" => "NORMAL",
+    ]]]);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $body,
+        CURLOPT_HTTPHEADER => ["Authorization: Bearer $key", "Content-Type: application/json"],
+        CURLOPT_RETURNTRANSFER => true,
+    ]);
+    curl_exec($ch);
+    $ok = curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200;
+    curl_close($ch);
+    return $ok;
+}
+```
+
+Hinweise:
+- Rückmeldung: Der Uplink meldet das aktive Intervall (noch) nicht. Prüfbar am Abstand der Uplinks oder im seriellen Log (`DL Port 10: 15`).
+- Kommt der Downlink nie an: FCntDown prüfen (Abschnitt 5).
+- `<app>` ist die TTN-Application-ID (bei uns = Gerätename, z. B. `beelogger011`), `<dev>` die Device-ID (z. B. `beelogger011-otaa`).
 
 ## 5. Wenn etwas nicht geht
 
