@@ -2,6 +2,8 @@
 
 Stand 07.11.2026, **zur Diskussion**, nichts davon ist umgesetzt.
 
+**Korrektur 07.11. (nach Lesen der Server-Skripte M40_261004):** Die frühere Annahme „ein Zusatz-Uplink ab 200 s wird gespeichert“ war falsch. Der Server stempelt jede Meldung mit seiner eigenen Uhr, **auf die Minute abgerundet**. Sicher gespeichert wird erst ab **240 s** Abstand, wir planen mit **250 s**. Außerdem hat der Server schon eine eigene Sendeintervall-Steuerung, die bei LoRa nur nicht beim Logger ankommt (Abschnitt „Was die Firmware heute schon kann“).
+
 ## Grundsatz und Reihenfolge
 
 1. **Jetzt (fertig): minimal-invasiv.** Die Firmware entspricht in Funktion, Messablauf, Waagenzahl und Payload dem Original 260705. Neu sind nur Downlinks (Sendeintervall, FPort 10) mit ABP und OTAA, dazu Fehlerkorrekturen (Sketch-ID, ADR-Bit) und die Startzeile. Server und Decoder bleiben unverändert.
@@ -29,6 +31,8 @@ Ergebnis der Überlegung unten: Nicht die **Sendezeiten** verkürzen, sondern ö
 
 Unten gilt immer: mindestens 5 min, Weckzeit auf 5-Minuten-Raster (`tt - tt % 300`).
 
+**Schwarm-Erkennung steckt schon in der Firmware, wird aber nicht genutzt:** `Sensor_Gewicht()` (`beelogger_HX711_STM.ino` Z. 47) vergleicht mit `Alarm_Gewicht = 1.0` kg (`STM32_beelogger.h`) und gibt 1 zurück, wenn eine Waage mehr verloren hat. Der Aufruf in `STM32_LORA_260705.ino` Z. 189/193 wirft den Rückgabewert weg, die Variable `s_alarm` wird nie benutzt. Laut Hilfetext der Server-Skripte senden andere beelogger nach mehr als 1 kg Verlust die nächsten 5 Messungen sofort. Ein Zusatz-Uplink bei Gewichtsverlust wäre also kein neues Konzept, sondern das, was beim LoRa-Logger fehlt.
+
 **Keine Uhrzeit beim LoRa-Logger:** Die RTC startet bei jedem Power-On-Reset am 01.01.2022 um 00:00 und läuft von dort. WLAN- und LTE-Logger stellen ihre Uhr aus der Server-Antwort, LoRa hat keine solche Antwort. „Nacht 23–6 Uhr“ heißt also „23–6 Stunden nach dem Einschalten“, „Oktober–März“ heißt „die ersten drei Monate nach dem Einschalten“. Möglichkeiten:
 
 | Weg | Aufwand | Bewertung |
@@ -38,6 +42,8 @@ Unten gilt immer: mindestens 5 min, Weckzeit auf 5-Minuten-Raster (`tt - tt % 30
 | DeviceTimeReq (LoRaWAN-MAC-Befehl) | kennt LMIC 1.5 nicht | nein |
 
 Ein Plan „Sommer tagsüber oft, nachts selten, Winter selten“ geht also heute schon, wenn er über Solarspannung und Temperatur läuft. Es fehlt nur ein eigener Zeitraum Schwarmzeit, und alles ist fest beim Flashen eingestellt.
+
+**Der Server hat so einen Plan schon** (`ServerZeitSteuerung()` in `beelogger_log.php`, eingestellt in der Web-Konfiguration, `$IntervallSendeSteuerung`): zeit-, licht- oder solarspannungsgesteuert je ein Intervall für Tag und Nacht, dazu Winter nach Datum (Sommer-/Winterbeginn), höchstens 60 min. Der Server hat eine echte Uhr, Uhrzeit und Datum gehen dort also. WLAN- und GSM-Logger bekommen das Ergebnis in der HTTP-Antwort (`<Zeit>T<Intervall>B<Service>ok *`) und stellen sich danach. Beim LoRa-Logger geht diese Antwort an den TTN-Webhook und wird verworfen. Den Plan des Servers per Downlink zum Logger zu bringen, bräuchte eine Server-Änderung (TTN-API-Key am Server, Downlink schicken) → Frage an die Entwickler.
 
 ## Wie oft geht es? (Quad, SF7)
 
@@ -72,9 +78,9 @@ Zwei Schwellen, getrennte Aufgaben:
 | Alarmschwelle | Server (wie heute) | Ist es ein Schwarm? Benachrichtigen. |
 | Sendeschwelle | Logger (neu) | Außer der Reihe senden? Muss **kleiner** als die Alarmschwelle sein (Vorschlag 0,3 kg; ein Schwarm nimmt meist 1–3 kg mit), damit der Server jedes relevante Ereignis sieht. |
 
-**Server-Regel 200 s:** `beelogger_log.php` speichert eine Meldung nur, wenn sie mehr als 200 s nach der letzten gespeicherten kommt (Ausnahmen: Service = 99, oder Kalibriertemperatur `99.9` in der Server-Konfiguration, dann ab 55 s; Wiki 08). Ein Zusatz-Uplink eine Minute nach dem regulären würde also verworfen, und der Schwarmalarm sähe ihn nicht. Ohne Server-Änderung:
-- **Empfohlen:** Der Logger sendet den Zusatz-Uplink frühestens 200 s (sicherer: 4 min) nach dem letzten Uplink. Bei 5-min-Takt bringt das wenig, bei 10–30 min Takt viel. Der Server bleibt unverändert.
-- Nicht empfohlen: Kalibriertemperatur `99.9` am Server. Derselbe Wert steuert auch die Temperaturkompensation: `Gewicht_korr = Gewicht_roh + (Wägezellentemperatur − KalibrierTemperatur) × Korrekturwert` (Wiki 08, aus den Server-Scripten M.40, nicht getestet). Mit 99,9 °C und dem Beispiel-Korrekturwert 0,0355 kg/°C von beelogger.de wird das Gewicht bei 15 °C um rund 3 kg zu leicht und wandert mit der Temperatur. Unschädlich nur mit Korrekturwert 0 (Kompensation aus). Also: Minutenbetrieb **oder** Temperaturkompensation, nicht beides.
+**Server-Regel „mindestens 4 Minuten“:** `beelogger_log.php` speichert eine Meldung nur, wenn ihr Zeitstempel mehr als 200 s nach dem letzten gespeicherten liegt. Beide Zeitstempel sind Serverzeit **auf die Minute abgerundet**, also braucht es 4 volle Minuten: ab 240 s echtem Abstand immer, bei 181–239 s nur je nach Sekunde. Ausnahmen: Service = 99 (ab der nächsten Minute), Service < 0 (ab 110 s), Kalibriertemperatur `99.9` in der Server-Konfiguration (ab 55 s). Auch der **Schwarmalarm** wird nur bei mehr als 200 s Abstand geprüft, unabhängig von diesen Ausnahmen. Ein Zusatz-Uplink eine Minute nach dem regulären würde also verworfen, und der Schwarmalarm sähe ihn nicht. Ohne Server-Änderung:
+- **Empfohlen:** Der Logger sendet den Zusatz-Uplink frühestens **250 s** nach dem letzten Uplink (240 s plus Luft für Laufzeit-Schwankungen). Bei 5-min-Takt bringt das wenig, bei 10–30 min Takt viel. Der Server bleibt unverändert.
+- Nicht empfohlen: Kalibriertemperatur `99.9` am Server. Derselbe Wert steuert auch die Temperaturkompensation: `Gewicht_korr = Gewicht_roh + (Temperatur − KalibrierTemperatur) × Korrekturwert` (`beelogger_log.php` Z. 527–535, bei LoRa ist die Temperatur TempOut). Im Minutenbetrieb läuft außerdem der Schwarmalarm praktisch nie (Prüfung erst ab 200 s Abstand). Mit 99,9 °C und dem Beispiel-Korrekturwert 0,0355 kg/°C von beelogger.de wird das Gewicht bei 15 °C um rund 3 kg zu leicht und wandert mit der Temperatur. Unschädlich nur mit Korrekturwert 0 (Kompensation aus). Also: Minutenbetrieb **oder** Temperaturkompensation, nicht beides.
 
 Die Sendeschwelle kann fest sein. Aus der Ferne einstellbar lohnt sich vor allem bei unruhigen Waagen (Wind), die zu oft außer der Reihe senden.
 
@@ -99,7 +105,7 @@ Wer per Downlink etwas umstellt, will sehen, ob es angekommen ist. Ohne neues Pa
 | 15 – ca. 80 | Einschaltdauer in s eines Sendezyklus |
 | 99 | Arbeitsschalter aktiv erkannt |
 
-Der Server wertet Service aus (Wiki 08): Bei **99** speichert er jede Meldung (Servicemodus, Durchsicht-Icon). Der **Schwarmalarm** läuft nur, wenn Service in der aktuellen **und** der vorherigen Meldung **unter 99** liegt. Werte über 1000 werden zu 99.
+Der Server wertet Service aus (`beelogger_log.php`, geprüft 07.11.): Bei **99** speichert er jede Meldung ab der nächsten Minute. **99 oder über 240** setzt das Durchsicht-Icon (höchstens alle 40 min). Der **Schwarmalarm** und die Auto-Anmerkungen laufen nur, wenn Service in der aktuellen **und** der letzten gespeicherten Meldung **unter 99** liegt. Werte über 1000 werden zu 99, −1 wird leer, andere negative Werte gelten als RSSI. Ein Wert wie 90 hat keine Sonderwirkung.
 
 Vorschlag: In der ersten Nachricht nach einem empfangenen Downlink sendet der Logger statt der Einschaltdauer den festen Wert **90** (Bereich 81–98 ist frei; 90 liegt mit Abstand über den längsten Sendezyklen und unter 99; den endgültigen Wert legen die Entwickler fest). Das bestätigt „Downlink angekommen“, den Inhalt zeigt Weg 1. Kosten: eine Einschaltdauer fehlt in der Grafik. Schwarmalarm und Speicherung bleiben unberührt.
 
@@ -126,10 +132,11 @@ Gemeinsame Voraussetzungen:
 ## Fragen an die Entwickler (ohne Server-Änderung)
 
 1. **Service-Quittung:** Darf die Firmware nach einem Downlink einmal einen festen Wert senden? Unser Vorschlag: **90**. Passt das, oder ist ein anderer Wert aus 81–98 besser? Sind 81–98 oder Werte ab 100 schon verplant?
-2. Wertet der Server Service noch an anderer Stelle aus (Watchdog, Autoanmerkung, mobileWatch, Beep)?
-3. **200-s-Regel:** Wir würden Zusatz-Uplinks frühestens 200 s nach dem letzten schicken, damit der Server sie ohne Änderung speichert. Einverstanden? (Kalibriertemperatur `99.9` kommt für uns nicht in Frage, weil sie die Temperaturkompensation verfälscht – stimmt diese Lesart des Codes?)
+2. Wertet der Server Service noch außerhalb von `beelogger_log.php` aus (Watchdog, mobileWatch, Beep)? In `beelogger_log.php` haben wir es geprüft (siehe oben).
+3. **Mindestabstand:** Wir würden Zusatz-Uplinks frühestens 250 s nach dem letzten schicken (Server: > 200 s auf Minuten abgerundet = 4 min), damit der Server sie ohne Änderung speichert und den Schwarmalarm prüft. Einverstanden? Kalibriertemperatur `99.9` kommt für uns nicht in Frage (Temperaturkompensation, Schwarmalarm).
 4. **Plan ohne Uhr:** Sind `SOLAR_ZYKLUS` und `TEMP_ZYKLUS` bei LoRa-Loggern erprobt? Bewährte Schwellen (Solarspannung Tag/Nacht, Temperatur Winter)?
-5. Ist ein Zusatz-Uplink bei Gewichtsänderung (gleiches Format, ohne Kennzeichnung) für den Server in Ordnung, oder stört das Anzeige, Tageswerte oder Statistik?
+5. Ist ein Zusatz-Uplink bei Gewichtsverlust (gleiches Format, ohne Kennzeichnung) für den Server in Ordnung, oder stört das Anzeige, Tageswerte oder Statistik? Die Firmware erkennt 1 kg Verlust schon (`Sensor_Gewicht()`), nutzt es aber nicht; andere beelogger senden dann 5 Messungen sofort. Ist das für LoRa so gewollt oder vergessen?
+6. **Sendeplan des Servers für LoRa:** Die Intervall-Steuerung in der Web-Konfiguration erreicht LoRa-Logger nicht. Wäre es denkbar, dass der Server sie später per TTN-Downlink (FPort 10) schickt? Bis dahin würden wir den Plan im Logger lassen (Solar/Temperatur).
 
 ## Offene Fragen (für uns)
 
@@ -146,7 +153,7 @@ Ein eigener Logger mit Waage, Solarzelle und Akku im Freien, **einige Wochen** (
 - Strom und Akkuspannung bei minütlichem Wiegen, auch über mehrere trübe Tage,
 - Sendezeit pro Tag in TTN (bleibt sie unter 30 s, auch mit Zusatz-Uplinks?),
 - wie oft die Sendeschwelle ohne Schwarm auslöst (Wind, Eingriffe, Regen),
-- ob die Zusatz-Uplinks am Server ankommen und gespeichert werden (200-s-Regel),
+- ob die Zusatz-Uplinks am Server ankommen und gespeichert werden (mindestens 4 Minuten Abstand, Ziel 250 s),
 - ob Solar- und Temperatursteuerung sinnvoll umschalten.
 
 Einen Schwarm kann man im Herbst nicht abwarten: Gewicht von Hand wegnehmen (z. B. 2 kg) und prüfen, ob Zusatz-Uplink und Schwarmalarm des Servers kommen. Das Verhalten im Winter (Akku, Schnee) läuft danach nebenher weiter und ist keine Voraussetzung für den ersten Einsatz.
