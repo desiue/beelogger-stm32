@@ -138,6 +138,7 @@ Vollständig in `docs/aenderungen_gegen_260705.diff`. Kurz:
    - Neu-Join: nach Power-On-Reset (Akku ab), bei ungültigem Datum, ab FCnt 16000 und nach 3 Tagen ohne Antwort auf den täglichen LinkCheckReq (1 Downlink/Tag).
    - Join-Versuch höchstens 60 s pro Zyklus; ohne Erfolg neuer Versuch im nächsten Zyklus.
    - LMIC: Join-Code eingeschaltet (`DISABLE_JOIN` aus), LinkCheckReq/-Ans ergänzt. ABP-Geräte joinen nie (DevAddr ist gesetzt), Build ca. 0,7 KB größer.
+7. **ADR aus** (`LMIC_setAdrMode(0)` in `setup_LORA()`): Die LMIC schaltet ADR in `LMIC_reset()` ein, die Firmware beantwortet aber keine LinkADRReq. Uplinks tragen kein ADR-Bit mehr. TTN-Einstellung „ADR Disabled“ bleibt empfohlen für Altgeräte. Noch nicht auf Gerät getestet.
 5. **Firmware-Kennung** `l_ID` = **261106** (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 
 ## Gefundene Fehler

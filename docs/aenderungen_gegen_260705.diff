@@ -370,7 +370,14 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
  
    //#if defined(CFG_eu868)
    // Set up the channels used by the Things Network, which corresponds
-@@ -175,6 +269,13 @@
+@@ -171,10 +265,20 @@
+   // Disable link check validation
+   LMIC_setLinkCheckMode(0);
+ 
++  // ADR aus: LMIC_reset() schaltet es ein, die FW beantwortet aber keine LinkADRReq
++  LMIC_setAdrMode(0);
++
+   LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
  
    // TTN uses SF9 for its RX2 window.
    LMIC.dn2Dr = DR_SF9;
@@ -384,7 +391,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
  
    // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)
    LMIC_setDrTxpow(DR_SF7, 14);  //Low-Power
-@@ -299,16 +400,39 @@
+@@ -299,16 +403,39 @@
  #endif
  
      LMIC.seqnoUp = LoRaSeqCounter;
@@ -425,7 +432,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
    } else {
      debugprintlnF("err");
    }
-@@ -537,7 +661,7 @@
+@@ -537,7 +664,7 @@
    cnt_pld++;
    debugprintF("info:");  debugprintln(svc);
  
@@ -434,7 +441,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
      //payload[cnt_pld] = TYPE_AUX2;
      //cnt_pld++;
      PayloadHeader |= TYPE_AUX2;
-@@ -599,9 +723,27 @@
+@@ -599,9 +726,27 @@
  
              }
        */

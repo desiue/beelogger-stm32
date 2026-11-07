@@ -265,6 +265,9 @@ void setup_LORA() {
   // Disable link check validation
   LMIC_setLinkCheckMode(0);
 
+  // ADR aus: LMIC_reset() schaltet es ein, die FW beantwortet aber keine LinkADRReq
+  LMIC_setAdrMode(0);
+
   LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
 
   // TTN uses SF9 for its RX2 window.
