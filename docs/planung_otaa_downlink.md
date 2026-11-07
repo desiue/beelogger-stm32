@@ -211,7 +211,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [ ] Doku (Nutzer 06.11.): In Beispielen echte Live-Daten aus der TTN-Konsole zeigen (z. B. Uplink von beelogger08), damit neue Nutzer sehen, wie die Daten dort aussehen müssen. Dazu passende Auszüge aus der seriellen Konsole (Startzeile, Join, Uplink, TX done).
 
 **Messen / Hardware**
-- [ ] Wachzeit und Stromverbrauch pro Zyklus messen, **vor und nach** dem Flash der neuen Firmware: am **beelogger08** (vor dem Update!). Log `t-on` und `TX done`-Zeit (ms) vergleichen; Strom mit Multimeter/USB-Meter.
+- [x] Wachzeit und Stromverbrauch pro Zyklus messen, **vor und nach** dem Flash der neuen Firmware: am **beelogger08** (vor dem Update!). Log `t-on` und `TX done`-Zeit (ms) vergleichen; Strom mit Multimeter/USB-Meter. 07.11.: neue FW gleich (Schlaf 18,09 µA, wach 24–34 mA).
   - 06.11. **Basis alte FW, beelogger08** (Black F411CE, Messaufbau zu Hause: 2 HX711 ohne Wägezellen, 4 Waagen konfiguriert, Akku 4,21 V = Anzeige 4,21 V): Wachzeit **18 s** (`t-on: 18`; Waage 1/2 `fail` je ~2 s, Waage 3/4 je ~5 s, Senden ~2 s). Ohne HX711 14 s. Strom (Multimeter in Reihe): wach 24–36 mA, Schlaf 18,2 µA → pro Zyklus ca. 0,15 mAh; bei 5 min ca. 44 mAh/Tag, bei 15 min ca. 15 mAh/Tag (Schlaf nur 0,44 mAh/Tag; Sendespitze vom Multimeter nicht erfasst). Gleicher Aufbau für die Messung nach dem Update.
 - [ ] LoRa-Kanäle (`LORA_CHANNELS` 1/3/8): Entscheidung ans Ende, wenn die Firmware fertig ist. Empfehlung bisher 8 (TTN-Standard).
 - [ ] Seriell-Log läuft dauerhaft (`scripts/seriell-log.sh`, `~/beelogger-logs/seriell.log`) – vor dem Flashen stoppen.
@@ -223,7 +223,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 ## Offene Fragen (Planung)
 
 - [x] Serielle Konsole läuft (FTDI, 9600 Baud).
-- [ ] Flash-Größe des Test-Chips (64 oder 128 KB) und ob der Build mit Join-Code passt. Stand 06.11.: Build F103 = 54 KB; bei C8 (64 KB) bleiben ca. 9 KB für Join-Code + 1 KB Session-Seite.
+- [x] Flash-Größe des Test-Chips (64 oder 128 KB) und ob der Build mit Join-Code passt. Stand 06.11.: Build F103 = 54 KB; bei C8 (64 KB) bleiben ca. 9 KB für Join-Code + 1 KB Session-Seite.
 - [x] Intervall-Fernwert: entschieden 06.11.2026 (Sitzung 2) **Backup-Register 5, Bit 9–14** (F1 und F4), nicht Flash.
 - [x] Neu-Join-Regel: entschieden 06.11.2026, siehe Entscheidungen (1 Link-Check/Tag, 3 ohne Antwort → Neu-Join).
 
