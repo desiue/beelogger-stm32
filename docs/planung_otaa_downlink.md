@@ -259,7 +259,7 @@ Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgen
   - ATmega-LoRa-Sketch: dieselben Fehler, Korrektur in `atmega_lora/`; Seite beelogger.de/netzwerk/lora („kein Rückkanal“) gilt für STM32 mit dieser Firmware nicht mehr.
   - `05_lorawan`/`04_payload` nur prüfen, ob dort 200 s oder Service-Bedeutungen stehen.
   - Seitenkopf „Letzte inhaltliche Änderung“ setzen (`regeln:konventionen`).
-- [ ] E-Mail an die Entwickler aktualisieren (Entwurf vom 07.11. war nur im Chat): Frage 3 jetzt „250 s statt 200 s, einverstanden?“, Service-Auswertung als geprüft, neue Fragen 5 (ungenutzte 1-kg-Erkennung) und 6 (Server-Intervallsteuerung per Downlink für LoRa) aus `docs/idee_sendeplan_schwarmalarm.md`. Irrtum offen nennen.
+- [x] E-Mail an die Entwickler (07.11. verschickt): Korrekturen (4 min statt 200 s, 99.9/Service geprüft, Server-Intervall erreicht LoRa nicht, ADR-Bit noch ungetestet), Antworten zu LMIC/DISABLE_JOIN und Black/Blue, ATmega-Vorschlag mit Testbitte, Grundsatz `main` kompatibel / Ideen im eigenen Branch. Vier Fragen: Übernahme Downlink+OTAA, DISABLE_JOIN-Lösung, Erfahrung SOLAR/TEMP_ZYKLUS, ungenutzte 1-kg-Erkennung. Nachtrag an einen Nutzer (Universal + SMD, Frage nach Helium-OTAA-Gerät). **Antwort abwarten.**
 
 ## Offene Fragen (Planung)
 
