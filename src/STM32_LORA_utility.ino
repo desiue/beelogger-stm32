@@ -159,7 +159,7 @@ void System_Init() {
     snprintf(id_line, sizeof(id_line), "Name: %s UID: %08lX%08lX%08lX DevAddr: %08lX", LOGGER_NAME,
              (unsigned long)HAL_GetUIDw2(), (unsigned long)HAL_GetUIDw1(), (unsigned long)HAL_GetUIDw0(),
 #if LORA_OTAA
-             (unsigned long)getBackupRegister(10));  // DevAddr des letzten Join, 0 = Join steht aus
+             (unsigned long)otaa_rd(0));  // DevAddr des letzten Join, 0 = Join steht aus
 #else
              (unsigned long)DEVADDR);
 #endif

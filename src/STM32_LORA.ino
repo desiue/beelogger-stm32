@@ -61,9 +61,6 @@ uint8_t payload[64];
 #endif
 
 #if LORA_OTAA
-#if defined(STM32F1xx)
-#error "LORA_OTAA: Session-Speicher fuer F1 (Flash) fehlt noch"
-#endif
 #define JOIN_TM_OUT 60000    // Join + erster Uplink; ohne Erfolg neuer Versuch im nächsten Zyklus
 #define OTAA_VERSION 1       // Version des Session-Blocks
 #define OTAA_FCNT_MAX 16000  // vor dem Überlauf von LoRaSeqCounter (16384) neu joinen
@@ -72,7 +69,7 @@ void os_getArtEui(u1_t* buf) { memcpy_P(buf, APPEUI, 8); }
 void os_getDevEui(u1_t* buf) { memcpy_P(buf, DEVEUI, 8); }
 void os_getDevKey(u1_t* buf) { memcpy_P(buf, APPKEY, 16); }
 
-// Session-Block in Backup-Registern (F4, 32 Bit), Schlüssel werden aus APPKEY neu berechnet:
+// Session-Block (F4: Backup-Register 10-13, F1: Flash, je 32 Bit), Schlüssel werden aus APPKEY neu berechnet:
 // 10 DevAddr | 11 NetID, Bit 24-31 RxDelay<<4 | Rx2-DR | 12 AppNonce, Bit 24-31 Version
 // 13 DevNonce, Bit 16-20 Tag des letzten Link-Checks, Bit 21-22 Fehlversuche, Bit 24-31 Prüfsumme
 uint8_t otaa_sum(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
@@ -81,13 +78,42 @@ uint8_t otaa_sum(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
   return s;
 }
 
-void otaa_clear() {  // nächster Versand joint neu
+#if defined(STM32F1xx)
+// F1: Backup-Register sind 16 Bit und belegt -> Session in einer Flash-Seite (1 KB unter 64 KB, auch beim C8 vorhanden).
+// Geschrieben nur bei Änderung (Join, 1 Link-Check/Tag, Löschen): ca. 365 Löschzyklen/Jahr bei 10 000 erlaubten.
+// shortcut: feste Adresse 0x0800FC00, Firmware muss unter 63 KB bleiben (Build-Ausgabe prüfen).
+#define OTAA_FLASH (FLASH_BASE + 63 * 1024)
+uint32_t otaa_rd(uint8_t i) {
+  uint32_t v = ((volatile uint32_t*)OTAA_FLASH)[i];
+  return v == 0xFFFFFFFF ? 0 : v;  // gelöschte Seite = keine Session
+}
+void otaa_wr(const uint32_t* r) {
+  if (memcmp(r, (const void*)OTAA_FLASH, 16) == 0) return;
+  FLASH_EraseInitTypeDef e = {};
+  e.TypeErase = FLASH_TYPEERASE_PAGES;
+  e.PageAddress = OTAA_FLASH;
+  e.NbPages = 1;
+  uint32_t err;
+  HAL_FLASH_Unlock();
+  if (HAL_FLASHEx_Erase(&e, &err) == HAL_OK)
+    for (uint8_t i = 0; i < 4; i++) HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, OTAA_FLASH + 4 * i, r[i]);
+  HAL_FLASH_Lock();
+}
+#else
+uint32_t otaa_rd(uint8_t i) { return getBackupRegister(10 + i); }
+void otaa_wr(const uint32_t* r) {
   enableBackupDomain();
-  setBackupRegister(10, 0);
+  for (uint8_t i = 0; i < 4; i++) setBackupRegister(10 + i, r[i]);
+}
+#endif
+
+void otaa_clear() {  // nächster Versand joint neu
+  const uint32_t z[4] = { 0, 0, 0, 0 };
+  otaa_wr(z);
 }
 
 bool otaa_load() {  // gültige Session -> LMIC, sonst false (LMIC joint dann selbst, DevAddr = 0)
-  uint32_t r10 = getBackupRegister(10), r11 = getBackupRegister(11), r12 = getBackupRegister(12), r13 = getBackupRegister(13);
+  uint32_t r10 = otaa_rd(0), r11 = otaa_rd(1), r12 = otaa_rd(2), r13 = otaa_rd(3);
   if (r10 == 0 || (r12 >> 24) != OTAA_VERSION || (r13 >> 24) != otaa_sum(r10, r11, r12, r13 & 0xFFFF)) return false;
   if (LoRaSeqCounter >= OTAA_FCNT_MAX) return false;
   u1_t an[6];  // AppNonce + NetID, LSB zuerst wie im Join-Accept
@@ -105,11 +131,8 @@ void otaa_save_join() {  // bei EV_JOINED: LMIC.frame enthält noch den entschl�
   uint32_t r11 = (LMIC.netid & 0xFFFFFF) | (uint32_t)(((LMIC.rxDelay & 0x0F) << 4) | (LMIC.dn2Dr & 0x0F)) << 24;
   uint32_t r12 = f[0] | (uint32_t)f[1] << 8 | (uint32_t)f[2] << 16 | (uint32_t)OTAA_VERSION << 24;
   uint32_t dn = (u2_t)(LMIC.devNonce - 1);  // LMIC zählt nach dem Join-Request hoch
-  enableBackupDomain();
-  setBackupRegister(10, r10);
-  setBackupRegister(11, r11);
-  setBackupRegister(12, r12);
-  setBackupRegister(13, dn | (uint32_t)rtc_stm.getDay() << 16 | (uint32_t)otaa_sum(r10, r11, r12, dn) << 24);
+  const uint32_t r[4] = { r10, r11, r12, dn | (uint32_t)rtc_stm.getDay() << 16 | (uint32_t)otaa_sum(r10, r11, r12, dn) << 24 };
+  otaa_wr(r);
 }
 #else
 // ABP: LMIC enthält den Join-Code, ruft ihn aber nie auf (DevAddr gesetzt)
@@ -248,7 +271,7 @@ void setup_LORA() {
   LMIC.dn2Dr = DR_SF9;
 #if LORA_OTAA
   if (otaa_ok) {  // Rx-Werte aus dem Join-Accept
-    uint8_t dl = getBackupRegister(11) >> 24;
+    uint8_t dl = otaa_rd(1) >> 24;
     LMIC.dn2Dr = dl & 0x0F;
     LMIC.rxDelay = dl >> 4;
   }
@@ -380,7 +403,7 @@ void Daten_Senden() {
 #if LORA_OTAA
     // 1 Link-Check pro Tag; 3 ohne Antwort -> Neu-Join
     uint8_t heute = rtc_stm.getDay();
-    uint32_t r13 = getBackupRegister(13);
+    uint32_t r13 = otaa_rd(3);
     bool lchk = LMIC.devaddr != 0 && ((r13 >> 16) & 0x1F) != heute;
     if (lchk) LMIC.lchkReq = 1;
     uint32_t tm_out = LMIC.devaddr ? SERVER_TM_OUT : JOIN_TM_OUT;
@@ -405,8 +428,8 @@ void Daten_Senden() {
       debugprintln(fail);
       if (fail >= 3) otaa_clear();
       else {
-        enableBackupDomain();
-        setBackupRegister(13, (r13 & 0xFF00FFFF) | (uint32_t)heute << 16 | (uint32_t)fail << 21);
+        const uint32_t r[4] = { otaa_rd(0), otaa_rd(1), otaa_rd(2), (r13 & 0xFF00FFFF) | (uint32_t)heute << 16 | (uint32_t)fail << 21 };
+        otaa_wr(r);
       }
     }
 #endif

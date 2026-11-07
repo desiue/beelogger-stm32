@@ -40,7 +40,7 @@ Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler
 8. **Flashen** über FTDI-Adapter mit stm32loader: siehe [`docs/flashen.md`](docs/flashen.md). Vorher an der Startzeile prüfen, welches Gerät am Kabel hängt.
 9. **TTN einstellen** wie unter „TTN-Einstellungen“, sonst kommen Downlinks nicht an.
 
-ABP oder OTAA per Schalter `#define LORA_OTAA` (0/1) im Geräteblock von `Config_LORA.h`. OTAA geht bisher nur auf der BlackPill (F4); auf der BluePill bricht der Build mit `#error` ab, bis der Session-Speicher im Flash fertig ist.
+ABP oder OTAA per Schalter `#define LORA_OTAA` (0/1) im Geräteblock von `Config_LORA.h`, auf BluePill und BlackPill. BluePill: Firmware muss unter 63 KB bleiben (Session-Seite), Build mit OTAA 56 176 B.
 
 Hinweise:
 - STM32-Core 2.6.0 (`framework-arduinoststm32@~4.20600`), in `platformio.ini` festgelegt.
@@ -52,7 +52,7 @@ Hinweise:
 
 | | ABP (`LORA_OTAA 0`) | OTAA (`LORA_OTAA 1`) |
 |---|---|---|
-| **BluePill** F103 (`bluepill_f103c8`) | läuft (beeloggerblue05, beelogger011) | **noch offen**: Build bricht mit `#error` ab, Session-Speicher im Flash fehlt |
+| **BluePill** F103 (`bluepill_f103c8`) | läuft (beeloggerblue05) | läuft (beelogger011, seit 07.11.) |
 | **BlackPill** F411/F401 (`blackpill_f411ce`, `blackpill_f401cc`) | läuft (beelogger09) | läuft (beelogger08) |
 
 Board = PlatformIO-Umgebung, ABP/OTAA = Schalter im Geräteblock von `Config_LORA.h`. Sonst ist der Code gleich, Korrekturen gelten für alle Varianten.
@@ -71,12 +71,12 @@ Board = PlatformIO-Umgebung, ABP/OTAA = Schalter im Geräteblock von `Config_LOR
 | TTN-Einstellungen (Rx1/Rx2) | müssen genau zur Firmware passen, sonst Downlink-Schleife; Änderung erst nach „Reset session and MAC state“ | kommen mit dem Join-Accept ins Gerät |
 | Netzausfall erkennen | nein | ja: 1 Link-Check pro Tag, nach 3 Tagen ohne Antwort Neu-Join (kostet 1 Downlink/Tag von 10 erlaubten) |
 | Gerät in andere TTN-App umziehen | neu flashen | in TTN neu anlegen, Join |
-| Boards | Blue und Black | bisher nur Black |
+| Boards | Blue und Black | Blue und Black |
 | Strom | – | gleich (beelogger08: Schlaf 18,1 µA, wach 24–34 mA, wie mit alter FW) |
 
 **Warum beide:** Die vorhandenen Feldgeräte laufen mit ABP und sollen nach dem Update ohne Neuanlage in TTN weiterlaufen. Neue Geräte sollen OTAA nutzen: sicherer, weniger Fehlerquellen bei den TTN-Einstellungen, und ein Netzausfall wird erkannt. Beides aus einer Codebasis, damit Korrekturen nur einmal nötig sind.
 
-OTAA-Gerät in TTN anlegen: LoRaWAN 1.0.2, RP 1.0.2 rev B, Frequenzplan EU_863_870_TTN, ADR aus. Die Session (DevAddr, Nonces, Rx-Werte) liegt bei der BlackPill in RTC-Backup-Registern und übersteht den Tiefschlaf; die Sitzungsschlüssel werden daraus neu berechnet und nicht gespeichert. Neu-Join nach Stromausfall (POR), unbekanntem Frame-Zähler, FCnt ≥ 16000 (vor dem Überlauf des 14-Bit-Zählers), ungültiger Prüfsumme der Session oder 3 Tagen ohne Link-Check-Antwort.
+OTAA-Gerät in TTN anlegen: LoRaWAN 1.0.2, RP 1.0.2 rev B, Frequenzplan EU_863_870_TTN, ADR aus. Die Session (DevAddr, Nonces, Rx-Werte, 4 × 32 Bit) liegt bei der BlackPill in RTC-Backup-Registern 10–13, beim BluePill in einer Flash-Seite bei 0x0800FC00 (63 KB, auch beim C8 vorhanden; geschrieben nur bei Änderung: Join, 1 Link-Check/Tag, Löschen). Sie übersteht den Tiefschlaf; die Sitzungsschlüssel werden daraus neu berechnet und nicht gespeichert. Neu-Join nach Stromausfall (POR), unbekanntem Frame-Zähler, FCnt ≥ 16000 (vor dem Überlauf des 14-Bit-Zählers), ungültiger Prüfsumme der Session oder 3 Tagen ohne Link-Check-Antwort.
 
 Mitschnitt OTAA (beelogger08, BlackPill, nach Akku ab/an):
 ```
@@ -200,4 +200,4 @@ Kein offizielles Projekt von beelogger.de. Original: https://beelogger.de
 ## Stand
 
 Siehe `docs/planung_otaa_downlink.md`, Abschnitte „Arbeitspakete“ und „Verlauf“.
-Paket 1 (Grundlage) und Paket 2 (Downlink-Intervall, ABP) fertig. Paket 3 (OTAA): BlackPill läuft und ist abgenommen (beelogger08: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Strom gleich). BluePill offen.
+Paket 1 (Grundlage) und Paket 2 (Downlink-Intervall, ABP) fertig. Paket 3 (OTAA): BlackPill läuft und ist abgenommen (beelogger08: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Strom gleich). BluePill abgenommen 07.11. (beelogger011: Join, Wiederanlauf aus dem Flash ohne Join).
