@@ -89,3 +89,10 @@ Gemeinsame Voraussetzungen:
 4. Fern-Intervall heute behalten, durch „schneller/langsamer mit Ablauf“ ersetzen oder beides?
 5. Welche Fern-Einstellungen müssen den Akku-Wechsel überstehen (→ Flash)?
 6. Reihenfolge: zuerst die Rückmeldung (ohne sie weiß niemand, was am Logger gilt), dann Plan per Downlink, dann Schwarmalarm?
+
+## Testaufbau (Vorschlag Nutzer, 07.11.)
+
+Ein eigener Logger mit Waage, Solarzelle und Akku im Freien, **etwa ein Jahr** laufen lassen, bevor etwas davon in die Feldgeräte geht. Messen:
+- Akkuspannung über Sommer und Winter (reicht die Solarzelle bei minütlichem Wiegen, auch nach mehreren trüben Tagen?),
+- Sendezeit pro Tag in TTN (bleibt sie unter 30 s, auch mit Zusatz-Uplinks?),
+- wie oft die Sendeschwelle ohne Schwarm auslöst (Wind, Eingriffe, Regen, Schnee).

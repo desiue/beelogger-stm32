@@ -1,29 +1,40 @@
 # beelogger STM32 – LoRaWAN-Firmware (PlatformIO)
 
-Die beelogger-Firmware **STM32_LORA_260705** (beelogger.de) als PlatformIO-Projekt für VS Code, mit Erweiterungen.
-Ziel: Das Sendeintervall soll sich per Downlink aus der Ferne ändern lassen, und neue Geräte sollen per OTAA statt ABP ins Netz gehen.
-Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler sie übernehmen können.
+Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogger.de) als PlatformIO-Projekt für VS Code, mit Erweiterungen. Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler sie übernehmen können.
 
-**Keine Schlüssel oder Passwörter im Repo** (siehe „Schlüssel“).
+**Auf einen Blick**
+
+- **Sendeintervall aus der Ferne** per TTN-Downlink (FPort 10, 5–180 min), mit ABP und OTAA.
+- **OTAA** für neue Geräte, ABP für vorhandene Feldgeräte – eine Codebasis, umschaltbar per `#define LORA_OTAA`.
+- **BluePill (F103) und BlackPill (F411/F401)**, alle vier Kombinationen auf Testgeräten abgenommen.
+- **Fehler behoben:** Sketch-ID in jedem Uplink, TTN-Downlink-Schleife (Einstellungen dokumentiert), ADR-Bit.
+- **Startzeile** mit Firmware-Kennung, Name, Chip-UID und DevAddr – man sieht sofort, welches Gerät am Kabel hängt.
+- **Keine Schlüssel oder Passwörter im Repo** (siehe [Schlüssel](#schlüssel)).
+
+**Inhalt:** [Dateien](#inhalt) · [Selbst bauen](#firmware-selbst-bauen) · [Varianten](#eine-firmware-vier-varianten) · [ABP oder OTAA](#abp-oder-otaa) · [Startzeile](#serielle-konsole-und-startzeile) · [Änderungen](#änderungen-gegenüber-260705) · [Gefundene Fehler](#gefundene-fehler) · [TTN-Einstellungen](#ttn-einstellungen-abp-lmic-dieser-firmware) · [Fair Use](#ttn-fair-use-policy) · [Lizenz](#lizenz) · [Stand](#stand)
 
 ## Inhalt
 
 | Pfad | Inhalt |
 |---|---|
-| `src/` | Firmware (Sketch 260705 mit Änderungen, siehe unten) |
-| `src/Config_LORA.h.example`, `src/Config_MULTI.h.example` | Vorlagen für LoRa- und Sensorkonfiguration (nur Platzhalter) |
-| `lib/` | beelogger-Bibliotheken 2026_04; geändert nur LMIC (`lib/beelogger_arduino-lmic-master/src/lmic/`: Join-Code an, Link-Check, `LMIC_restoreJoin`), siehe Diff |
-| `orginal_firmware_bibliotheken/` | Originale von beelogger.de zum Vergleich (Sketche 202610, Bibliotheken 2026_04, WLAN/LTE 230928) |
-| `platformio.ini` | Boards BluePill F103CB, BlackPill F411CE, BlackPill F401CC |
-| `docs/flashen.md` | Bauen, Flashen über FTDI (stm32loader), Gerätetabelle |
-| `docs/ttn_anleitung.md` | TTN Schritt für Schritt: Application, Gerät ABP/OTAA, Prüfen, Downlink, Fehlersuche, API-Keys |
-| `docs/vorschlag_payload_erweiterung.md` | Entwurf zur Abstimmung: Intervall-Rückmeldung und Waage 5–8 per Erweiterungsbyte, Airtime je SF |
-| `docs/idee_sendeplan_schwarmalarm.md` | Idee zum Besprechen: Sendeplan nach Jahreszeit, Schwarmalarm auf Ereignis, was aus der Ferne verstellbar sein soll |
-| `docs/planung_otaa_downlink.md` | Plan, Entscheidungen und Verlauf der Arbeitspakete |
-| `docs/aenderungen_gegen_260705.diff` | Alle Änderungen gegenüber dem Original-Sketch 260705 |
-| `docs/ttn/` | TTN-Einstellungen (JSON aus der TTN-API), Payload-Decoder, Beispielnachrichten |
-| `docs/logs/` | Serielle Mitschnitte (9600 Baud) |
-| `scripts/` | `seriell-log.sh` (Konsole mitschreiben), `ttn-status.sh` (TTN-Werte eines Geräts prüfen) |
+| **Firmware** | |
+| [`src/`](src/) | Sketch 260705 mit Änderungen (siehe [Änderungen](#änderungen-gegenüber-260705)) |
+| [`src/Config_LORA.h.example`](src/Config_LORA.h.example), [`src/Config_MULTI.h.example`](src/Config_MULTI.h.example) | Vorlagen für LoRa- und Sensorkonfiguration (nur Platzhalter) |
+| [`lib/`](lib/) | beelogger-Bibliotheken 2026_04; geändert nur LMIC (`lib/beelogger_arduino-lmic-master/src/lmic/`: Join-Code an, Link-Check, `LMIC_restoreJoin`), siehe Diff |
+| [`orginal_firmware_bibliotheken/`](orginal_firmware_bibliotheken/) | Originale von beelogger.de zum Vergleich (Sketche 202610, Bibliotheken 2026_04, WLAN/LTE 230928) |
+| [`platformio.ini`](platformio.ini) | Boards BluePill F103CB, BlackPill F411CE, BlackPill F401CC |
+| **Anleitungen** | |
+| [`docs/flashen.md`](docs/flashen.md) | Bauen, Flashen über FTDI (stm32loader), Kalibrieren, Gerätetabelle |
+| [`docs/ttn_anleitung.md`](docs/ttn_anleitung.md) | TTN Schritt für Schritt: Application, Gerät ABP/OTAA, Prüfen, Downlink, Fehlersuche, API-Keys |
+| **Zur Abstimmung** | |
+| [`docs/vorschlag_payload_erweiterung.md`](docs/vorschlag_payload_erweiterung.md) | Entwurf für die Entwickler: Intervall-Rückmeldung und Waage 5–8 per Erweiterungsbyte, Airtime je SF |
+| [`docs/idee_sendeplan_schwarmalarm.md`](docs/idee_sendeplan_schwarmalarm.md) | Idee zum Besprechen: Sendeplan nach Jahreszeit, minütlich wiegen und bei Änderung senden, was aus der Ferne verstellbar sein soll |
+| **Nachweise** | |
+| [`docs/planung_otaa_downlink.md`](docs/planung_otaa_downlink.md) | Plan, Entscheidungen und Verlauf der Arbeitspakete |
+| [`docs/aenderungen_gegen_260705.diff`](docs/aenderungen_gegen_260705.diff) | Alle Änderungen gegenüber dem Original-Sketch 260705 |
+| [`docs/ttn/`](docs/ttn/) | TTN-Einstellungen (JSON aus der TTN-API), Payload-Decoder, Beispielnachrichten |
+| [`docs/logs/`](docs/logs/) | Serielle Mitschnitte (9600 Baud) |
+| [`scripts/`](scripts/) | `seriell-log.sh` (Konsole mitschreiben), `ttn-status.sh` (TTN-Werte eines Geräts prüfen) |
 
 ## Firmware selbst bauen
 
@@ -41,21 +52,21 @@ Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler
    - BlackPill (STM32F411, „Black“): `blackpill_f411ce`, ältere BlackPill: `blackpill_f401cc`
 7. **Bauen:** Häkchen in der PlatformIO-Leiste oder `pio run -e blackpill_f411ce`. Ergebnis: `.pio/build/<board>/firmware.bin`.
 8. **Flashen** über FTDI-Adapter mit stm32loader: siehe [`docs/flashen.md`](docs/flashen.md). Vorher an der Startzeile prüfen, welches Gerät am Kabel hängt.
-9. **TTN einstellen** wie unter „TTN-Einstellungen“, sonst kommen Downlinks nicht an.
+9. **TTN einstellen** wie unter [TTN-Einstellungen](#ttn-einstellungen-abp-lmic-dieser-firmware) bzw. in der [TTN-Anleitung](docs/ttn_anleitung.md), sonst kommen Downlinks nicht an.
 
-ABP oder OTAA per Schalter `#define LORA_OTAA` (0/1) im Geräteblock von `Config_LORA.h`, auf BluePill und BlackPill. BluePill: Firmware muss unter 63 KB bleiben (Session-Seite), Build mit OTAA 56 176 B.
+> **Tipp:** Vor dem Flashen an der [Startzeile](#serielle-konsole-und-startzeile) prüfen, welches Gerät am Kabel hängt – sonst landen die Schlüssel des falschen Geräts auf dem Board.
 
 Hinweise:
 - STM32-Core 2.6.0 (`framework-arduinoststm32@~4.20600`), in `platformio.ini` festgelegt.
 - BluePill: Board `bluepill_f103c8_128k` mit `-DARDUINO_BLUEPILL_F103CB` (die Firmware braucht 128 KB).
-- Flash-Belegung (Paket 2): F103CB 53 884 B, F411CE 53 176 B.
+- Flash-Belegung (07.11., mit OTAA): F103CB 56 500 B, F411CE 55 308 B. BluePill: muss unter 63 KB bleiben, darüber liegt die OTAA-Session-Seite.
 - `pio run -t upload` geht beim F411 nicht (stm32flash kennt die Chip-ID 0x431 nicht), deshalb stm32loader.
 
 ## Eine Firmware, vier Varianten
 
 | | ABP (`LORA_OTAA 0`) | OTAA (`LORA_OTAA 1`) |
 |---|---|---|
-| **BluePill** F103 (`bluepill_f103c8`) | läuft (beeloggerblue05) | läuft (beelogger011, seit 07.11.) |
+| **BluePill** F103 (`bluepill_f103c8`) | läuft (beeloggerblue05) | läuft (beelogger011) |
 | **BlackPill** F411/F401 (`blackpill_f411ce`, `blackpill_f401cc`) | läuft (beelogger09) | läuft (beelogger08) |
 
 Board = PlatformIO-Umgebung, ABP/OTAA = Schalter im Geräteblock von `Config_LORA.h`. Sonst ist der Code gleich, Korrekturen gelten für alle Varianten.
@@ -123,7 +134,7 @@ Damit sieht man vor dem Flashen, welches Gerät am Kabel hängt und welche Firmw
 
 ## Änderungen gegenüber 260705
 
-Vollständig in `docs/aenderungen_gegen_260705.diff`. Kurz:
+Vollständig in [`docs/aenderungen_gegen_260705.diff`](docs/aenderungen_gegen_260705.diff). Kurz:
 
 1. **Startzeile** in `System_Init()` (siehe oben).
 2. **Downlink Sendeintervall** (`onEvent()` in `STM32_LORA.ino`):
@@ -134,13 +145,13 @@ Vollständig in `docs/aenderungen_gegen_260705.diff`. Kurz:
    - Getestet auf BlackPill F411 (beelogger09) und BluePill F103 (beeloggerblue05).
 3. **Sketch-ID-Fehler behoben** (Feld Aux2, siehe „Gefundene Fehler“; in älteren Notizen „Aux3“ genannt).
 4. `Config_LORA.h`: `LOGGER_NAME` je Geräteblock.
+5. **Firmware-Kennung** `l_ID` = **261107** (261106: ohne ADR-aus) (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 6. **OTAA** (`#define LORA_OTAA 1`, Werte `DEVEUI`, `APPEUI` = JoinEUI, beide LSB, `APPKEY` MSB; TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B):
-   - Join beim ersten Versand. Gespeichert werden nur DevAddr, NetID, AppNonce, DevNonce, Rx1-Delay und Rx2-DR (RTC-Backup-Register 10–13, mit Version und Prüfsumme). Die Session-Schlüssel rechnet der Logger nach jedem Aufwachen aus dem AppKey neu (`LMIC_restoreJoin`).
+   - Join beim ersten Versand. Gespeichert werden nur DevAddr, NetID, AppNonce, DevNonce, Rx1-Delay und Rx2-DR, mit Version und Prüfsumme: BlackPill in RTC-Backup-Registern 10–13, BluePill in der Flash-Seite 0x0800FC00 (nur bei Änderung geschrieben). Die Session-Schlüssel rechnet der Logger nach jedem Aufwachen aus dem AppKey neu (`LMIC_restoreJoin`).
    - Neu-Join: nach Power-On-Reset (Akku ab), bei ungültigem Datum, ab FCnt 16000 und nach 3 Tagen ohne Antwort auf den täglichen LinkCheckReq (1 Downlink/Tag).
    - Join-Versuch höchstens 60 s pro Zyklus; ohne Erfolg neuer Versuch im nächsten Zyklus.
    - LMIC: Join-Code eingeschaltet (`DISABLE_JOIN` aus), LinkCheckReq/-Ans ergänzt. ABP-Geräte joinen nie (DevAddr ist gesetzt), Build ca. 0,7 KB größer.
 7. **ADR aus** (`LMIC_setAdrMode(0)` in `setup_LORA()`): Die LMIC schaltet ADR in `LMIC_reset()` ein, die Firmware beantwortet aber keine LinkADRReq. Uplinks tragen kein ADR-Bit mehr. TTN-Einstellung „ADR Disabled“ bleibt empfohlen für Altgeräte. Noch nicht auf Gerät getestet.
-5. **Firmware-Kennung** `l_ID` = **261107** (261106: ohne ADR-aus) (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 
 ## Gefundene Fehler
 
@@ -195,6 +206,7 @@ Pro Gerät im Schnitt **30 s Uplink-Airtime** und **höchstens 10 Downlinks** in
 - Bei 5 min und SF8 wäre die Grenze überschritten, deshalb ist SF7 fest eingestellt. Mehr Payload (z. B. weitere Waagen) braucht längere Intervalle.
 - Ein Intervall-Downlink ist ein einzelner Downlink und liegt weit unter der Grenze.
 - Ein Gerät in der Downlink-Schleife bekommt dagegen bis zu 288 Downlinks am Tag, fast das 30-Fache. Deshalb die TTN-Einstellungen oben genau übernehmen.
+- Kürzere Intervalle in der Schwarmzeit und Senden nur bei Gewichtsänderung: siehe [Idee Sendeplan/Schwarmalarm](docs/idee_sendeplan_schwarmalarm.md).
 
 ## Schlüssel
 
@@ -210,5 +222,12 @@ Kein offizielles Projekt von beelogger.de. Original: https://beelogger.de
 
 ## Stand
 
-Siehe `docs/planung_otaa_downlink.md`, Abschnitte „Arbeitspakete“ und „Verlauf“.
-Paket 1 (Grundlage) und Paket 2 (Downlink-Intervall, ABP) fertig. Paket 3 (OTAA): BlackPill läuft und ist abgenommen (beelogger08: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Strom gleich). BluePill abgenommen 07.11. (beelogger011: Join, Wiederanlauf aus dem Flash ohne Join).
+| Paket | Inhalt | Stand |
+|---|---|---|
+| 1 | Grundlage: PlatformIO-Build für Blue und Black, Startzeile | fertig |
+| 2 | Sendeintervall per Downlink (ABP), Sketch-ID-Fehler | fertig, auf Blue und Black getestet |
+| 3 | OTAA | fertig: BlackPill (beelogger08: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Strom gleich), BluePill (beelogger011: Join, Wiederanlauf aus dem Flash) |
+| 4 | Doku: TTN-Anleitung, Wiki | Anleitung als Text fertig; Bildschirmfotos und Wiki folgen |
+| – | ADR aus (Kennung 261107) | gebaut, Test auf Gerät folgt |
+
+Einzelheiten, offene Punkte und Verlauf: [`docs/planung_otaa_downlink.md`](docs/planung_otaa_downlink.md).
