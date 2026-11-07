@@ -10,7 +10,7 @@ APP=$1; DEV=$2
 KF="$HOME/.config/ttn/$APP.key"; [ -f "$KF" ] || KF="$HOME/.config/ttn/konto.key"  # Konto-Key als Rückfall
 KEY=$(tr -d ' \n' < "$KF")
 curl -s -H "Authorization: Bearer $KEY" \
-  "https://${TTN_CLUSTER:-eu1}.cloud.thethings.network/api/v3/ns/applications/$APP/devices/$DEV?field_mask=session.last_n_f_cnt_down,session.last_f_cnt_up,session.started_at,mac_settings,mac_state.current_parameters,mac_state.desired_parameters,mac_state.recent_uplinks,lorawan_version,supports_join" |
+  "https://${TTN_CLUSTER:-eu1}.cloud.thethings.network/api/v3/ns/applications/$APP/devices/$DEV?field_mask=session.last_n_f_cnt_down,session.last_f_cnt_up,session.started_at,mac_settings,mac_state.current_parameters,mac_state.desired_parameters,mac_state.recent_uplinks,mac_state.pending_requests,lorawan_version,supports_join" |
 python3 -c '
 import json,sys
 d=json.load(sys.stdin)
@@ -22,11 +22,15 @@ print(d["ids"]["device_id"], d.get("lorawan_version"), "OTAA" if d.get("supports
 fd=int(s.get("last_n_f_cnt_down",0))
 print(ok(fd<65536)+"FCntDown", fd, "(muss < 65536 sein, sonst Session/MAC-Reset)")
 print("   Session seit", s.get("started_at","-")[:19], "letzter FCntUp", s.get("last_f_cnt_up",0))
-for k,soll in (("rx1_delay",1),("rx2_data_rate_index",3)):
-    a=m.get(k,0); b=m.get("desired_"+k,0)
-    print(ok(a==soll and b==soll)+"Einstellung %s: %s / desired %s (soll %s)"%(k,a,b,soll))
+a=m.get("rx1_delay",0); b=m.get("desired_rx1_delay",0)
+print(ok(a==1 and b==1)+"Einstellung rx1_delay: %s / desired %s (soll 1)"%(a,b))
+# Rx2-DR: gleich der Firmware (neue FW: 3 = SF9; Altgeräte laut Wiki 06a: 0). Hauptsache alles gleich, sonst RXParamSetupReq bei jedem Uplink
+a=m.get("rx2_data_rate_index",0); b=m.get("desired_rx2_data_rate_index",0)
 r2c=cur.get("rx2_data_rate_index",0); r2d=des.get("rx2_data_rate_index",0)
-print(ok(r2c==3 and r2d==3)+"laufende Session RX2-DR: %s / %s (nach Settings-Änderung: MAC-Reset)"%(r2c,r2d))
+print(ok(a==b)+"Einstellung rx2_data_rate_index: %s / desired %s (gleich der Firmware: neue FW 3)"%(a,b))
+print(ok(r2c==a and r2d==b)+"laufende Session RX2-DR: %s / %s (ungleich Einstellung: MAC-Reset)"%(r2c,r2d))
+pr=[p.get("cid","") for p in st.get("pending_requests",[])]
+print(ok(not pr)+"offene MAC-Befehle:", pr or "keine")
 if not d.get("supports_join"):  # nur ABP; OTAA setzt Zähler per Join zurück
     print(ok(m.get("resets_f_cnt",False))+"Resets frame counters:", m.get("resets_f_cnt",False))
 print(ok("disabled" in m.get("adr",{}))+"ADR aus:", "disabled" in m.get("adr",{}))
