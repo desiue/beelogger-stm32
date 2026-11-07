@@ -33,7 +33,7 @@ Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 
 ### 2a. ABP (`#define LORA_OTAA 0`)
 
-1. Device address, NwkSKey, AppSKey mit **Generate** erzeugen. End device ID = Name des Loggers.
+1. Device address, NwkSKey, AppSKey mit **Generate** erzeugen (DevEUI ist bei ABP egal). End device ID = Name des Loggers. Im Bild ist „Use network's default MAC settings“ noch an: abwählen, siehe Tabelle oben.
    ![ABP-Schlüssel](ttn/bilder/05_abp_keys.png)
 2. In `src/Config_LORA.h` eintragen, beide Schlüssel in **MSB**-Reihenfolge (Schalter `<>` in der Konsole, Format „C-style“):
    - `DEVADDR = 0x260B….` (Device address)
@@ -76,7 +76,7 @@ Braucht einen API-Key in `~/.config/ttn/konto.key` (siehe Abschnitt 6). Der Bloc
 Bauen und flashen: README und [`flashen.md`](flashen.md). Danach:
 
 1. **Serielle Konsole** (9600 Baud): Startzeile mit Name und DevAddr. OTAA: nach dem ersten Start Join (einige Sekunden), danach steht die neue DevAddr in der Startzeile.
-2. **TTN → Gerät → Live data**: OTAA zeigt „Accept join-request“, dann den ersten Uplink mit FCnt 0. ABP: Uplinks direkt. Live data zeigt nur die letzten Meldungen; den Join sieht man nur, wenn die Seite beim Einschalten des Loggers offen ist. Im Bild: Uplinks mit dekodierter Payload (Gewicht, TempOut, VBatt …) alle 5 min.
+2. **TTN → Gerät → Live data**: OTAA zeigt „Accept join-request“, dann den ersten Uplink mit FCnt 0. ABP: Uplinks direkt. Live data zeigt nur die letzten Meldungen; den Join sieht man nur, wenn die Seite beim Einschalten des Loggers offen ist. Im Bild (von unten nach oben): Uplinks alle 5 min, Akku ab und an, „Receive join-request“, „Accept join-request“ mit neuer DevAddr, nach etwa 4 s der erste Uplink mit `Aux3: 261106` (Firmware-Kennung nach dem Einschalten).
    ![Live data](ttn/bilder/08_live_data.png)
    Beispiele, wie es aussehen muss: [`ttn/beispiele/`](ttn/beispiele/) (OTAA-Join: `2026-11-06_beelogger08_otaa_live_data_join.json`).
 3. **Skript** prüft die wichtigen Werte (ohne Schlüssel):
