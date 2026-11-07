@@ -215,7 +215,6 @@ struct lmic_t {
     u1_t        margin;
     bit_t       ladrAns;      // link adr adapt answer pending
     bit_t       devsAns;      // device status answer pending
-    u1_t        lchkReq;      // beelogger: 1 = LinkCheckReq senden, 2 = gesendet, 3 = LinkCheckAns erhalten
     u1_t        adrEnabled;
     u1_t        moreData;     // NWK has more data pending
 #if !defined(DISABLE_MCMD_DCAP_REQ)
@@ -305,7 +304,6 @@ void  LMIC_tryRejoin     (void);
 
 void LMIC_setSession (u4_t netid, devaddr_t devaddr, xref2u1_t nwkKey, xref2u1_t artKey);
 void LMIC_setLinkCheckMode (bit_t enabled);
-void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid);
 void LMIC_setClockError(u2_t error);
 
 // Declare onEvent() function, to make sure any definition will have the

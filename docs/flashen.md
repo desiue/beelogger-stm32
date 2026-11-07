@@ -85,7 +85,8 @@ Nr. 1–4 = Testgeräte (Rolle laut Planung Paket 3). UID wie stm32loader sie me
 - Alte FW Aux3 = 1. 06.11. kurz versehentlich als 260BEB70 geflasht, dann 260705 als beelogger09 (Uplink 14:44 UTC, FCnt 4), danach Paket 2. 261106 noch nicht geflasht.
 
 **2 beeloggerblue05** (Testboard Blue)
-- Startzeile-UID 30003F2A000000001A5A5BB6. Reset-Taster defekt (R gegen G brücken).
+- Startzeile-UID 32303030303015C40F0C3A0C (stm32loader 3A0C-0F0C-303015C4-32303030, Bootloader 0x22), BluePill am 07.11.2026 getauscht: alte (UID 30003F2A000000001A5A5BB6) hatte keinen funktionierenden I2C-Bus. Reset-Taster defekt (R gegen G brücken).
+- Sensortest 07.11.: BME280 + BH1750 (GY-302) + DS18B20 + 4 Waagen, Config `Config_MULTI.h.bak_beeloggerblue05-sensoren`.
 - Paket 2 abgenommen 06.11. 18:51 UTC. 261106 noch nicht geflasht.
 
 **3 beelogger011** (Testboard Blue)

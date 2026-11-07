@@ -1,6 +1,7 @@
 // Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
 //   2026-11-06, desiue: OTAA - Session nach Power-On-Reset/ungültigem Datum verwerfen, DevAddr in Startzeile aus Join.
+//   2026-11-07, desiue: Software-Watchdog (TIM4, Backup-Register F1: 10, F4: 14) und i2c_bus_frei().
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 //20.10.2021 STM32_LORA
@@ -596,4 +597,77 @@ void display_time() {
   strftime (buff, 60, "%d.%m.%Y %H:%M:%S", localtime (&wakeup_time));
   debugprintF("Datum:    "); debugprintln(buff);
 #endif
+}
+
+
+/****************************************************************/
+// Software-Watchdog und I2C-Bus freitakten (desiue, 2026-11-07)
+// Der Hardware-Watchdog (IWDG) passt nicht: Er läuft im Standby weiter und würde den
+// Logger alle ~26 s wecken. Stattdessen zählt TIM4 im 1-s-Takt, nur in der Wachphase.
+// Dauert eine Phase zu lange (z. B. I2C-Sensor hängt), merkt sich der Logger die Phase
+// im Backup-Register und startet neu. Im nächsten Lauf:
+//   Phase 1 (Sensoren) hing -> ohne I2C-Sensoren messen und senden,
+//   Phase 2 (LoRa) hing oder zweiter Neustart in Folge -> gleich schlafen bis zum nächsten Termin.
+/****************************************************************/
+#if defined(STM32F1xx)
+#define WDT_REG 10      // F1: DR10 frei (1-9 Sketch, 6/7 RTC-Datum)
+#else
+#define WDT_REG 14      // F4: 10-13 OTAA-Session
+#endif
+#define WDT_MAGIC 0xA500  // Bit 4-7: Neustarts in Folge, Bit 0-3: Phase
+
+HardwareTimer *wdt_tim = nullptr;
+volatile uint16_t wdt_rest = 0;
+volatile uint8_t wdt_phase = 0;
+
+void wdt_tick() {
+  if (wdt_rest && --wdt_rest == 0) {
+    uint8_t n = (wdt_anzahl < 15) ? wdt_anzahl + 1 : 15;
+    setBackupRegister(WDT_REG, WDT_MAGIC | (n << 4) | wdt_phase);
+    NVIC_SystemReset();
+  }
+}
+
+void wdt_init() {  // in setup(): Merker vom letzten Lauf lesen und löschen
+  enableBackupDomain();
+  uint32_t reg = getBackupRegister(WDT_REG) & 0xFFFF;
+  setBackupRegister(WDT_REG, 0);
+  if ((reg & 0xFF00) == WDT_MAGIC) {
+    wdt_vorher = reg & 0x0F;
+    wdt_anzahl = (reg >> 4) & 0x0F;
+    debugprintF("WDT: Neustart, Phase "); debugprint(wdt_vorher);
+    debugprintF(" hing, in Folge: "); debugprintln(wdt_anzahl);
+  }
+}
+
+void wdt_start(uint8_t phase, uint16_t sekunden) {  // neue Phase mit eigenem Zeitlimit
+  noInterrupts();
+  wdt_phase = phase;
+  wdt_rest = sekunden;
+  interrupts();
+  if (wdt_tim == nullptr) {
+    wdt_tim = new HardwareTimer(TIM4);
+    wdt_tim->setOverflow(1, HERTZ_FORMAT);
+    wdt_tim->attachInterrupt(wdt_tick);
+    wdt_tim->resume();
+  }
+}
+
+void i2c_bus_frei() {  // hängt ein Slave mit SDA auf low, bis zu 9 Takte auf SCL und STOP
+  pinMode(PIN_WIRE_SDA, INPUT_PULLUP);
+  pinMode(PIN_WIRE_SCL, INPUT_PULLUP);
+  delayMicroseconds(10);
+  if (digitalRead(PIN_WIRE_SDA)) return;  // Bus frei
+  debugprintlnF("I2C: SDA low, takte frei");
+  pinMode(PIN_WIRE_SCL, OUTPUT_OPEN_DRAIN);
+  for (uint8_t i = 0; i < 9 && !digitalRead(PIN_WIRE_SDA); i++) {
+    digitalWrite(PIN_WIRE_SCL, LOW);  delayMicroseconds(5);
+    digitalWrite(PIN_WIRE_SCL, HIGH); delayMicroseconds(5);
+  }
+  pinMode(PIN_WIRE_SDA, OUTPUT_OPEN_DRAIN);  // STOP: SDA low -> high bei SCL high
+  digitalWrite(PIN_WIRE_SDA, LOW);  delayMicroseconds(5);
+  digitalWrite(PIN_WIRE_SCL, HIGH); delayMicroseconds(5);
+  digitalWrite(PIN_WIRE_SDA, HIGH); delayMicroseconds(5);
+  pinMode(PIN_WIRE_SDA, INPUT_PULLUP);
+  pinMode(PIN_WIRE_SCL, INPUT_PULLUP);
 }

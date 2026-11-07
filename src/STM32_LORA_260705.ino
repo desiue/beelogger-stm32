@@ -1,6 +1,7 @@
 // Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
 //   2026-11-07, desiue: ADR aus (LMIC_setAdrMode(0) in STM32_LORA.ino); l_ID 261107.
+//   2026-11-07, desiue: Software-Watchdog (wdt_init/wdt_start) und I2C-Bus freitakten in setup()/loop().
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 /*
@@ -146,6 +147,10 @@ uint16_t LoRaSeqCounter = 0;  // TTN Sequence numbber
 static uint32_t wake_up_var = 0;
 volatile uint8_t ok_sleep = 1;
 
+// Software-Watchdog (STM32_LORA_utility.ino)
+uint8_t wdt_vorher = 0;  // Phase, die im letzten Lauf hing (0 = keine)
+uint8_t wdt_anzahl = 0;  // Watchdog-Neustarts in Folge
+
 /****************************************************************/
 
 
@@ -155,6 +160,7 @@ void setup() {
   // Init system when power-on reset or restart
   //----------------------------------------------------------------
   System_Init();
+  wdt_init();  // Software-Watchdog: Merker vom letzten Lauf
   //----------------------------------------------------------------
 
   Spannungen_messen();
@@ -176,25 +182,35 @@ void loop() {
   Spannungen_messen();
   if (Batteriespannung < VAlternativ) akku_save = 1;
   if (Batteriespannung > VSysnormal) akku_save = 0;
-  if (Batteriespannung > VMinimum) {
+  // Software-Watchdog: nach LoRa-Hänger oder zweitem Neustart in Folge gleich schlafen
+  bool wdt_schlafen = (wdt_vorher >= 2) || (wdt_anzahl >= 2);
+  if (wdt_schlafen) debugprintlnF("WDT: Zyklus ausgelassen");
+  if ((Batteriespannung > VMinimum) && !wdt_schlafen) {
     uint8_t ureq = User_Int_req();
+    wdt_start(1, 60);  // Phase 1: Sensoren
+    bool mit_i2c = (wdt_vorher != 1);
+    if (mit_i2c) i2c_bus_frei();
+    else debugprintlnF("WDT: ohne I2C-Sensoren");
     if (ureq) {  // service switch on? or "time is over"
       Sensor_Temp_Zelle(0);
       Sensor_DHT();
       Sensor_DS18B20();
-      Sensor_BME280();
-      Sensor_Licht();
-      Sensor_Si7021();
-      Sensor_SHT31();
+      if (mit_i2c) {
+        Sensor_BME280();
+        Sensor_Licht();
+        Sensor_Si7021();
+        Sensor_SHT31();
+      }
       Sensor_Gewicht(0);
       Sensor_Temp_Zelle(1);
+      wdt_start(2, 100);  // Phase 2: LoRa (Join bis 60 s)
       Daten_Senden();  // only when service "off" or "time is over"
     } else {
       Sensor_Gewicht(1);
     }
   }
 
-
+  wdt_start(3, 20);  // Phase 3: Schlaf vorbereiten
   System_ShutDown();
 
   blink_LED(10, 500);  // we will never make it to here

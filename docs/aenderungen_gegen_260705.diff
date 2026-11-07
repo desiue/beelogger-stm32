@@ -1,6 +1,6 @@
 diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
---- orig/Config_LORA.h	2026-11-07 01:24:01.300344315 +0100
-+++ neu/Config_LORA.h	2026-11-07 01:24:01.303949956 +0100
+--- orig/Config_LORA.h	2026-11-07 23:02:58.991764121 +0100
++++ neu/Config_LORA.h	2026-11-07 23:06:44.424835364 +0100
 @@ -1,68 +1,82 @@
 -/****************************************************************/
 -// LORA Konfiguration
@@ -77,8 +77,8 @@ diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
 +/****************************************************************/
 +// LORA Konfiguration
 +/****************************************************************/
-+#include <lmic.h>
-+#include <hal/hal.h>
++#include "src/lmic_otaa/lmic.h"      // angepasste LMIC im Sketch-Ordner (OTAA, Link-Check)
++#include "src/lmic_otaa/hal/hal.h"
 +#include <SPI.h>
 +
 +// Verbindungsparameter:
@@ -152,9 +152,9 @@ diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
 +
 +// 
 +#define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht
-diff --color -ruN orig/lmic/config.h neu/lmic/config.h
---- orig/lmic/config.h	2026-11-07 01:24:01.301413235 +0100
-+++ neu/lmic/config.h	2026-11-07 01:24:01.305393339 +0100
+diff --color -ruN orig/src/lmic_otaa/lmic/config.h neu/src/lmic_otaa/lmic/config.h
+--- orig/src/lmic_otaa/lmic/config.h	2026-11-07 23:02:58.995884193 +0100
++++ neu/src/lmic_otaa/lmic/config.h	2026-11-07 23:02:59.006456992 +0100
 @@ -38,7 +38,7 @@
  #define LMIC_FAILURE_TO Serial
  
@@ -164,9 +164,9 @@ diff --color -ruN orig/lmic/config.h neu/lmic/config.h
  // Uncomment this to disable all code related to ping
  #define DISABLE_PING  //mod
  // Uncomment this to disable all code related to beacon tracking.
-diff --color -ruN orig/lmic/lmic.c neu/lmic/lmic.c
---- orig/lmic/lmic.c	2026-11-07 01:24:01.301669106 +0100
-+++ neu/lmic/lmic.c	2026-11-07 01:24:01.305435220 +0100
+diff --color -ruN orig/src/lmic_otaa/lmic/lmic.c neu/src/lmic_otaa/lmic/lmic.c
+--- orig/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:02:58.995982026 +0100
++++ neu/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:02:59.006548727 +0100
 @@ -1144,6 +1144,7 @@
          case MCMD_LCHK_ANS: {
              //int gwmargin = opts[oidx+1];
@@ -203,9 +203,9 @@ diff --color -ruN orig/lmic/lmic.c neu/lmic/lmic.c
  // Enable/disable link check validation.
  // LMIC sets the ADRACKREQ bit in UP frames if there were no DN frames
  // for a while. It expects the network to provide a DN message to prove
-diff --color -ruN orig/lmic/lmic.h neu/lmic/lmic.h
---- orig/lmic/lmic.h	2026-11-07 01:24:01.302411954 +0100
-+++ neu/lmic/lmic.h	2026-11-07 01:24:01.305477256 +0100
+diff --color -ruN orig/src/lmic_otaa/lmic/lmic.h neu/src/lmic_otaa/lmic/lmic.h
+--- orig/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:02:58.996019143 +0100
++++ neu/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:02:59.006599671 +0100
 @@ -215,6 +215,7 @@
      u1_t        margin;
      bit_t       ladrAns;      // link adr adapt answer pending
@@ -223,18 +223,19 @@ diff --color -ruN orig/lmic/lmic.h neu/lmic/lmic.h
  
  // Declare onEvent() function, to make sure any definition will have the
 diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
---- orig/STM32_LORA_260705.ino	2026-11-07 01:24:01.299499849 +0100
-+++ neu/STM32_LORA_260705.ino	2026-11-07 01:24:01.303226964 +0100
-@@ -1,3 +1,8 @@
+--- orig/STM32_LORA_260705.ino	2026-11-07 23:02:58.992609944 +0100
++++ neu/STM32_LORA_260705.ino	2026-11-07 23:02:59.003245903 +0100
+@@ -1,3 +1,9 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
 +//   2026-11-07, desiue: ADR aus (LMIC_setAdrMode(0) in STM32_LORA.ino); l_ID 261107.
++//   2026-11-07, desiue: Software-Watchdog (wdt_init/wdt_start) und I2C-Bus freitakten in setup()/loop().
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  /*
     (C) 2024 R.Schick - beelogger.de
  
-@@ -94,7 +99,7 @@
+@@ -94,7 +100,7 @@
  
  
  char ID_ID[16] = "STM32_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
@@ -243,7 +244,7 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
  
  #define CFG_noassert 1  // supress error messages in LMIC-library
  
-@@ -131,6 +136,7 @@
+@@ -131,6 +137,7 @@
  uint8_t stuck_switch = 0;  // Service Switch permanent on
  uint8_t s_alarm = 0;       // Schwarmalarm
  uint8_t akku_save = 0;     // in Akku Save Mode
@@ -251,19 +252,81 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
  
  uint8_t nr_to_measure = 1;    // POR_RST
  uint16_t LoRaSeqCounter = 0;  // TTN Sequence numbber
+@@ -140,6 +147,10 @@
+ static uint32_t wake_up_var = 0;
+ volatile uint8_t ok_sleep = 1;
+ 
++// Software-Watchdog (STM32_LORA_utility.ino)
++uint8_t wdt_vorher = 0;  // Phase, die im letzten Lauf hing (0 = keine)
++uint8_t wdt_anzahl = 0;  // Watchdog-Neustarts in Folge
++
+ /****************************************************************/
+ 
+ 
+@@ -149,6 +160,7 @@
+   // Init system when power-on reset or restart
+   //----------------------------------------------------------------
+   System_Init();
++  wdt_init();  // Software-Watchdog: Merker vom letzten Lauf
+   //----------------------------------------------------------------
+ 
+   Spannungen_messen();
+@@ -170,25 +182,35 @@
+   Spannungen_messen();
+   if (Batteriespannung < VAlternativ) akku_save = 1;
+   if (Batteriespannung > VSysnormal) akku_save = 0;
+-  if (Batteriespannung > VMinimum) {
++  // Software-Watchdog: nach LoRa-Hänger oder zweitem Neustart in Folge gleich schlafen
++  bool wdt_schlafen = (wdt_vorher >= 2) || (wdt_anzahl >= 2);
++  if (wdt_schlafen) debugprintlnF("WDT: Zyklus ausgelassen");
++  if ((Batteriespannung > VMinimum) && !wdt_schlafen) {
+     uint8_t ureq = User_Int_req();
++    wdt_start(1, 60);  // Phase 1: Sensoren
++    bool mit_i2c = (wdt_vorher != 1);
++    if (mit_i2c) i2c_bus_frei();
++    else debugprintlnF("WDT: ohne I2C-Sensoren");
+     if (ureq) {  // service switch on? or "time is over"
+       Sensor_Temp_Zelle(0);
+       Sensor_DHT();
+       Sensor_DS18B20();
+-      Sensor_BME280();
+-      Sensor_Licht();
+-      Sensor_Si7021();
+-      Sensor_SHT31();
++      if (mit_i2c) {
++        Sensor_BME280();
++        Sensor_Licht();
++        Sensor_Si7021();
++        Sensor_SHT31();
++      }
+       Sensor_Gewicht(0);
+       Sensor_Temp_Zelle(1);
++      wdt_start(2, 100);  // Phase 2: LoRa (Join bis 60 s)
+       Daten_Senden();  // only when service "off" or "time is over"
+     } else {
+       Sensor_Gewicht(1);
+     }
+   }
+ 
+-
++  wdt_start(3, 20);  // Phase 3: Schlaf vorbereiten
+   System_ShutDown();
+ 
+   blink_LED(10, 500);  // we will never make it to here
 diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
---- orig/STM32_LORA.ino	2026-11-07 01:24:01.299810540 +0100
-+++ neu/STM32_LORA.ino	2026-11-07 01:24:01.303250022 +0100
-@@ -1,3 +1,8 @@
+--- orig/STM32_LORA.ino	2026-11-07 23:02:58.992907853 +0100
++++ neu/STM32_LORA.ino	2026-11-07 23:02:59.003949447 +0100
+@@ -1,3 +1,9 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
-+//   2026-11-06, desiue: OTAA per #define LORA_OTAA (Join, Session in Backup-Registern 10-13, Link-Check 1x/Tag).
++//   2026-11-06, desiue: OTAA per #define LORA_OTAA (Join, Session F4: Backup-Register 10-13, F1: letzte Flash-Seite; Link-Check 1x/Tag).
++//   2026-11-07, desiue: F1-Session-Seite aus Flash-Ende statt fest bei 63 KB (Programm wurde überschrieben).
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  /****************************************************************/
  // Funktion LORA - Daten Senden
  /****************************************************************/
-@@ -51,6 +56,91 @@
+@@ -51,6 +57,105 @@
  bool flag_TXCOMPLETE = false;
  uint8_t payload[64];
  
@@ -290,24 +353,38 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
 +}
 +
 +#if defined(STM32F1xx)
-+// F1: Backup-Register sind 16 Bit und belegt -> Session in einer Flash-Seite (1 KB unter 64 KB, auch beim C8 vorhanden).
++// F1: Backup-Register sind 16 Bit und belegt -> Session in der letzten Flash-Seite (1 KB).
 +// Geschrieben nur bei Änderung (Join, 1 Link-Check/Tag, Löschen): ca. 365 Löschzyklen/Jahr bei 10 000 erlaubten.
-+// shortcut: feste Adresse 0x0800FC00, Firmware muss unter 63 KB bleiben (Build-Ausgabe prüfen).
-+#define OTAA_FLASH (FLASH_BASE + 63 * 1024)
++// Seite = Ende des Flash laut Chip (F103CB: 127 KB). Liegt sie im Programm (z. B. 64-KB-Chip mit großer
++// Config), wird nichts gespeichert: Der Logger joint dann bei jedem Start neu, statt sein Programm zu löschen.
++// (Fehler bis 07.11.2026: feste Seite bei 63 KB, Firmware mit BME + Licht ist 64 KB -> Programm überschrieben.)
++extern "C" uint32_t _sidata, _sdata, _edata;
++uint32_t otaa_flash() {  // Adresse der Session-Seite, 0 = kein Platz
++  uint32_t seite = FLASH_BASE + (uint32_t)(*(volatile uint16_t*)FLASHSIZE_BASE) * 1024 - 1024;
++  uint32_t ende = (uint32_t)&_sidata + ((uint32_t)&_edata - (uint32_t)&_sdata);  // Programmende im Flash
++  return (ende <= seite) ? seite : 0;
++}
 +uint32_t otaa_rd(uint8_t i) {
-+  uint32_t v = ((volatile uint32_t*)OTAA_FLASH)[i];
++  uint32_t a = otaa_flash();
++  if (a == 0) return 0;
++  uint32_t v = ((volatile uint32_t*)a)[i];
 +  return v == 0xFFFFFFFF ? 0 : v;  // gelöschte Seite = keine Session
 +}
 +void otaa_wr(const uint32_t* r) {
-+  if (memcmp(r, (const void*)OTAA_FLASH, 16) == 0) return;
++  uint32_t a = otaa_flash();
++  if (a == 0) {
++    debugprintlnF("OTAA: kein Flash frei fuer Session, Join bei jedem Start");
++    return;
++  }
++  if (memcmp(r, (const void*)a, 16) == 0) return;
 +  FLASH_EraseInitTypeDef e = {};
 +  e.TypeErase = FLASH_TYPEERASE_PAGES;
-+  e.PageAddress = OTAA_FLASH;
++  e.PageAddress = a;
 +  e.NbPages = 1;
 +  uint32_t err;
 +  HAL_FLASH_Unlock();
 +  if (HAL_FLASHEx_Erase(&e, &err) == HAL_OK)
-+    for (uint8_t i = 0; i < 4; i++) HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, OTAA_FLASH + 4 * i, r[i]);
++    for (uint8_t i = 0; i < 4; i++) HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, a + 4 * i, r[i]);
 +  HAL_FLASH_Lock();
 +}
 +#else
@@ -355,7 +432,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
  //#define eeAddress  0x20 // EE-Prom Adress wear leveling
  //#define eeAd_data  0x30 // EE-Prom Adress LoRa sequence number
  //uint16_t LoRaSeqCounter = 0;      // TTN Sequence numbber
-@@ -124,11 +214,15 @@
+@@ -124,11 +229,15 @@
    // These values are stored in flash and only copied to RAM once.
    // Copy them to a temporary buffer here, LMIC_setSession will
    // copy them into a buffer of its own again.
@@ -371,7 +448,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
  
    //#if defined(CFG_eu868)
    // Set up the channels used by the Things Network, which corresponds
-@@ -171,10 +265,20 @@
+@@ -171,10 +280,20 @@
    // Disable link check validation
    LMIC_setLinkCheckMode(0);
  
@@ -392,7 +469,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
  
    // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)
    LMIC_setDrTxpow(DR_SF7, 14);  //Low-Power
-@@ -299,16 +403,39 @@
+@@ -299,16 +418,39 @@
  #endif
  
      LMIC.seqnoUp = LoRaSeqCounter;
@@ -433,7 +510,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
    } else {
      debugprintlnF("err");
    }
-@@ -537,7 +664,7 @@
+@@ -537,7 +679,7 @@
    cnt_pld++;
    debugprintF("info:");  debugprintln(svc);
  
@@ -442,7 +519,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
      //payload[cnt_pld] = TYPE_AUX2;
      //cnt_pld++;
      PayloadHeader |= TYPE_AUX2;
-@@ -599,9 +726,27 @@
+@@ -599,9 +741,27 @@
  
              }
        */
@@ -471,18 +548,19 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
        // data received in ping slot
        debugprintlnF("RX !");
 diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
---- orig/STM32_LORA_utility.ino	2026-11-07 01:24:01.300272982 +0100
-+++ neu/STM32_LORA_utility.ino	2026-11-07 01:24:01.303277822 +0100
-@@ -1,3 +1,8 @@
+--- orig/STM32_LORA_utility.ino	2026-11-07 23:02:58.993343106 +0100
++++ neu/STM32_LORA_utility.ino	2026-11-07 23:02:59.004617564 +0100
+@@ -1,3 +1,9 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
 +//   2026-11-06, desiue: OTAA - Session nach Power-On-Reset/ungültigem Datum verwerfen, DevAddr in Startzeile aus Join.
++//   2026-11-07, desiue: Software-Watchdog (TIM4, Backup-Register F1: 10, F4: 14) und i2c_bus_frei().
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  //20.10.2021 STM32_LORA
  // 02.11.2021 calc wakeup
  // 01.12.2021 Service switch led blink code
-@@ -106,6 +111,9 @@
+@@ -106,6 +112,9 @@
      rtc_stm.setMonth(1);
      rtc_stm.setDay(1);
      LoRaSeqCounter = 0;   // reset framecounter / sequence number
@@ -492,7 +570,16 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    }
    else { // Reset Wakeup STM32 after shutdown
      nr_to_measure = 1;    // LORA send immediate
-@@ -143,6 +151,20 @@
+@@ -126,7 +135,7 @@
+ #if myDEBUG
+   while (!MONITOR_RX_TX) {};         // Wait for serial port open
+ #endif
+-  debugprintln(" "); debugprintln(ID_ID); debugprint(l_ID);
++  debugprintln(" "); debugprint(ID_ID); debugprint(l_ID); debugprint(" - ");
+ #if defined(ARDUINO_BLACKPILL_F411CE)
+   debugprintln("STM32F411CE");
+ #endif
+@@ -143,6 +152,20 @@
    //debugprintln("STM32F103C8");
  #error " STM32F103C8 not enough memory for LORA"
  #endif
@@ -513,7 +600,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
  
    /*
      debugprint(EEProm_Size);
-@@ -355,6 +377,7 @@
+@@ -355,6 +378,7 @@
        }
  #endif
      }
@@ -521,7 +608,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    }
    if (akku_save == 1) {
      IntervallMinuten = AlternativIntervallMinuten;
-@@ -434,6 +457,9 @@
+@@ -434,6 +458,9 @@
      rtc_stm.setYear(22);  // LORA w/o server response
      rtc_stm.setMonth(1);
      rtc_stm.setDay(1);
@@ -531,7 +618,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    }
    else {
  
-@@ -447,6 +473,7 @@
+@@ -447,6 +474,7 @@
      reg = getBackupRegister(5);
      stuck_switch = (uint8_t) (reg & 0x001f);    // lower five bits  0 ... 31
      if (reg & 0x0100) akku_save = 1;            // upper one bit 0 / 1
@@ -539,7 +626,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
  
  #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
      reg = (uint16_t)getBackupRegister(1);
-@@ -493,6 +520,7 @@
+@@ -493,6 +521,7 @@
  
    reg = 0; if (akku_save)reg = 0x0100;      // set upper bit
    reg = reg | (stuck_switch & 0x001f);      // lower five bits  0 ... 31
@@ -547,7 +634,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    setBackupRegister(5, reg);
  
  #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
-@@ -546,6 +574,8 @@
+@@ -546,6 +575,8 @@
    //  debugprint(send_cycle);
    debugprint(" Interval: ");
    debugprint(WeckIntervallMinuten);
@@ -556,3 +643,80 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    debugprint("min  t-on: ");
    debugprint(time_on);
    //  debugprint("s  dly: ");
+@@ -567,3 +598,76 @@
+   debugprintF("Datum:    "); debugprintln(buff);
+ #endif
+ }
++
++
++/****************************************************************/
++// Software-Watchdog und I2C-Bus freitakten (desiue, 2026-11-07)
++// Der Hardware-Watchdog (IWDG) passt nicht: Er läuft im Standby weiter und würde den
++// Logger alle ~26 s wecken. Stattdessen zählt TIM4 im 1-s-Takt, nur in der Wachphase.
++// Dauert eine Phase zu lange (z. B. I2C-Sensor hängt), merkt sich der Logger die Phase
++// im Backup-Register und startet neu. Im nächsten Lauf:
++//   Phase 1 (Sensoren) hing -> ohne I2C-Sensoren messen und senden,
++//   Phase 2 (LoRa) hing oder zweiter Neustart in Folge -> gleich schlafen bis zum nächsten Termin.
++/****************************************************************/
++#if defined(STM32F1xx)
++#define WDT_REG 10      // F1: DR10 frei (1-9 Sketch, 6/7 RTC-Datum)
++#else
++#define WDT_REG 14      // F4: 10-13 OTAA-Session
++#endif
++#define WDT_MAGIC 0xA500  // Bit 4-7: Neustarts in Folge, Bit 0-3: Phase
++
++HardwareTimer *wdt_tim = nullptr;
++volatile uint16_t wdt_rest = 0;
++volatile uint8_t wdt_phase = 0;
++
++void wdt_tick() {
++  if (wdt_rest && --wdt_rest == 0) {
++    uint8_t n = (wdt_anzahl < 15) ? wdt_anzahl + 1 : 15;
++    setBackupRegister(WDT_REG, WDT_MAGIC | (n << 4) | wdt_phase);
++    NVIC_SystemReset();
++  }
++}
++
++void wdt_init() {  // in setup(): Merker vom letzten Lauf lesen und löschen
++  enableBackupDomain();
++  uint32_t reg = getBackupRegister(WDT_REG) & 0xFFFF;
++  setBackupRegister(WDT_REG, 0);
++  if ((reg & 0xFF00) == WDT_MAGIC) {
++    wdt_vorher = reg & 0x0F;
++    wdt_anzahl = (reg >> 4) & 0x0F;
++    debugprintF("WDT: Neustart, Phase "); debugprint(wdt_vorher);
++    debugprintF(" hing, in Folge: "); debugprintln(wdt_anzahl);
++  }
++}
++
++void wdt_start(uint8_t phase, uint16_t sekunden) {  // neue Phase mit eigenem Zeitlimit
++  noInterrupts();
++  wdt_phase = phase;
++  wdt_rest = sekunden;
++  interrupts();
++  if (wdt_tim == nullptr) {
++    wdt_tim = new HardwareTimer(TIM4);
++    wdt_tim->setOverflow(1, HERTZ_FORMAT);
++    wdt_tim->attachInterrupt(wdt_tick);
++    wdt_tim->resume();
++  }
++}
++
++void i2c_bus_frei() {  // hängt ein Slave mit SDA auf low, bis zu 9 Takte auf SCL und STOP
++  pinMode(PIN_WIRE_SDA, INPUT_PULLUP);
++  pinMode(PIN_WIRE_SCL, INPUT_PULLUP);
++  delayMicroseconds(10);
++  if (digitalRead(PIN_WIRE_SDA)) return;  // Bus frei
++  debugprintlnF("I2C: SDA low, takte frei");
++  pinMode(PIN_WIRE_SCL, OUTPUT_OPEN_DRAIN);
++  for (uint8_t i = 0; i < 9 && !digitalRead(PIN_WIRE_SDA); i++) {
++    digitalWrite(PIN_WIRE_SCL, LOW);  delayMicroseconds(5);
++    digitalWrite(PIN_WIRE_SCL, HIGH); delayMicroseconds(5);
++  }
++  pinMode(PIN_WIRE_SDA, OUTPUT_OPEN_DRAIN);  // STOP: SDA low -> high bei SCL high
++  digitalWrite(PIN_WIRE_SDA, LOW);  delayMicroseconds(5);
++  digitalWrite(PIN_WIRE_SCL, HIGH); delayMicroseconds(5);
++  digitalWrite(PIN_WIRE_SDA, HIGH); delayMicroseconds(5);
++  pinMode(PIN_WIRE_SDA, INPUT_PULLUP);
++  pinMode(PIN_WIRE_SCL, INPUT_PULLUP);
++}

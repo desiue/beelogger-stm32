@@ -1144,7 +1144,6 @@ static bit_t decodeFrame (void) {
         case MCMD_LCHK_ANS: {
             //int gwmargin = opts[oidx+1];
             //int ngws = opts[oidx+2];
-            LMIC.lchkReq = 3;  // beelogger
             oidx += 3;
             continue;
         }
@@ -1643,11 +1642,6 @@ static void buildDataFrame (void) {
         LMIC.dn2Ans = 0;
     }
 #endif // !DISABLE_MCMD_DN2P_SET
-    if( LMIC.lchkReq == 1 ) {  // beelogger: link check request
-        LMIC.frame[end] = MCMD_LCHK_REQ;
-        end += 1;
-        LMIC.lchkReq = 2;
-    }
     if( LMIC.devsAns ) {  // answer to device status
         LMIC.frame[end+0] = MCMD_DEVS_ANS;
         LMIC.frame[end+1] = os_getBattLevel();
@@ -2365,15 +2359,6 @@ void LMIC_setSession (u4_t netid, devaddr_t devaddr, xref2u1_t nwkKey, xref2u1_t
     DO_DEVDB(LMIC.artKey,  artkey);
     DO_DEVDB(LMIC.seqnoUp, seqnoUp);
     DO_DEVDB(LMIC.seqnoDn, seqnoDn);
-}
-
-// beelogger: OTAA-Session aus gespeicherten Join-Werten wiederherstellen.
-// artnonce_netid = AppNonce (3) + NetID (3) wie im Join-Accept (LSB zuerst);
-// devnonce = DevNonce des erfolgreichen Join-Request. Schlüssel kommen aus os_getDevKey().
-void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid) {
-    u1_t nwk[16], art[16];
-    aes_sessKeys(devnonce, artnonce_netid, nwk, art);
-    LMIC_setSession(netid, devaddr, nwk, art);
 }
 
 // Enable/disable link check validation.

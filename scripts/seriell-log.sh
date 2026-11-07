@@ -3,10 +3,12 @@
 #   Start:    scripts/seriell-log.sh
 #   Stopp:    scripts/seriell-log.sh stop      (vor dem Flashen! stm32loader braucht den Port allein)
 #   Ansehen:  tail -f ~/beelogger-logs/seriell.log
-# Anderer Port: PORT=/dev/ttyUSB1 scripts/seriell-log.sh
+# Anderer Port: PORT=/dev/ttyUSB1 scripts/seriell-log.sh [stop]
+#   Läuft parallel zu ttyUSB0, schreibt in dieselbe Datei, Zeilen mit Kennung [USB1].
 PORT=${PORT:-/dev/ttyUSB0}
 DIR=$HOME/beelogger-logs
-PIDF=$DIR/seriell.pid
+NAME=$(basename "$PORT")
+if [ "$NAME" = ttyUSB0 ]; then PIDF=$DIR/seriell.pid; TAG=""; else PIDF=$DIR/seriell-$NAME.pid; TAG="[${NAME#tty}] "; fi
 LOG=$DIR/seriell.log
 mkdir -p "$DIR"
 
@@ -28,5 +30,5 @@ echo $$ > "$PIDF"
 stty -F "$PORT" 9600 cs8 -parenb -cstopb raw -echo || exit 1
 echo "$(date '+%F %T') --- Log gestartet ($PORT) ---" >> "$LOG"
 cat "$PORT" | while IFS= read -r l; do
-  printf '%s %s\n' "$(date '+%F %T')" "${l%$'\r'}"
+  printf '%s %s%s\n' "$(date '+%F %T')" "$TAG" "${l%$'\r'}"
 done >> "$LOG"

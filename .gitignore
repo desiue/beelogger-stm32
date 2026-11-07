@@ -13,3 +13,7 @@ src/Config_MULTI.h
 src/Config_MULTI.h.bak*
 # Private Notizen (Standorte, Kontakte, Pfade)
 docs/privat/
+# Mailverkehr mit Entwicklern: privat, nie hochladen
+mailverkehr/
+# Server-Skripte (fremder Code): nur lokal
+M40_261004_ServerSkripte/

@@ -1,6 +1,7 @@
 // Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
-//   2026-11-06, desiue: OTAA per #define LORA_OTAA (Join, Session in Backup-Registern 10-13, Link-Check 1x/Tag).
+//   2026-11-06, desiue: OTAA per #define LORA_OTAA (Join, Session F4: Backup-Register 10-13, F1: letzte Flash-Seite; Link-Check 1x/Tag).
+//   2026-11-07, desiue: F1-Session-Seite aus Flash-Ende statt fest bei 63 KB (Programm wurde überschrieben).
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 /****************************************************************/
@@ -79,24 +80,38 @@ uint8_t otaa_sum(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
 }
 
 #if defined(STM32F1xx)
-// F1: Backup-Register sind 16 Bit und belegt -> Session in einer Flash-Seite (1 KB unter 64 KB, auch beim C8 vorhanden).
+// F1: Backup-Register sind 16 Bit und belegt -> Session in der letzten Flash-Seite (1 KB).
 // Geschrieben nur bei Änderung (Join, 1 Link-Check/Tag, Löschen): ca. 365 Löschzyklen/Jahr bei 10 000 erlaubten.
-// shortcut: feste Adresse 0x0800FC00, Firmware muss unter 63 KB bleiben (Build-Ausgabe prüfen).
-#define OTAA_FLASH (FLASH_BASE + 63 * 1024)
+// Seite = Ende des Flash laut Chip (F103CB: 127 KB). Liegt sie im Programm (z. B. 64-KB-Chip mit großer
+// Config), wird nichts gespeichert: Der Logger joint dann bei jedem Start neu, statt sein Programm zu löschen.
+// (Fehler bis 07.11.2026: feste Seite bei 63 KB, Firmware mit BME + Licht ist 64 KB -> Programm überschrieben.)
+extern "C" uint32_t _sidata, _sdata, _edata;
+uint32_t otaa_flash() {  // Adresse der Session-Seite, 0 = kein Platz
+  uint32_t seite = FLASH_BASE + (uint32_t)(*(volatile uint16_t*)FLASHSIZE_BASE) * 1024 - 1024;
+  uint32_t ende = (uint32_t)&_sidata + ((uint32_t)&_edata - (uint32_t)&_sdata);  // Programmende im Flash
+  return (ende <= seite) ? seite : 0;
+}
 uint32_t otaa_rd(uint8_t i) {
-  uint32_t v = ((volatile uint32_t*)OTAA_FLASH)[i];
+  uint32_t a = otaa_flash();
+  if (a == 0) return 0;
+  uint32_t v = ((volatile uint32_t*)a)[i];
   return v == 0xFFFFFFFF ? 0 : v;  // gelöschte Seite = keine Session
 }
 void otaa_wr(const uint32_t* r) {
-  if (memcmp(r, (const void*)OTAA_FLASH, 16) == 0) return;
+  uint32_t a = otaa_flash();
+  if (a == 0) {
+    debugprintlnF("OTAA: kein Flash frei fuer Session, Join bei jedem Start");
+    return;
+  }
+  if (memcmp(r, (const void*)a, 16) == 0) return;
   FLASH_EraseInitTypeDef e = {};
   e.TypeErase = FLASH_TYPEERASE_PAGES;
-  e.PageAddress = OTAA_FLASH;
+  e.PageAddress = a;
   e.NbPages = 1;
   uint32_t err;
   HAL_FLASH_Unlock();
   if (HAL_FLASHEx_Erase(&e, &err) == HAL_OK)
-    for (uint8_t i = 0; i < 4; i++) HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, OTAA_FLASH + 4 * i, r[i]);
+    for (uint8_t i = 0; i < 4; i++) HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, a + 4 * i, r[i]);
   HAL_FLASH_Lock();
 }
 #else

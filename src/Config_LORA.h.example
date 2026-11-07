@@ -5,8 +5,8 @@
 /****************************************************************/
 // LORA Konfiguration
 /****************************************************************/
-#include <lmic.h>
-#include <hal/hal.h>
+#include "src/lmic_otaa/lmic.h"      // angepasste LMIC im Sketch-Ordner (OTAA, Link-Check)
+#include "src/lmic_otaa/hal/hal.h"
 #include <SPI.h>
 
 // Verbindungsparameter:

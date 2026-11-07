@@ -22,7 +22,8 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 | **Firmware** | |
 | [`src/`](src/) | Sketch 260705 mit Änderungen (siehe [Änderungen](#änderungen-gegenüber-260705)) |
 | [`src/Config_LORA.h.example`](src/Config_LORA.h.example), [`src/Config_MULTI.h.example`](src/Config_MULTI.h.example) | Vorlagen für LoRa- und Sensorkonfiguration (nur Platzhalter) |
-| [`lib/`](lib/) | beelogger-Bibliotheken 2026_04; geändert nur LMIC (`lib/beelogger_arduino-lmic-master/src/lmic/`: Join-Code an, Link-Check, `LMIC_restoreJoin`), siehe Diff |
+| [`lib/`](lib/) | beelogger-Bibliotheken 2026_04, **unverändert** |
+| [`src/lmic_otaa/`](src/lmic_otaa/) | Kopie der beelogger-LMIC mit unseren Änderungen (Join-Code an, Link-Check, `LMIC_restoreJoin`). Liegt im Sketch-Ordner, damit die gemeinsame Bibliothek für die anderen Sketche unverändert bleibt. Eingebunden über `#include "src/lmic_otaa/lmic.h"` in `Config_LORA.h` |
 | [`atmega_lora/`](atmega_lora/) | ATmega328-LoRa-Sketch 250326 (Universal 1.x, beeloggerSMD) mit zwei kleinen Änderungen als Vorschlag (Sketch-ID, ADR), Kennung 261107. Baut, auf einem Logger noch ungetestet |
 | [`orginal_firmware_bibliotheken/`](orginal_firmware_bibliotheken/) | Originale von beelogger.de zum Vergleich (Sketche 202610, ATmega-LoRa 250326, Bibliotheken 2026_04, WLAN/LTE 230928) |
 | [`platformio.ini`](platformio.ini) | Boards BluePill F103CB, BlackPill F411CE, BlackPill F401CC |
@@ -151,17 +152,19 @@ Vollständig in [`docs/aenderungen_gegen_260705.diff`](docs/aenderungen_gegen_26
 4. `Config_LORA.h`: `LOGGER_NAME` je Geräteblock.
 5. **Firmware-Kennung** `l_ID` = **261107** (261106: ohne ADR-aus) (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 6. **OTAA** (`#define LORA_OTAA 1`, Werte `DEVEUI`, `APPEUI` = JoinEUI, beide LSB, `APPKEY` MSB; TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B):
-   - Join beim ersten Versand. Gespeichert werden nur DevAddr, NetID, AppNonce, DevNonce, Rx1-Delay und Rx2-DR, mit Version und Prüfsumme: BlackPill in RTC-Backup-Registern 10–13, BluePill in der Flash-Seite 0x0800FC00 (nur bei Änderung geschrieben). Die Session-Schlüssel rechnet der Logger nach jedem Aufwachen aus dem AppKey neu (`LMIC_restoreJoin`).
+   - Join beim ersten Versand. Gespeichert werden nur DevAddr, NetID, AppNonce, DevNonce, Rx1-Delay und Rx2-DR, mit Version und Prüfsumme: BlackPill in RTC-Backup-Registern 10–13, BluePill in der letzten Flash-Seite laut Chip, beim F103CB 0x0801FC00 (nur bei Änderung geschrieben; liegt die Seite im Programm, wird nichts gespeichert und der Logger joint bei jedem Start). Die Session-Schlüssel rechnet der Logger nach jedem Aufwachen aus dem AppKey neu (`LMIC_restoreJoin`).
    - Neu-Join: nach Power-On-Reset (Akku ab), bei ungültigem Datum, ab FCnt 16000 und nach 3 Tagen ohne Antwort auf den täglichen LinkCheckReq (1 Downlink/Tag).
    - Join-Versuch höchstens 60 s pro Zyklus; ohne Erfolg neuer Versuch im nächsten Zyklus.
-   - LMIC: Join-Code eingeschaltet (`DISABLE_JOIN` aus), LinkCheckReq/-Ans ergänzt. ABP-Geräte joinen nie (DevAddr ist gesetzt), Build ca. 0,7 KB größer.
+   - LMIC: Join-Code eingeschaltet (`DISABLE_JOIN` aus), LinkCheckReq/-Ans ergänzt, als Kopie in `src/lmic_otaa/` (die Bibliothek in `lib/` bleibt original). ABP-Geräte joinen nie (DevAddr ist gesetzt), Build ca. 0,7 KB größer.
 7. **ADR aus** (`LMIC_setAdrMode(0)` in `setup_LORA()`): Die LMIC schaltet ADR in `LMIC_reset()` ein, die Firmware beantwortet aber keine LinkADRReq. Uplinks tragen kein ADR-Bit mehr. TTN-Einstellung „ADR Disabled“ bleibt empfohlen für Altgeräte. Noch nicht auf Gerät getestet.
+8. **Software-Watchdog und I2C-Bus freitakten** (`STM32_LORA_utility.ino`, Aufruf in `loop()`): Hängt ein Sensor oder das Funkmodul, blieb der Logger bisher bis zum Stromausfall stehen (auch im Original). Jetzt zählt TIM4 im Sekundentakt, nur in der Wachphase: Sensoren 60 s, LoRa 100 s, Schlaf vorbereiten 20 s. Läuft eine Phase über, merkt sich der Logger das im Backup-Register (F1: 10, F4: 14) und startet neu. Nach einem Sensor-Hänger misst er einmal ohne I2C-Sensoren und sendet; nach einem LoRa-Hänger oder zwei Neustarts in Folge schläft er bis zum nächsten Termin. Vor der Sensorabfrage wird ein hängender I2C-Bus (SDA low) mit bis zu 9 Takten freigegeben. Der Hardware-Watchdog (IWDG) passt nicht, weil er im Standby weiterläuft und den Logger alle ~26 s wecken würde. Build ca. 2 KB größer. Noch nicht am fehlerhaften Aufbau getestet.
 
 ## Gefundene Fehler
 
 | Fehler | Folge | Stand |
 |---|---|---|
 | `prep_payload()` prüft `LMIC.seqnoUp % 10`, bevor `seqnoUp` gesetzt ist | Sketch-ID (Aux2, 4 Byte) in **jedem** Uplink statt in jedem 10. → mehr Airtime | behoben: `LoRaSeqCounter % 10` |
+| Kein Watchdog: hängt ein I2C-Sensor (gestörter Bus) oder das Funkmodul, bleibt die Firmware stehen | Logger sendet nicht mehr bis zum Stromausfall (auch Original 260705) | Software-Watchdog + I2C freitakten (Änderung 8) |
 | Backup-Register 4 `WeckIntervallMinuten` wird geschrieben, aber nirgends gelesen | toter Code, Register belegt | unverändert, nur dokumentiert |
 | TTN-Vorgabe RX2 = SF12 (DR0), Firmware hört auf SF9 (DR3) | TTN schickt Antworten ins Leere und wiederholt MAC-Befehle („Downlink-Schleife“), bis zu 288 Downlinks/Tag | TTN auf Rx2 DR 3 stellen (siehe unten) |
 | FCntDown in TTN > 65535; LMIC nutzt nach jedem Neustart nur 16 Bit | Downlink wird **ohne Meldung verworfen** | Zähler in TTN auf 0 setzen (siehe unten) |
@@ -212,7 +215,13 @@ Pro Gerät im Schnitt **30 s Uplink-Airtime** und **höchstens 10 Downlinks** in
 - Bei 5 min und SF8 wäre die Grenze überschritten, deshalb ist SF7 fest eingestellt. Mehr Payload (z. B. weitere Waagen) braucht längere Intervalle.
 - Ein Intervall-Downlink ist ein einzelner Downlink und liegt weit unter der Grenze.
 - Ein Gerät in der Downlink-Schleife bekommt dagegen bis zu 288 Downlinks am Tag, fast das 30-Fache. Deshalb die TTN-Einstellungen oben genau übernehmen.
-- Kürzere Intervalle in der Schwarmzeit und Senden nur bei Gewichtsänderung: siehe [Idee Sendeplan/Schwarmalarm](docs/idee_sendeplan_schwarmalarm.md).
+- Kürzere Intervalle in der Schwarmzeit und Senden nur bei Gewichtsänderung: siehe [Idee Sendeplan/Schwarmalarm](docs/idee_sendeplan_schwarmalarm.md). Für `main` nicht vorgesehen: Laut beelogger-Team ist die Schwarmlogik des Servers auf den 10-min-Takt ausgelegt (Windböen), öfter senden bringt nichts.
+
+## beelogger-Server: Mindestabstand
+
+- Der Community-Server speichert eine Meldung nur mit genug Abstand zur letzten: **Oktober–März 400 s**, sonst 200 s (Auskunft beelogger-Team 07.11.2026; die Server-Skripte M40_261004 kennen nur 200 s). Die Serverzeit wird auf die Minute abgerundet, 200 s heißen also praktisch 4 min.
+- Bei 5 min Sendeintervall fehlt im Winter am Community-Server jeder zweite Wert. Wer nur den Community-Server nutzt, stellt Okt–März mindestens 10 min ein (Firmware-Vorgabe: 10 min Tag, 30 min Nacht).
+- Kalibriertemperatur `99.9` in der Server-Konfiguration lockert die Sperre, ist aber **nur für Tests** bei der Firmware-Entwicklung gedacht: Derselbe Wert steuert die Temperaturkompensation, im Betrieb springt dann das Gewicht.
 
 ## Schlüssel
 
