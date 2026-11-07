@@ -27,6 +27,11 @@ Alte Firmware wird nicht gesichert (Entscheidung Nutzer, 06.11.2026): Es wird je
 | 06.11.2026 | 4 Testgeräte: ABP = beelogger09 (Black, 260BD691), beeloggerblue05 (Blue, 260B6573, TTN-Gerät eui-70b3d57ed005f5e0); OTAA = beelogger011 (Blue, 260BF6FE, F103C8 meldet 128 KB), beelogger08 (Black, 260B2D40, vorher Strom/Wachzeit messen) | Nutzerentscheid |
 | 06.11.2026 | Neu-Join: ohne gültige Session oder nach Stromausfall (FCnt-Register leer); dazu 1 Link-Check pro Tag, 3 ohne Antwort in Folge → Neu-Join | Netzausfall erkennen, kostet nur 1 von 10 Downlinks pro Tag |
 
+## Dauerregeln
+
+- DevAddr/DevEUI/device_id bleiben in Doku und Exporten unverändert (Nutzer 06.11.: nicht geheim, hilft beim Nachvollziehen). DevEUIs in `docs/ttn/` beim Export nicht neutralisieren. Standorte, Namen, URLs und Passwörter bleiben draußen.
+- Seriell-Log läuft dauerhaft (`scripts/seriell-log.sh`, `~/beelogger-logs/seriell.log`). Vor dem Flashen `scripts/seriell-log.sh stop`, danach `start`.
+
 ## Fakten aus dem Code (Firmware STM32_LORA_260705, Bibliotheken 2026_04)
 
 - Hauptsketch: `src/STM32_LORA_260705.ino`, LoRa-Teil in `src/STM32_LORA.ino`.
@@ -140,12 +145,20 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - Problem nach der Umstellung aus 06a: Gateway empfängt, App bekommt nichts. Logger sendet `f_cnt 62980`. Genau der in 06a (Abschnitt „Voraussetzung Frame Counter“, 6.1, 11) beschriebene Fall: Nach „Reset session and MAC state“ erwartet TTN den Zähler bei 0, Lücke > 16 384 → Uplinks verworfen. „Resets frame counters“ hilft nicht, es erlaubt nur den Sprung zurück auf 0, keine große Lücke nach vorn.
 - (Das Frame-Counter-Problem ist laut Nutzer gelöst, steht im Wiki.)
 
-### Helium (Bewertung 06.11.2026)
+### Helium (Bewertung 06.11.2026, neu bewertet 07.11.2026)
 
-- Helium kennt nur OTAA, der NS steuert per ADR. Mit Paket 3 (OTAA + gespeicherte Session) wäre der Join bei Helium grundsätzlich möglich.
-- **Hindernis:** Wie bei TTN startet der Logger nach jedem Zyklus neu und vergisst MAC-Befehle. Bei TTN lässt sich das per Custom MAC settings abstellen, bei Helium nicht so einfach. Folge: ständige Downlinks, und bei Helium kostet jedes Paket Data Credits.
-- Für echtes ADR müsste die Firmware zusätzlich den MAC-Zustand (Datenrate, Sendeleistung, Kanalmaske, ausstehende Antworten) über den Standby retten. Auf F4 passt das in die Backup-Register, auf F1 in den Flash (nur bei Änderung schreiben).
-- **Entscheidung:** Jetzt nicht bauen. Paket 3 so anlegen, dass der Speicherblock eine Versionsnummer hat und später um den MAC-Zustand erweitert werden kann. Testen ginge nur mit Helium-Abdeckung und Konto. Nutzer selbst nutzt Helium nicht, ein anderer Nutzer hat (noch) keine STM32-Logger.
+Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgenommen), die MAC-Schleife ist verstanden (Wiki 06/06a, `ttn-status.sh`).
+
+| Punkt | 06.11. | 07.11. |
+|---|---|---|
+| Aktivierung | Helium kennt nur OTAA, Firmware hatte nur ABP | **erledigt:** `LORA_OTAA 1`, Join nur bei POR/FCnt ≥ 16000/3 Tage ohne LinkCheckAns |
+| ADR | NS steuert per ADR, Firmware vergisst MAC-Befehle | **Ursache im Code gefunden:** `LMIC_reset()` schaltet ADR ein (`lmic.c` Z. 2258), der Sketch schaltet es nicht ab. Jeder Uplink trägt das ADR-Bit = „bitte steuern“. Mit `LMIC_setAdrMode(0)` nach `LMIC_reset()` (`STM32_LORA.ino` ~Z. 266) bittet das Gerät nicht mehr darum – hilft bei jedem Netzserver, nicht nur bei TTN (dort bisher per Geräteeinstellung „ADR Disabled“). |
+| Andere MAC-Befehle (RXParamSetup, RXTimingSetup, DevStatus) | bei TTN per Custom MAC settings abstellbar, bei Helium unklar | unverändert: Firmware beantwortet sie nach dem Standby nicht. Bei Helium-Anbietern mit ChirpStack im Geräteprofil Rx1 delay 1 s, Rx2 SF9 (DR3) passend zur Firmware setzen, dann gibt es nichts zu korrigieren (ungeprüft) |
+| Kosten | jedes Paket kostet Data Credits | bleibt; laut Fremdquellen 1 DC je 24 Byte (Uplink 17 Byte = 1 DC), Preise je Anbieter verschieden (ungeprüft) |
+| Netzserver | Helium Console | Helium rät von der eigenen Console für neue Projekte ab, stattdessen ChirpStack bei einem Console-Anbieter (docs.helium.com/console, 07.11. gelesen) |
+| Kanäle | – | Join-Accept bringt die Kanäle (CFList); ob die Firmware sie übernimmt, ist derselbe offene Punkt wie bei TTN (`LMIC_setupChannel` ~Z. 238) |
+
+**Bewertung:** Das große Hindernis (kein OTAA) ist weg. Für einen Helium-Versuch fehlen nur noch: ADR-Bit aus (eine Zeile, nützt auch TTN) und der CFList-Punkt. Testen geht weiterhin nur mit Helium-Abdeckung und einem Konto bei einem Anbieter. **Entscheidung:** ADR-Bit aus als eigener kleiner Punkt vorschlagen (Nutzer entscheidet); Helium selbst erst, wenn jemand mit Abdeckung testen will.
 
 - 06.11.2026, Sitzung 2 (Paket 2):
   - `WeckIntervallMinuten` (Register 4) wird gespeichert, aber nie benutzt; alte Firmware schreibt dort 5. Darum **nicht** als Fernwert genutzt (Feld-Logger liefen nach Update sonst auf 5 min).
@@ -182,7 +195,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [x] beelogger08: Akku kurz ab → Startzeile DevAddr 0, neuer Join (neue DevAddr in TTN). 06.11. 22:32: Join nach 8 s, DevAddr 260B056F, FCnt 0 angenommen, Wachzeit mit Join 19 s. (3,96 V kam vom Multimeter in Reihe.)
 - [ ] beelogger08: Link-Check am nächsten Tag im Log (`Link-Check Fehlversuche: 0`).
 - [x] beelogger08: Strom mit neuer FW (261106 OTAA) gemessen 06.11.: Schlaf 18,09 µA, wach 24–34 mA – gleich wie alte FW. Wachzeit normaler Zyklus noch aus `t-on` ablesen (mit Join 19 s).
-- [ ] beelogger08: Spannungsanzeige gegen Multimeter prüfen (Kalibrierung vorerst Black-Wert 4120 mV / 1650 Bit).
+- [x] beelogger08: Spannungsanzeige gegen Multimeter geprüft (07.11.: Multimeter 4,20 V, gemeldet 4,111 V). Kalibrierung aus Log-Bitwert 1647–1649 auf 4200 mV / 1648 Bit gesetzt, 07.11. 02:58 geflasht, Anzeige jetzt 4,20 V.
 - [ ] beelogger08: altes ABP-Gerät `beelogger08` in TTN löschen, wenn OTAA stabil läuft.
 - [x] Paket 3 auf F1 (beelogger011), 07.11.: Session im Flash 0x0800FC00 (63 KB), nur bei Änderung geschrieben; TTN-Gerät beelogger011-otaa per Skript; Join 01:18:34 (260B21D9), Wiederanlauf 01:23 ohne Join. Akkuspannung nicht extra geprüft (Versand nur über VMinimum).
 - [ ] beelogger011: Link-Check am nächsten Tag (Flash-Schreiben 1x/Tag), altes ABP-Gerät beelogger011 löschen, wenn stabil.
@@ -201,7 +214,6 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 
 **Doku / Repo**
 - [x] (06.11., README neu) README-Startseite überarbeiten: Ziel des Projekts in 3 Sätzen; **Schritt-für-Schritt „Firmware selbst bauen“** (Repo laden, VS Code + PlatformIO, Vorlagen kopieren, Env wählen BluePill/BlackPill, Schalter ABP/OTAA (`LORA_OTAA`, ab Paket 3), bauen, flashen); Startzeile `Name/UID/DevAddr` erklären (steht bisher nur knapp unter „Änderungen“).
-- [ ] DevAddr/DevEUI wieder unverändert lassen (Nutzer 06.11.: nicht geheim, hilft beim Nachvollziehen). Neutralisierung der DevEUIs in `docs/ttn/` beim nächsten Export nicht mehr machen; Standorte/Namen/URLs/Passwörter bleiben draußen.
 - [x] (06.11., README) Abschnitt **„Gefundene Fehler“** (Repo-Doku): Aux3 in jedem Uplink (seqnoUp), Register 4 `WeckIntervallMinuten` gespeichert aber unbenutzt, FCntDown > 65535 → Downlink verworfen, AS-Zähler übersteht MAC-Reset, RX2-SF9 vs. TTN-Vorgabe SF12.
 - [x] (06.11., README) Abschnitt **Fair Use Policy** (TTN: 30 s Airtime/Tag, 10 Downlinks/Tag) mit Paketgrößen und Intervallen; Material aus Wiki `projekte:beelogger_doku` übernehmen.
 - [x] (06.11. Nutzer: **nein**, bleiben im Wiki) Entscheiden: DokuWiki-Seiten zu beelogger (Payload/Bitaufteilung, Verschlüsselung, TTN 06/06a) ins Repo übernehmen (Markdown, ohne Privates)?
@@ -214,7 +226,11 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - [x] Wachzeit und Stromverbrauch pro Zyklus messen, **vor und nach** dem Flash der neuen Firmware: am **beelogger08** (vor dem Update!). Log `t-on` und `TX done`-Zeit (ms) vergleichen; Strom mit Multimeter/USB-Meter. 07.11.: neue FW gleich (Schlaf 18,09 µA, wach 24–34 mA).
   - 06.11. **Basis alte FW, beelogger08** (Black F411CE, Messaufbau zu Hause: 2 HX711 ohne Wägezellen, 4 Waagen konfiguriert, Akku 4,21 V = Anzeige 4,21 V): Wachzeit **18 s** (`t-on: 18`; Waage 1/2 `fail` je ~2 s, Waage 3/4 je ~5 s, Senden ~2 s). Ohne HX711 14 s. Strom (Multimeter in Reihe): wach 24–36 mA, Schlaf 18,2 µA → pro Zyklus ca. 0,15 mAh; bei 5 min ca. 44 mAh/Tag, bei 15 min ca. 15 mAh/Tag (Schlaf nur 0,44 mAh/Tag; Sendespitze vom Multimeter nicht erfasst). Gleicher Aufbau für die Messung nach dem Update.
 - [ ] LoRa-Kanäle (`LORA_CHANNELS` 1/3/8): Entscheidung ans Ende, wenn die Firmware fertig ist. Empfehlung bisher 8 (TTN-Standard). Vorher prüfen: Übernimmt die Firmware bei OTAA die Kanäle aus dem Join-Accept (CFList) oder setzt sie danach wieder ihre eigenen (`LMIC_setupChannel`, STM32_LORA.ino ~238)? 8 Kanäle bringen keine zusätzliche Airtime (alle im selben 1-%-Band), nur weniger Kollisionen.
-- [ ] Seriell-Log läuft dauerhaft (`scripts/seriell-log.sh`, `~/beelogger-logs/seriell.log`) – vor dem Flashen stoppen.
+
+**Firmware-Kleinigkeiten (Nutzer 07.11.: für später merken)**
+- [ ] Debug-Ausgabe im Block `Data:` lesbar machen. Heute druckt `STM32_LORA.ino` (~Z. 496) je Wert die zwei Payload-Bytes einzeln dezimal ohne Trenner (auch im Original 260705). Beispiele beelogger08 07.11. 03:05: `temperature: 8245` = 8 | 245 = 0x08F5 = 2293 → 22,93 °C (DS18B20 22,94); `batt.: 16106` = 16 | 106 = 0x106A = 4202 mV; `solar: 110` = 1 | 10 = 0x010A = 266 mV; `weight 2: 05` = 0 | 5 → 0,05 kg; `HDR: 22829` = 0x592D (letzte zwei Payload-Bytes `59 2D`), `info:6` = Service-Wert. Vorschlag: Wert dezimal mit Einheit und Bytes in Hex, z. B. `batt.: 4202 mV (10 6A)`.
+- [ ] `t-on` in der zweiten Infozeile nach `System On` zeigt die RTC-Zeit statt der Wachzeit (`t-on: 1641011399` = 01.01.2022 04:29:59 UTC): `time_on` hält bis zum Zyklusende den Startzeitpunkt (`STM32_LORA_utility.ino` Z. 195, Differenz erst Z. 328). Auch im Original. Nur Anzeige.
+- [ ] ADR-Bit aus: `LMIC_setAdrMode(0)` nach `LMIC_reset()` (siehe Helium-Bewertung). Firmware bittet heute bei jedem Uplink um ADR; TTN-Geräte brauchen dafür „ADR Disabled“. Vor Umsetzen mit Nutzer abstimmen (betrifft auch Altgeräte nach Update).
 
 **Später / Ideen**
 - [ ] **beeloggerHexa** (07.11.: Entwurf `docs/vorschlag_payload_erweiterung.md`, wartet auf Rückmeldung der Entwickler): 6 (oder 8) Waagen. Klären: Payload-Größe je Waage/Temperatur, maximale Sendehäufigkeit unter der Fair Use Policy bei SF7…SF12, ob Aufteilung auf mehrere Pakete nötig.
