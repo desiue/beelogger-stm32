@@ -152,13 +152,13 @@ Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgen
 | Punkt | 06.11. | 07.11. |
 |---|---|---|
 | Aktivierung | Helium kennt nur OTAA, Firmware hatte nur ABP | **erledigt:** `LORA_OTAA 1`, Join nur bei POR/FCnt ≥ 16000/3 Tage ohne LinkCheckAns |
-| ADR | NS steuert per ADR, Firmware vergisst MAC-Befehle | **Ursache im Code gefunden:** `LMIC_reset()` schaltet ADR ein (`lmic.c` Z. 2258), der Sketch schaltet es nicht ab. Jeder Uplink trägt das ADR-Bit = „bitte steuern“. Mit `LMIC_setAdrMode(0)` nach `LMIC_reset()` (`STM32_LORA.ino` ~Z. 266) bittet das Gerät nicht mehr darum – hilft bei jedem Netzserver, nicht nur bei TTN (dort bisher per Geräteeinstellung „ADR Disabled“). |
+| ADR | NS steuert per ADR, Firmware vergisst MAC-Befehle | **Ursache im Code gefunden:** `LMIC_reset()` schaltet ADR ein (`lmic.c` Z. 2258), der Sketch schaltet es nicht ab. Jeder Uplink trägt das ADR-Bit = „bitte steuern“. Mit `LMIC_setAdrMode(0)` bittet das Gerät nicht mehr darum – hilft bei jedem Netzserver, nicht nur bei TTN (dort bisher per Geräteeinstellung „ADR Disabled“). **07.11. eingebaut** (`STM32_LORA.ino` Z. 268, Kennung 261107), Test auf beelogger08 folgt. |
 | Andere MAC-Befehle (RXParamSetup, RXTimingSetup, DevStatus) | bei TTN per Custom MAC settings abstellbar, bei Helium unklar | unverändert: Firmware beantwortet sie nach dem Standby nicht. Bei Helium-Anbietern mit ChirpStack im Geräteprofil Rx1 delay 1 s, Rx2 SF9 (DR3) passend zur Firmware setzen, dann gibt es nichts zu korrigieren (ungeprüft) |
 | Kosten | jedes Paket kostet Data Credits | bleibt; laut Fremdquellen 1 DC je 24 Byte (Uplink 17 Byte = 1 DC), Preise je Anbieter verschieden (ungeprüft) |
 | Netzserver | Helium Console | Helium rät von der eigenen Console für neue Projekte ab, stattdessen ChirpStack bei einem Console-Anbieter (docs.helium.com/console, 07.11. gelesen) |
 | Kanäle | – | Join-Accept bringt die Kanäle (CFList); ob die Firmware sie übernimmt, ist derselbe offene Punkt wie bei TTN (`LMIC_setupChannel` ~Z. 238) |
 
-**Bewertung:** Das große Hindernis (kein OTAA) ist weg. Für einen Helium-Versuch fehlen nur noch: ADR-Bit aus (eine Zeile, nützt auch TTN) und der CFList-Punkt. Testen geht weiterhin nur mit Helium-Abdeckung und einem Konto bei einem Anbieter. **Entscheidung:** ADR-Bit aus als eigener kleiner Punkt vorschlagen (Nutzer entscheidet); Helium selbst erst, wenn jemand mit Abdeckung testen will.
+**Bewertung:** Das große Hindernis (kein OTAA) ist weg. ADR-Bit aus ist seit 07.11. eingebaut (Test folgt). Für einen Helium-Versuch fehlt nur noch der CFList-Punkt. Testen geht weiterhin nur mit Helium-Abdeckung und einem Konto bei einem Anbieter. **Entscheidung:** ADR-Bit aus als eigener kleiner Punkt vorschlagen (Nutzer entscheidet); Helium selbst erst, wenn jemand mit Abdeckung testen will.
 
 - 06.11.2026, Sitzung 2 (Paket 2):
   - `WeckIntervallMinuten` (Register 4) wird gespeichert, aber nie benutzt; alte Firmware schreibt dort 5. Darum **nicht** als Fernwert genutzt (Feld-Logger liefen nach Update sonst auf 5 min).
