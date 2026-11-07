@@ -10,9 +10,9 @@ Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 
 1. **Applications → + Create application**, Application ID z. B. `beelogger09`.
    ![Application anlegen](ttn/bilder/01_application.png)
-2. **Payload formatters → Uplink → Custom Javascript formatter**, Inhalt von [`ttn/payload_decoder_ttn.js`](ttn/payload_decoder_ttn.js) einfügen, speichern.
+2. **Payload formatters → Uplink**: Formatter type „Custom Javascript formatter“, Inhalt von [`ttn/payload_decoder_ttn.js`](ttn/payload_decoder_ttn.js) einfügen, speichern.
    ![Payload-Formatter](ttn/bilder/02_formatter.png)
-3. **Integrations → Webhooks → + Add webhook → Custom webhook**: Adresse des beelogger-Servers wie bei beelogger.de beschrieben (`…/beelogger_log.php?Passwort=…&LORA=1`), „Uplink message“ an.
+3. **Webhooks → + Add webhook → Custom webhook**: Adresse des beelogger-Servers wie bei beelogger.de beschrieben (`…/beelogger_log.php?Passwort=…&LORA=1`), „Uplink message“ an.
    ![Webhook](ttn/bilder/03_webhook.png)
 
 ## 2. Gerät anlegen
@@ -23,8 +23,11 @@ Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 |---|---|
 | Frequency plan | Europe 863-870 MHz (SF9 for RX2 – recommended) = `EU_863_870_TTN` |
 | LoRaWAN version | LoRaWAN Specification 1.0.2 |
-| Regional Parameters version | RP001 Regional Parameters 1.0.2 revision B |
+| Regional Parameters version | RP001 Regional Parameters 1.0.2 **revision B** (nicht „1.0.2“ ohne Zusatz) |
 | Activation mode (unter „Show advanced activation …“) | ABP oder OTAA, passend zu `#define LORA_OTAA` |
+| Additional LoRaWAN class capabilities | None (class A only) |
+| Network defaults: „Use network's default MAC settings“ | **aus** – sonst Rx1 delay 5 s und ADR an, passt nicht zur Firmware. Die MAC-Werte dann wie in 2a Schritt 3 eintragen |
+| Cluster settings: „Skip registration on Join Server“ | aus |
 
 ![Gerät anlegen, Grunddaten](ttn/bilder/04_register.png)
 
@@ -35,22 +38,30 @@ Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 2. In `src/Config_LORA.h` eintragen, beide Schlüssel in **MSB**-Reihenfolge (Schalter `<>` in der Konsole, Format „C-style“):
    - `DEVADDR = 0x260B….` (Device address)
    - `NWKSKEY[16]`, `APPSKEY[16]`
-3. **Settings → Network layer → Advanced MAC settings** genau wie in der Tabelle im README („TTN-Einstellungen“). Wichtig: **Resets frame counters an**, **Rx2 data rate index 3**, **ADR aus**, Rx1 delay 1 s. Aktuelle und „Desired“-Werte gleich.
-   ![MAC-Einstellungen](ttn/bilder/06_mac_settings.png)
+3. **General settings → Network layer → Custom MAC settings** genau wie in der Tabelle im README („TTN-Einstellungen“), dazu wie bei OTAA (2b Schritt 4) Status count/time periodicity 0. Wichtig: **Resets frame counters an**, **Rx2 data rate index 3**, **ADR Disabled**, Rx1 delay 1 s. Aktuelle und „Desired“-Werte gleich.
 4. Wurden die MAC-Einstellungen bei einem laufenden Gerät geändert: **Reset session and MAC state** (siehe Abschnitt 5), sonst gelten die alten Werte weiter.
 
 ### 2b. OTAA (`#define LORA_OTAA 1`)
 
 Von Hand:
 
-1. JoinEUI `0000000000000000`, DevEUI und AppKey mit **Generate** erzeugen. End device ID z. B. `<name>-otaa`.
+1. Im selben Formular (Haken „Use network's default MAC settings“ aus): **Rx2 data rate 3**, Rx2 frequency 869.525 MHz.
+2. JoinEUI `0000000000000000`, **Confirm**. Dann DevEUI und AppKey mit **Generate** erzeugen. End device ID z. B. `<name>-otaa`. **Register end device**.
    ![OTAA-Schlüssel](ttn/bilder/07_otaa_keys.png)
-2. In `src/Config_LORA.h` eintragen:
+3. In `src/Config_LORA.h` eintragen:
    - `DEVEUI[8]` und `APPEUI[8]` (= JoinEUI) in **LSB**-Reihenfolge
    - `APPKEY[16]` in **MSB**-Reihenfolge
    
    Falsche Reihenfolge ist der häufigste Fehler: Das Gerät sendet Join-Requests, TTN antwortet nicht.
-3. **Advanced MAC settings** wie bei ABP, aber „Resets frame counters“ ist egal (jeder Join setzt die Zähler zurück). Rx1 delay und Rx2 kommen mit dem Join-Accept.
+4. Gerät → **General settings → Network layer → Custom MAC settings** (Bild unten), dann **Save changes**:
+   - Frame counter width 32 bit
+   - **Desired Rx1 delay 1 s**, Rx1 data rate offset 0, Rx2 data rate index 3, Rx2 869,525 MHz
+   - **Status count periodicity 0 und Status time periodicity 0** (Vorgabe 200 / 86400: TTN fragt sonst per MAC-Befehl den Gerätestatus ab, die Firmware antwortet nicht, Downlink-Schleife)
+   - **Adaptive data rate: Disabled** (Vorgabe ist „Dynamic mode“)
+
+   ![Custom MAC settings](ttn/bilder/06_mac_settings.png)
+   
+   „Resets frame counters“ ist egal (jeder Join setzt die Zähler zurück). TTN schickt Rx1 delay und Rx2 mit dem Join-Accept; ohne diese Änderung wären es 5 s Wartezeit statt 1 s, der Logger bliebe pro Zyklus länger wach.
 
 Mit Skript (legt Gerät mit allen MAC-Einstellungen an und schreibt die drei Werte in die richtige Reihenfolge in `Config_LORA.h`, ohne Schlüssel auszugeben):
 

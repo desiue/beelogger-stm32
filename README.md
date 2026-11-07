@@ -160,7 +160,8 @@ Die Firmware startet nach jedem Zyklus neu (`LowPower.shutdown()`) und beantwort
 | Rx2 frequency / Desired | 869,525 / 869,525 MHz | |
 | Resets frame counters | an | Zähler fängt nach Akku-ab bei 0 an |
 | Factory preset frequencies | 868,1 / 868,3 / 868,5 / 867,1 … 867,9 MHz | muss alle Sendefrequenzen enthalten |
-| ADR | aus | |
+| ADR | aus (Disabled) | |
+| Status count / time periodicity | 0 / 0 | Vorgabe 200 / 86400: TTN fragt den Gerätestatus per MAC-Befehl ab, Firmware antwortet nicht |
 
 Links („aktuell“) und rechts („Desired“) müssen gleich sein. Beispiel aus der API: `docs/ttn/beelogger09_ns_einstellungen_abp.json`.
 
