@@ -2,6 +2,8 @@
 
 Stand 07.11.2026, **Entwurf zur Abstimmung mit den beelogger-Entwicklern**. Noch nichts davon ist in der Firmware umgesetzt.
 
+**Reihenfolge:** Das ist der zweite Schritt. Zuerst kommen die Varianten ohne Änderung an Server und Payload (Rückmeldung über Zeitabstand und Service-Quittung, Plan über Solar/Temperatur, öfter wiegen), siehe [`idee_sendeplan_schwarmalarm.md`](idee_sendeplan_schwarmalarm.md).
+
 ## Ausgangslage
 
 - Das Sendeintervall lässt sich jetzt per Downlink ändern (FPort 10, 1 Byte Minuten, siehe [`ttn_anleitung.md`](ttn_anleitung.md) Abschnitt 4). Der Server erfährt aber nicht, welches Intervall der Logger gerade benutzt.

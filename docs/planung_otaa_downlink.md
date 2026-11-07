@@ -237,7 +237,7 @@ Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgen
 **Später / Ideen**
 - [ ] **beeloggerHexa** (07.11.: Entwurf `docs/vorschlag_payload_erweiterung.md`, wartet auf Rückmeldung der Entwickler): 6 (oder 8) Waagen. Klären: Payload-Größe je Waage/Temperatur, maximale Sendehäufigkeit unter der Fair Use Policy bei SF7…SF12, ob Aufteilung auf mehrere Pakete nötig.
 - [ ] Waagenkonfiguration per Downlink.
-- [ ] **Zum Besprechen:** Sendeplan nach Jahreszeit, Schwarmalarm auf Ereignis (Gewichtssturz → sofort Uplink), und was aus der Ferne überhaupt verstellbar sein soll (Plan-Werte, Schwellwert, vorübergehend schneller/langsamer mit Ablauf). Ausarbeitung `docs/idee_sendeplan_schwarmalarm.md` (07.11.). Kürzer als 3 min am Tag passt nicht in Fair Use.
+- [ ] **Zum Besprechen:** Sendeplan nach Jahreszeit, Schwarmalarm auf Ereignis (Gewichtssturz → sofort Uplink), und was aus der Ferne überhaupt verstellbar sein soll (Plan-Werte, Schwellwert, vorübergehend schneller/langsamer mit Ablauf). Ausarbeitung `docs/idee_sendeplan_schwarmalarm.md` (07.11.). Kürzer als 3 min am Tag passt nicht in Fair Use. 07.11. (Gespräch mit Nutzer): erst minimal-invasiv bleiben, als Nächstes nur Varianten ohne Server-/Payload-Änderung mit den Entwicklern abstimmen (Fragenliste in der Idee-Datei). Richtung: Plan über Solarspannung/Temperatur statt Uhr (LoRa-Logger hat keine echte Uhrzeit), öfter wiegen statt öfter senden (Server-Regel 200 s beachten), Rückmeldung über Zeitabstand + Service-Quittung 81–98 (Service ≥ 99 schaltet den Schwarmalarm am Server ab). Testaufbau einige Wochen statt ein Jahr.
 
 ## Offene Fragen (Planung)
 

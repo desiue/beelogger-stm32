@@ -4,6 +4,7 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 
 **Auf einen Blick**
 
+- **Minimal-invasiv:** Messablauf, Waagenzahl, Payload-Format und beelogger-Server bleiben wie beim Original 260705. Neu sind nur Downlinks (ABP und OTAA) und Fehlerkorrekturen. Weitergehende Ideen erst nach Abstimmung mit den Entwicklern ([Idee](docs/idee_sendeplan_schwarmalarm.md)).
 - **Sendeintervall aus der Ferne** per TTN-Downlink (FPort 10, 5–180 min), mit ABP und OTAA.
 - **OTAA** für neue Geräte, ABP für vorhandene Feldgeräte – eine Codebasis, umschaltbar per `#define LORA_OTAA`.
 - **BluePill (F103) und BlackPill (F411/F401)**, alle vier Kombinationen auf Testgeräten abgenommen.
@@ -28,7 +29,7 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 | [`docs/ttn_anleitung.md`](docs/ttn_anleitung.md) | TTN Schritt für Schritt: Application, Gerät ABP/OTAA, Prüfen, Downlink, Fehlersuche, API-Keys |
 | **Zur Abstimmung** | |
 | [`docs/vorschlag_payload_erweiterung.md`](docs/vorschlag_payload_erweiterung.md) | Entwurf für die Entwickler: Intervall-Rückmeldung und Waage 5–8 per Erweiterungsbyte, Airtime je SF |
-| [`docs/idee_sendeplan_schwarmalarm.md`](docs/idee_sendeplan_schwarmalarm.md) | Idee zum Besprechen: Sendeplan nach Jahreszeit, minütlich wiegen und bei Änderung senden, was aus der Ferne verstellbar sein soll |
+| [`docs/idee_sendeplan_schwarmalarm.md`](docs/idee_sendeplan_schwarmalarm.md) | Idee zum Besprechen: Reihenfolge (erst ohne Server-Änderung), Sendeplan über Solarspannung/Temperatur statt Uhr, öfter wiegen statt öfter senden, Service-Quittung, Fragen an die Entwickler, Testaufbau |
 | **Nachweise** | |
 | [`docs/planung_otaa_downlink.md`](docs/planung_otaa_downlink.md) | Plan, Entscheidungen und Verlauf der Arbeitspakete |
 | [`docs/aenderungen_gegen_260705.diff`](docs/aenderungen_gegen_260705.diff) | Alle Änderungen gegenüber dem Original-Sketch 260705 |
@@ -229,5 +230,6 @@ Kein offizielles Projekt von beelogger.de. Original: https://beelogger.de
 | 3 | OTAA | fertig: BlackPill (beelogger08: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Strom gleich), BluePill (beelogger011: Join, Wiederanlauf aus dem Flash) |
 | 4 | Doku: TTN-Anleitung, Wiki | Anleitung als Text fertig; Bildschirmfotos und Wiki folgen |
 | – | ADR aus (Kennung 261107) | gebaut, Test auf Gerät folgt |
+| 5 | Was per Downlink verstellbar sein soll | Abstimmung mit den beelogger-Entwicklern: zuerst Varianten ohne Server- und Payload-Änderung ([Idee](docs/idee_sendeplan_schwarmalarm.md)), danach [Payload-Erweiterung](docs/vorschlag_payload_erweiterung.md) |
 
 Einzelheiten, offene Punkte und Verlauf: [`docs/planung_otaa_downlink.md`](docs/planung_otaa_downlink.md).
