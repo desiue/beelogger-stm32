@@ -117,7 +117,7 @@ Fair Use Policy: höchstens 10 Downlinks am Tag (README, „TTN Fair Use Policy�
 | Geänderte Einstellung wirkt nicht (ABP) | laufende Session nutzt alte Werte | Reset session and MAC state |
 
 **Reset session and MAC state** (setzt den FCntDown im Network Server auf 0):
-- Konsole: Gerät → General settings → Network layer → „Reset session and MAC state“, oder
+- Konsole: Gerät → General settings → Network layer → Expand → Knopf „Reset session and MAC state“ (über den Custom MAC settings, siehe Bild in 2b), oder
 - API: `PATCH /api/v3/ns/applications/<app>/devices/<dev>` mit Body `{"field_mask":{"paths":["session","mac_state"]}}`. (Der Pfad `/reset` gibt 404.)
 
 Den **zweiten FCntDown im Application Server** setzt das nicht zurück: `PUT /api/v3/as/applications/<app>/devices/<dev>` mit `session.last_a_f_cnt_down = 0` (Feldmaske gleich lautend), oder Gerät neu anlegen. Bei OTAA reicht meist ein Neu-Join (Akku kurz ab).
