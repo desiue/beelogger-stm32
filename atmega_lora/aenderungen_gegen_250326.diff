@@ -1,0 +1,40 @@
+--- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/Multi_LORA.ino	2025-03-26 07:38:16.000000000 +0100
++++ atmega_lora/beelogger_LORA_261107/Multi_LORA.ino	2026-11-07 10:10:08.673243089 +0100
+@@ -153,7 +153,10 @@
+   // frequency is not configured here.
+ 
+   // Disable link check validation
+-  LMIC_setLinkCheckMode(0);
++  LMIC_setLinkCheckMode(0);
++
++  // ADR aus: LMIC_reset() schaltet ADR ein, der Sketch beantwortet aber keine LinkADRReq
++  LMIC_setAdrMode(0);
+ 
+   LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
+ 
+@@ -439,7 +442,7 @@
+   cnt_pld++;
+   debugprintF("S:");  debugprintln(svc);
+ 
+-  if (LMIC.seqnoUp % 10 == 0 ) { // ID not in every transmission
++  if (LoRaSeqCounter % 10 == 0 ) { // ID not in every transmission (LMIC.seqnoUp ist hier noch 0)
+     //payload[cnt_pld] = TYPE_AUX3;
+     //cnt_pld++;
+     PayloadHeader |= TYPE_AUX3;
+--- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/beelogger_LORA_250326.ino	2025-03-26 07:43:14.000000000 +0100
++++ atmega_lora/beelogger_LORA_261107/beelogger_LORA_261107.ino	2026-11-07 10:10:08.674326536 +0100
+@@ -17,12 +17,13 @@
+ 
+ // beelogger.de - Arduino LoRaWAN Datenlogger für Imker
+ // Version 2025
++// 07.11.2026 ADR aus (LMIC_setAdrMode(0)), Sketch-ID nur in jedem 10. Uplink (LoRaSeqCounter % 10)
+ // 26.03.2025 Messzyklussteuerung per Solarspannung / Temperatur
+ // 01.04.2023 Universal Platine 2.x
+ // compile error fix oslmic.h line 230 static inline type table_get ## postfix
+ 
+ char ID[] = "MULTI_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
+-long l_ID = 250326;
++long l_ID = 261107;
+ 
+ 
+ #define CFG_noassert 1             // supress error messages in library

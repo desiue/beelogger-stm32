@@ -22,7 +22,8 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 | [`src/`](src/) | Sketch 260705 mit Änderungen (siehe [Änderungen](#änderungen-gegenüber-260705)) |
 | [`src/Config_LORA.h.example`](src/Config_LORA.h.example), [`src/Config_MULTI.h.example`](src/Config_MULTI.h.example) | Vorlagen für LoRa- und Sensorkonfiguration (nur Platzhalter) |
 | [`lib/`](lib/) | beelogger-Bibliotheken 2026_04; geändert nur LMIC (`lib/beelogger_arduino-lmic-master/src/lmic/`: Join-Code an, Link-Check, `LMIC_restoreJoin`), siehe Diff |
-| [`orginal_firmware_bibliotheken/`](orginal_firmware_bibliotheken/) | Originale von beelogger.de zum Vergleich (Sketche 202610, Bibliotheken 2026_04, WLAN/LTE 230928) |
+| [`atmega_lora/`](atmega_lora/) | ATmega328-LoRa-Sketch 250326 (Universal 1.x, beeloggerSMD) mit zwei kleinen Änderungen als Vorschlag (Sketch-ID, ADR), Kennung 261107. Baut, auf einem Logger noch ungetestet |
+| [`orginal_firmware_bibliotheken/`](orginal_firmware_bibliotheken/) | Originale von beelogger.de zum Vergleich (Sketche 202610, ATmega-LoRa 250326, Bibliotheken 2026_04, WLAN/LTE 230928) |
 | [`platformio.ini`](platformio.ini) | Boards BluePill F103CB, BlackPill F411CE, BlackPill F401CC |
 | **Anleitungen** | |
 | [`docs/flashen.md`](docs/flashen.md) | Bauen, Flashen über FTDI (stm32loader), Kalibrieren, Gerätetabelle |
@@ -163,6 +164,8 @@ Vollständig in [`docs/aenderungen_gegen_260705.diff`](docs/aenderungen_gegen_26
 | FCntDown in TTN > 65535; LMIC nutzt nach jedem Neustart nur 16 Bit | Downlink wird **ohne Meldung verworfen** | Zähler in TTN auf 0 setzen (siehe unten) |
 | „Reset session and MAC state“ setzt nur den Zähler im Network Server zurück, nicht im Application Server | Downlink bleibt verworfen, obwohl die Konsole 0 zeigt | beide Zähler per API zurücksetzen |
 
+**ATmega-LoRa-Sketch 250326:** Die Stellen zu Sketch-ID und ADR sowie Rx2 SF9 sehen dort gleich aus. Die TTN-Einstellungen dürften deshalb auch für ATmega-Logger passen. Vorschlag mit den zwei Änderungen, auf einem Logger noch ungetestet: [`atmega_lora/`](atmega_lora/).
+
 ## TTN-Einstellungen (ABP, LMIC dieser Firmware)
 
 Gilt für ABP. Bei OTAA kommen Rx1-Delay und Rx2 mit dem Join; Frequenzplan, LoRaWAN-Version und ADR aus wie unten.
@@ -229,6 +232,7 @@ Kein offizielles Projekt von beelogger.de. Original: https://beelogger.de
 | 3 | OTAA | fertig: BlackPill (beelogger08: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Strom gleich), BluePill (beelogger011: Join, Wiederanlauf aus dem Flash) |
 | 4 | Doku: TTN-Anleitung, Wiki | Anleitung als Text fertig; Bildschirmfotos und Wiki folgen |
 | – | ADR aus (Kennung 261107) | gebaut, Test auf Gerät folgt |
+| – | ATmega-LoRa 250326 → 261107 (Sketch-ID, ADR) | baut für Pro Mini 8/16 MHz und Nano, Test auf einem ATmega-Logger offen |
 | 5 | Was per Downlink verstellbar sein soll | Abstimmung mit den beelogger-Entwicklern: zuerst Varianten ohne Server- und Payload-Änderung ([Idee](docs/idee_sendeplan_schwarmalarm.md)), danach [Payload-Erweiterung](docs/vorschlag_payload_erweiterung.md) |
 
 Einzelheiten, offene Punkte und Verlauf: [`docs/planung_otaa_downlink.md`](docs/planung_otaa_downlink.md).

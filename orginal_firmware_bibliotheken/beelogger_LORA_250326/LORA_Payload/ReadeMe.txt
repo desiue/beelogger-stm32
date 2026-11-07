@@ -1,0 +1,7 @@
+Die Payload-Converter für TTN:
+
+
+neuer Payload-Converter für Sketch LORA_220325:
+payloadformatter_220227.js
+
+kodiert die Felder der Payload per Bitfeld, damit wird die payload kleiner, die Air-Time kürzer
