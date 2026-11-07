@@ -17,3 +17,4 @@ docs/privat/
 mailverkehr/
 # Server-Skripte (fremder Code): nur lokal
 M40_261004_ServerSkripte/
+dist/

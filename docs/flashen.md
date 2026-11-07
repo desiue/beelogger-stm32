@@ -88,6 +88,7 @@ Nr. 1–4 = Testgeräte (Rolle laut Planung Paket 3). UID wie stm32loader sie me
 - Startzeile-UID 32303030303015C40F0C3A0C (stm32loader 3A0C-0F0C-303015C4-32303030, Bootloader 0x22), BluePill am 07.11.2026 getauscht: alte (UID 30003F2A000000001A5A5BB6) hatte keinen funktionierenden I2C-Bus. Reset-Taster defekt (R gegen G brücken).
 - Sensortest 07.11.: BME280 + BH1750 (GY-302) + DS18B20 + 4 Waagen, Config `Config_MULTI.h.bak_beeloggerblue05-sensoren`.
 - Paket 2 abgenommen 06.11. 18:51 UTC. 261106 noch nicht geflasht.
+- Watchdog-Testaufbau an ttyUSB1 (07.11.2026, blue05-ABP-Schlüssel): weitere BluePill, UID stm32loader 391B-0F01-303015C4-32303030 (Startzeile …0F01391B), Bootloader 0x22. Erstes RFM95 defekt (Init-Fehler `hal_failed` mal ja, mal nein; TX done, aber nichts in TTN), ersetzt durch drittes Modul → Uplinks kommen an.
 
 **3 beelogger011** (Testboard Blue)
 - UID 5BB6-1A5A-00000000-301117FD, F103C8T6 meldet 128 KB. DevEUI 70B3D57ED0079D7A. Altes ABP-Gerät `beelogger011` (260BF6FE) steht noch in TTN.

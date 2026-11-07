@@ -240,6 +240,10 @@ void hal_init () {
 #endif
 }
 
+// beelogger (desiue, 2026-11-07): Der Sketch kann lmic_fehler() bereitstellen (Software-Watchdog:
+// Phase merken und neu starten). Sonst wie bisher: Interrupts aus, Endlosschleife.
+void lmic_fehler() __attribute__((weak));
+
 void hal_failed (const char *file, u2_t line) {
 #if defined(LMIC_FAILURE_TO)
     LMIC_FAILURE_TO.println("FAILURE ");
@@ -248,6 +252,7 @@ void hal_failed (const char *file, u2_t line) {
     LMIC_FAILURE_TO.println(line);
     LMIC_FAILURE_TO.flush();
 #endif
+    if (lmic_fehler) lmic_fehler();
     hal_disableIRQs();
     while(1);
 }

@@ -1,6 +1,6 @@
 diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
---- orig/Config_LORA.h	2026-11-07 23:02:58.991764121 +0100
-+++ neu/Config_LORA.h	2026-11-07 23:06:44.424835364 +0100
+--- orig/Config_LORA.h	2026-11-07 23:53:40.506660689 +0100
++++ neu/Config_LORA.h	2026-11-07 23:53:40.546444382 +0100
 @@ -1,68 +1,82 @@
 -/****************************************************************/
 -// LORA Konfiguration
@@ -152,9 +152,31 @@ diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
 +
 +// 
 +#define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht
+diff --color -ruN orig/src/lmic_otaa/hal/hal.cpp neu/src/lmic_otaa/hal/hal.cpp
+--- orig/src/lmic_otaa/hal/hal.cpp	2026-11-07 23:53:40.509568211 +0100
++++ neu/src/lmic_otaa/hal/hal.cpp	2026-11-07 23:53:40.546710974 +0100
+@@ -240,6 +240,10 @@
+ #endif
+ }
+ 
++// beelogger (desiue, 2026-11-07): Der Sketch kann lmic_fehler() bereitstellen (Software-Watchdog:
++// Phase merken und neu starten). Sonst wie bisher: Interrupts aus, Endlosschleife.
++void lmic_fehler() __attribute__((weak));
++
+ void hal_failed (const char *file, u2_t line) {
+ #if defined(LMIC_FAILURE_TO)
+     LMIC_FAILURE_TO.println("FAILURE ");
+@@ -248,6 +252,7 @@
+     LMIC_FAILURE_TO.println(line);
+     LMIC_FAILURE_TO.flush();
+ #endif
++    if (lmic_fehler) lmic_fehler();
+     hal_disableIRQs();
+     while(1);
+ }
 diff --color -ruN orig/src/lmic_otaa/lmic/config.h neu/src/lmic_otaa/lmic/config.h
---- orig/src/lmic_otaa/lmic/config.h	2026-11-07 23:02:58.995884193 +0100
-+++ neu/src/lmic_otaa/lmic/config.h	2026-11-07 23:02:59.006456992 +0100
+--- orig/src/lmic_otaa/lmic/config.h	2026-11-07 23:53:40.509796820 +0100
++++ neu/src/lmic_otaa/lmic/config.h	2026-11-07 23:53:40.546699636 +0100
 @@ -38,7 +38,7 @@
  #define LMIC_FAILURE_TO Serial
  
@@ -165,8 +187,8 @@ diff --color -ruN orig/src/lmic_otaa/lmic/config.h neu/src/lmic_otaa/lmic/config
  #define DISABLE_PING  //mod
  // Uncomment this to disable all code related to beacon tracking.
 diff --color -ruN orig/src/lmic_otaa/lmic/lmic.c neu/src/lmic_otaa/lmic/lmic.c
---- orig/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:02:58.995982026 +0100
-+++ neu/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:02:59.006548727 +0100
+--- orig/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:53:40.510202998 +0100
++++ neu/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:53:40.546659221 +0100
 @@ -1144,6 +1144,7 @@
          case MCMD_LCHK_ANS: {
              //int gwmargin = opts[oidx+1];
@@ -204,8 +226,8 @@ diff --color -ruN orig/src/lmic_otaa/lmic/lmic.c neu/src/lmic_otaa/lmic/lmic.c
  // LMIC sets the ADRACKREQ bit in UP frames if there were no DN frames
  // for a while. It expects the network to provide a DN message to prove
 diff --color -ruN orig/src/lmic_otaa/lmic/lmic.h neu/src/lmic_otaa/lmic/lmic.h
---- orig/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:02:58.996019143 +0100
-+++ neu/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:02:59.006599671 +0100
+--- orig/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:53:40.510400369 +0100
++++ neu/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:53:40.546632598 +0100
 @@ -215,6 +215,7 @@
      u1_t        margin;
      bit_t       ladrAns;      // link adr adapt answer pending
@@ -223,8 +245,8 @@ diff --color -ruN orig/src/lmic_otaa/lmic/lmic.h neu/src/lmic_otaa/lmic/lmic.h
  
  // Declare onEvent() function, to make sure any definition will have the
 diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
---- orig/STM32_LORA_260705.ino	2026-11-07 23:02:58.992609944 +0100
-+++ neu/STM32_LORA_260705.ino	2026-11-07 23:02:59.003245903 +0100
+--- orig/STM32_LORA_260705.ino	2026-11-07 23:53:40.507389282 +0100
++++ neu/STM32_LORA_260705.ino	2026-11-07 23:53:40.546452422 +0100
 @@ -1,3 +1,9 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
@@ -314,8 +336,8 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
  
    blink_LED(10, 500);  // we will never make it to here
 diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
---- orig/STM32_LORA.ino	2026-11-07 23:02:58.992907853 +0100
-+++ neu/STM32_LORA.ino	2026-11-07 23:02:59.003949447 +0100
+--- orig/STM32_LORA.ino	2026-11-07 23:53:40.507599381 +0100
++++ neu/STM32_LORA.ino	2026-11-07 23:53:40.546493603 +0100
 @@ -1,3 +1,9 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
@@ -548,13 +570,13 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
        // data received in ping slot
        debugprintlnF("RX !");
 diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
---- orig/STM32_LORA_utility.ino	2026-11-07 23:02:58.993343106 +0100
-+++ neu/STM32_LORA_utility.ino	2026-11-07 23:02:59.004617564 +0100
+--- orig/STM32_LORA_utility.ino	2026-11-07 23:53:40.507911454 +0100
++++ neu/STM32_LORA_utility.ino	2026-11-07 23:53:40.546480659 +0100
 @@ -1,3 +1,9 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
 +//   2026-11-06, desiue: OTAA - Session nach Power-On-Reset/ungültigem Datum verwerfen, DevAddr in Startzeile aus Join.
-+//   2026-11-07, desiue: Software-Watchdog (TIM4, Backup-Register F1: 10, F4: 14) und i2c_bus_frei().
++//   2026-11-07, desiue: Software-Watchdog (TIM4, Backup-Register F1: 10, F4: 14) und i2c_bus_frei(); lmic_fehler() für hal_failed().
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  //20.10.2021 STM32_LORA
@@ -643,7 +665,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    debugprint("min  t-on: ");
    debugprint(time_on);
    //  debugprint("s  dly: ");
-@@ -567,3 +598,76 @@
+@@ -567,3 +598,84 @@
    debugprintF("Datum:    "); debugprintln(buff);
  #endif
  }
@@ -669,12 +691,20 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
 +volatile uint16_t wdt_rest = 0;
 +volatile uint8_t wdt_phase = 0;
 +
++void wdt_ausloesen() {  // Phase merken und neu starten
++  uint8_t n = (wdt_anzahl < 15) ? wdt_anzahl + 1 : 15;
++  setBackupRegister(WDT_REG, WDT_MAGIC | (n << 4) | wdt_phase);
++  NVIC_SystemReset();
++}
++
 +void wdt_tick() {
-+  if (wdt_rest && --wdt_rest == 0) {
-+    uint8_t n = (wdt_anzahl < 15) ? wdt_anzahl + 1 : 15;
-+    setBackupRegister(WDT_REG, WDT_MAGIC | (n << 4) | wdt_phase);
-+    NVIC_SystemReset();
-+  }
++  if (wdt_rest && --wdt_rest == 0) wdt_ausloesen();
++}
++
++void lmic_fehler() {  // aus hal_failed() der LMIC (z. B. Funkmodul antwortet nicht); sperrt sonst die Interrupts
++  debugprintlnF("WDT: LMIC-Fehler");
++  debugflush();
++  wdt_ausloesen();
 +}
 +
 +void wdt_init() {  // in setup(): Merker vom letzten Lauf lesen und löschen

@@ -1,7 +1,7 @@
 // Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
 //   2026-11-06, desiue: OTAA - Session nach Power-On-Reset/ungültigem Datum verwerfen, DevAddr in Startzeile aus Join.
-//   2026-11-07, desiue: Software-Watchdog (TIM4, Backup-Register F1: 10, F4: 14) und i2c_bus_frei().
+//   2026-11-07, desiue: Software-Watchdog (TIM4, Backup-Register F1: 10, F4: 14) und i2c_bus_frei(); lmic_fehler() für hal_failed().
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 //20.10.2021 STM32_LORA
@@ -620,12 +620,20 @@ HardwareTimer *wdt_tim = nullptr;
 volatile uint16_t wdt_rest = 0;
 volatile uint8_t wdt_phase = 0;
 
+void wdt_ausloesen() {  // Phase merken und neu starten
+  uint8_t n = (wdt_anzahl < 15) ? wdt_anzahl + 1 : 15;
+  setBackupRegister(WDT_REG, WDT_MAGIC | (n << 4) | wdt_phase);
+  NVIC_SystemReset();
+}
+
 void wdt_tick() {
-  if (wdt_rest && --wdt_rest == 0) {
-    uint8_t n = (wdt_anzahl < 15) ? wdt_anzahl + 1 : 15;
-    setBackupRegister(WDT_REG, WDT_MAGIC | (n << 4) | wdt_phase);
-    NVIC_SystemReset();
-  }
+  if (wdt_rest && --wdt_rest == 0) wdt_ausloesen();
+}
+
+void lmic_fehler() {  // aus hal_failed() der LMIC (z. B. Funkmodul antwortet nicht); sperrt sonst die Interrupts
+  debugprintlnF("WDT: LMIC-Fehler");
+  debugflush();
+  wdt_ausloesen();
 }
 
 void wdt_init() {  // in setup(): Merker vom letzten Lauf lesen und löschen
