@@ -203,6 +203,7 @@ Hinweise:
 | Unter jedem Uplink ein Downlink, den niemand geschickt hat („Downlink-Schleife“) | MAC-Einstellungen in TTN passen nicht zur Firmware, oder nach dem Ändern fehlt der Reset | `ttn-status.sh` zeigt „offene MAC-Befehle“; Custom MAC settings prüfen, dann **Reset session and MAC state** |
 | Downlink geschickt, kommt nie an | FCntDown in TTN über 65535 | `ttn-status.sh`; beide Zähler zurücksetzen (siehe unten) |
 | ABP: Uplinks nach Akkuwechsel verworfen | Resets frame counters aus | einschalten |
+| ABP: nach „Reset session and MAC state“ empfängt das Gateway, die App bekommt nichts (Uplink-FCnt hoch, z. B. 62980) | Nach dem Reset erwartet TTN den Zähler bei 0. Liegt der Logger mehr als 16 384 darüber, verwirft TTN jeden Uplink. „Resets frame counters“ hilft nicht: Es erlaubt nur den Sprung zurück auf 0, keine Lücke nach vorn | Logger kurz stromlos machen (Akku ab), dann sendet er mit FCnt 0. Alternativ in TTN den erwarteten Zähler auf den Stand des Loggers setzen (API, `session.last_f_cnt_up`, ungeprüft). Gemeldet von einem Nutzer am 06.11.2026 |
 | OTAA: Join-Requests ohne Antwort | DevEUI/JoinEUI nicht LSB oder AppKey nicht MSB | Reihenfolge prüfen, neu flashen |
 | Geänderte Einstellung wirkt nicht (ABP) | laufende Session nutzt alte Werte | Reset session and MAC state |
 

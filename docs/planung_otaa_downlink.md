@@ -144,6 +144,8 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - **Unsere STM32-Firmware läuft auf dessen Geräten nicht.** Er ist für dieses Projekt kein Ziel, aber für die Wiki-Anleitung 06/06a.
 - Problem nach der Umstellung aus 06a: Gateway empfängt, App bekommt nichts. Logger sendet `f_cnt 62980`. Genau der in 06a (Abschnitt „Voraussetzung Frame Counter“, 6.1, 11) beschriebene Fall: Nach „Reset session and MAC state“ erwartet TTN den Zähler bei 0, Lücke > 16 384 → Uplinks verworfen. „Resets frame counters“ hilft nicht, es erlaubt nur den Sprung zurück auf 0, keine große Lücke nach vorn.
 - (Das Frame-Counter-Problem ist laut Nutzer gelöst, steht im Wiki.)
+- 07.11.: Fall als Zeile in `docs/ttn_anleitung.md` Abschnitt 5 ergänzt (Wiki 06a gilt als veraltet, Repo-Anleitung ist maßgeblich).
+- **Hinweis für sein Helium-Gerät** (eigener OTAA+ADR-Sketch): Beantwortet der Sketch MAC-Befehle nach dem Tiefschlaf nicht (wie unsere Firmware), entsteht dieselbe Downlink-Schleife wie bei TTN. Abhilfe: im Geräteprofil des Netzservers (bei Helium meist ChirpStack eines Console-Anbieters) Rx1-Delay und Rx2-Datenrate genau auf die Werte des Sketches setzen und ADR nur nutzen, wenn der Sketch LinkADRReq dauerhaft beantwortet (ADR-Zustand über den Tiefschlaf retten). Sonst `LMIC_setAdrMode(0)`. Ungeprüft, kein Helium-Zugang.
 
 ### Helium (Bewertung 06.11.2026, neu bewertet 07.11.2026)
 
