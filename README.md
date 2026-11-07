@@ -2,6 +2,8 @@
 
 Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogger.de) als PlatformIO-Projekt für VS Code, mit Erweiterungen. Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler sie übernehmen können.
 
+**Download für die Arduino IDE:** [beelogger_STM32_LORA_261107.zip](https://github.com/desiue/beelogger-stm32/releases/download/STM32_LORA_261107/beelogger_STM32_LORA_261107.zip) ([Release](https://github.com/desiue/beelogger-stm32/releases/tag/STM32_LORA_261107)) – Sketch-Ordner wie bei beelogger.de, ohne Schlüssel. Neu bauen mit `scripts/lieferpaket.sh`.
+
 **Auf einen Blick**
 
 - **Maximal kompatibel zum Original:** Messablauf, Waagenzahl, Payload-Format und beelogger-Server bleiben wie beim Original 260705. Neu sind nur Downlinks (ABP und OTAA) und Fehlerkorrekturen. Weitergehende Ideen (mehr Waagen, andere Payload, eigener Sendeplan) kommen nicht in `main`, sondern in einen eigenen Branch mit eigenem Server ([Idee](docs/idee_sendeplan_schwarmalarm.md), [Payload](docs/vorschlag_payload_erweiterung.md)).
