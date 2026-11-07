@@ -73,8 +73,8 @@ Zwei Schwellen, getrennte Aufgaben:
 | Sendeschwelle | Logger (neu) | Außer der Reihe senden? Muss **kleiner** als die Alarmschwelle sein (Vorschlag 0,3 kg; ein Schwarm nimmt meist 1–3 kg mit), damit der Server jedes relevante Ereignis sieht. |
 
 **Server-Regel 200 s:** `beelogger_log.php` speichert eine Meldung nur, wenn sie mehr als 200 s nach der letzten gespeicherten kommt (Ausnahmen: Service = 99, oder Kalibriertemperatur `99.9` in der Server-Konfiguration, dann ab 55 s; Wiki 08). Ein Zusatz-Uplink eine Minute nach dem regulären würde also verworfen, und der Schwarmalarm sähe ihn nicht. Ohne Server-Änderung:
-- Der Logger sendet den Zusatz-Uplink frühestens 200 s (sicherer: 4 min) nach dem letzten Uplink. Bei 5-min-Takt bringt das wenig, bei 10–30 min Takt viel.
-- Oder der Nutzer stellt am Server Kalibriertemperatur `99.9` ein. Wie sich das auf die Temperaturkompensation auswirkt, ist unklar → **Entwickler fragen**.
+- **Empfohlen:** Der Logger sendet den Zusatz-Uplink frühestens 200 s (sicherer: 4 min) nach dem letzten Uplink. Bei 5-min-Takt bringt das wenig, bei 10–30 min Takt viel. Der Server bleibt unverändert.
+- Nicht empfohlen: Kalibriertemperatur `99.9` am Server. Derselbe Wert steuert auch die Temperaturkompensation: `Gewicht_korr = Gewicht_roh + (Wägezellentemperatur − KalibrierTemperatur) × Korrekturwert` (Wiki 08, aus den Server-Scripten M.40, nicht getestet). Mit 99,9 °C und dem Beispiel-Korrekturwert 0,0355 kg/°C von beelogger.de wird das Gewicht bei 15 °C um rund 3 kg zu leicht und wandert mit der Temperatur. Unschädlich nur mit Korrekturwert 0 (Kompensation aus). Also: Minutenbetrieb **oder** Temperaturkompensation, nicht beides.
 
 Die Sendeschwelle kann fest sein. Aus der Ferne einstellbar lohnt sich vor allem bei unruhigen Waagen (Wind), die zu oft außer der Reihe senden.
 
@@ -101,7 +101,7 @@ Wer per Downlink etwas umstellt, will sehen, ob es angekommen ist. Ohne neues Pa
 
 Der Server wertet Service aus (Wiki 08): Bei **99** speichert er jede Meldung (Servicemodus, Durchsicht-Icon). Der **Schwarmalarm** läuft nur, wenn Service in der aktuellen **und** der vorherigen Meldung **unter 99** liegt. Werte über 1000 werden zu 99.
 
-Vorschlag: In der ersten Nachricht nach einem empfangenen Downlink sendet der Logger statt der Einschaltdauer einen festen Wert aus dem freien Bereich **81–98** (z. B. 90). Das bestätigt „Downlink angekommen“, den Inhalt zeigt Weg 1. Kosten: eine Einschaltdauer fehlt in der Grafik. Schwarmalarm und Speicherung bleiben unberührt.
+Vorschlag: In der ersten Nachricht nach einem empfangenen Downlink sendet der Logger statt der Einschaltdauer den festen Wert **90** (Bereich 81–98 ist frei; 90 liegt mit Abstand über den längsten Sendezyklen und unter 99; den endgültigen Wert legen die Entwickler fest). Das bestätigt „Downlink angekommen“, den Inhalt zeigt Weg 1. Kosten: eine Einschaltdauer fehlt in der Grafik. Schwarmalarm und Speicherung bleiben unberührt.
 
 Nicht empfohlen: mehrere Codes in 81–98 (zu eng, zu nah an echten Einschaltzeiten, ein OTAA-Join mit Zeitüberschreitung kann länger dauern), Werte ab 99 (schalten den Schwarmalarm für zwei Meldungen ab), Aux3/Sketch-ID umdeuten (der Server zeigt sie als Sketch-Version an).
 
@@ -125,9 +125,9 @@ Gemeinsame Voraussetzungen:
 
 ## Fragen an die Entwickler (ohne Server-Änderung)
 
-1. **Service-Quittung:** Darf die Firmware nach einem Downlink einmal einen festen Wert aus 81–98 senden? Welcher Wert? Sind die Bereiche 81–98 oder ab 100 schon verplant?
+1. **Service-Quittung:** Darf die Firmware nach einem Downlink einmal einen festen Wert senden? Unser Vorschlag: **90**. Passt das, oder ist ein anderer Wert aus 81–98 besser? Sind 81–98 oder Werte ab 100 schon verplant?
 2. Wertet der Server Service noch an anderer Stelle aus (Watchdog, Autoanmerkung, mobileWatch, Beep)?
-3. **200-s-Regel:** Ist Kalibriertemperatur `99.9` für LoRa-Logger gedacht und erprobt? Was passiert dabei mit der Temperaturkompensation? Oder soll der Logger Zusatz-Uplinks einfach erst nach 200 s schicken?
+3. **200-s-Regel:** Wir würden Zusatz-Uplinks frühestens 200 s nach dem letzten schicken, damit der Server sie ohne Änderung speichert. Einverstanden? (Kalibriertemperatur `99.9` kommt für uns nicht in Frage, weil sie die Temperaturkompensation verfälscht – stimmt diese Lesart des Codes?)
 4. **Plan ohne Uhr:** Sind `SOLAR_ZYKLUS` und `TEMP_ZYKLUS` bei LoRa-Loggern erprobt? Bewährte Schwellen (Solarspannung Tag/Nacht, Temperatur Winter)?
 5. Ist ein Zusatz-Uplink bei Gewichtsänderung (gleiches Format, ohne Kennzeichnung) für den Server in Ordnung, oder stört das Anzeige, Tageswerte oder Statistik?
 
