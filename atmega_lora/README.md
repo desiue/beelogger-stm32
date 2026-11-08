@@ -50,6 +50,8 @@ Der Frame-Counter liegt im EEPROM. Beim Aufspielen über den Bootloader (USB-Ser
 
 Wenn etwas anders aussieht als hier beschrieben, bitte melden. Dann habe ich mich vermutlich getäuscht.
 
+Getestet habe ich auf einem Steckbrett mit Uno, RFM95 und einem Nano als Uhr: [testaufbau_uno.md](testaufbau_uno.md).
+
 ## Lizenz
 
 GPL v3 wie das Original, © R. Schick / Thorsten Gurzan, beelogger.de.
