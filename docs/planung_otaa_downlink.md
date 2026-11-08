@@ -130,6 +130,8 @@ Diese Logger laufen dauerhaft am Schreibtisch (Solarzelle, USB-seriell mitgeschn
 |---|---|---|---|---|---|
 | beelogger08 | BlackPill F411CE, UID 3534393233375105006E0030 | beelogger08 / beelogger08-otaa | OTAA (Session Backup-Register) | ttyUSB0 | Quad8 „Test“ |
 | beelogger011 | BluePill F103CB, UID 32303030303015C306152913 | beelogger011 / beelogger011-otaa | OTAA (Session Flash) | ttyUSB1 | Quad4 „Black“ |
+| Uno-OTAA (ATmega) | Arduino Uno + RFM95, Firmware `beelogger_LORA_OTAA_261108` | beeloggeratmega01 / uno-otaa01 | OTAA (Session EEPROM) | ttyUSB2 | – (nur TTN) |
+| Nano-Uhr | Arduino Nano als DS3231-Ersatz für den Uno (I2C) | – | – | ttyUSB3 | – |
 
 - Firmware: Stand Branch `p7-serverquittung` (FPort 10 + 11), gebaut mit arduino-cli wie das Lieferpaket.
 - TTN: zusätzlicher Webhook `<app>-2` auf den Testserver mit Downlink-API-Key (Recht nur traffic down write). Die Community-Webhooks sind unverändert.
