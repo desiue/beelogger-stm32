@@ -122,6 +122,33 @@ Die Schleife entsteht, weil der Logger nach jedem Zyklus neu startet und MAC-Ant
   - Mitschnitt mit vollem Akku (4,20 V, Solar 5,41 V): erst mehrere Neustarts (POR/RST beim Akkutausch und Reset), dann **ein kompletter Zyklus**: Sensoren, `LoRa:`-Block, 22 Byte Payload, `TX!`, FCnt 1, Weckzeit +3 min auf die nächste 5-Minuten-Marke. **Testgerät funktioniert als Ausgangspunkt.**
   - Auffällig, aber unkritisch: Waage 4 zeigt 590 kg (kein Wägezelle an Kanal; Waagenzahl in der Config), nach RST steht `Interval: 0min` im Backup-Register.
 
+## Langzeittest-Geräte (seit 08.11.2026)
+
+Diese Logger laufen dauerhaft am Schreibtisch (Solarzelle, USB-seriell mitgeschnitten) als **Langzeittest** und werden nicht zurückgestellt (Nutzer 08.11.2026). Neue Firmware zuerst hier testen.
+
+| Gerät | Board | TTN-App / Gerät | Aktivierung | Port | Server (eigener Testserver) |
+|---|---|---|---|---|---|
+| beelogger08 | BlackPill F411CE, UID 3534393233375105006E0030 | beelogger08 / beelogger08-otaa | OTAA (Session Backup-Register) | ttyUSB0 | Quad8 „Test“ |
+| beelogger011 | BluePill F103CB, UID 32303030303015C306152913 | beelogger011 / beelogger011-otaa | OTAA (Session Flash) | ttyUSB1 | Quad4 „Black“ |
+
+- Firmware: Stand Branch `p7-serverquittung` (FPort 10 + 11), gebaut mit arduino-cli wie das Lieferpaket.
+- TTN: zusätzlicher Webhook `<app>-2` auf den Testserver mit Downlink-API-Key (Recht nur traffic down write). Die Community-Webhooks sind unverändert.
+- Testserver: `server/lora_downlink.php` in Quad4/Quad8, eingebunden in `beelogger_log.php` (eine Zeile vor der Antwort in `Auswertung()`).
+- Ein zweites BluePill-Board mit Namen beelogger011 (UID-Ausgabe kaputt, toter I2C-Bus: keine RTC/BME280) ist **nicht** im Langzeittest. Es nutzt denselben TTN-Schlüssel und darf nicht gleichzeitig laufen.
+
+## Serverquittung per Downlink (P7/P8, 08.11.2026)
+
+Bei WLAN/LTE antwortet `beelogger_log.php` mit `<Zeit>T<Intervall><A–D>[P]ok *`, und der Logger übernimmt Uhrzeit und Intervall. Bei LoRa verwirft TTN diese Antwort. Neu: `server/lora_downlink.php` schickt dieselbe Information als TTN-Downlink.
+
+- Weg: Der TTN-Webhook liefert pro Uplink `X-Downlink-Replace` und `X-Downlink-Apikey` im Header (wenn im Webhook ein Downlink-API-Key gesetzt ist). Der Server legt den Downlink damit selbst in die Warteschlange, ohne Zwischendienst.
+- FPort 11, 7 Byte (big endian): FCnt-Bezug (unteres Byte), Empfangszeit des Uplinks (Unixzeit + Sommerzeit-Stunde, wie WLAN), Abstand der letzten beiden Uplinks [min], Intervall [min] aus `ServerZeitSteuerung()` (Webseiten-Einstellung).
+- Gesendet wird nur bei Intervalländerung oder einmal pro Tag für die Uhr (TTN Fair Use).
+- **Beobachtet:** Der Downlink kommt im RX-Fenster **desselben** Uplinks an (Webhook schnell genug). Für den Fall, dass er erst nach dem nächsten Uplink kommt, rechnet der Logger den Abstand dazu.
+- Logger: Uhr per `rtc_stm.setEpoch()`, `time_on` wird mitkorrigiert. Intervall wie FPort 10 in `FernIntervall` (Backup-Register 5), kein neues Register nötig.
+- Uhr zeigt wie bei WLAN UTC + Sommerzeit-Stunde (Winter: 1 h hinter Ortszeit).
+- Test 08.11.: Black und Blue stellen die Uhr (von 2022 auf die richtige Zeit) und übernehmen 15 min. Intervalländerung 15 → 10 auf der Webseite kommt beim nächsten Uplink an.
+- Offen: Uhr-Stellen beim Tageswechsel prüfen; Vorschlag an Rudolf (Server-Teil ist sein Code, Einbindung eine Zeile); ATmega (kein Flash frei).
+
 ## Arbeitspakete (je eine eigene Sitzung)
 
 Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verlauf“.
