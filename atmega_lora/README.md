@@ -48,9 +48,9 @@ Speicher (arduino-cli, avr-gcc 7.3, Bibliotheken 2026_04, 1 DS18B20, 1 Waage):
 
 | Board | ABP 261107 | OTAA 261108 |
 |---|---|---|
-| Pro Mini 8 MHz (beeloggerSMD) | Flash 26 266 B | Flash 28 674 B |
-| Pro Mini 16 MHz (Universal 1.x) | Flash 26 280 B | Flash 28 688 B |
-| Nano 16 MHz (Universal 1.x) | Flash 26 278 B | Flash 28 688 B |
+| Pro Mini 8 MHz (beeloggerSMD) | Flash 26 300 B | Flash 28 696 B |
+| Pro Mini 16 MHz (Universal 1.x) | Flash 26 314 B | Flash 28 710 B |
+| Nano 16 MHz (Universal 1.x) | Flash 26 314 B | Flash 28 710 B |
 
 OTAA braucht etwa 2,4 KB mehr Flash. Bis 30 720 B bleiben damit knapp 2 KB, das reicht für **einen** weiteren Sensor. Gemessen mit OTAA auf Pro Mini 8 MHz (anderer Ablageort, Grundwert 28 788 B):
 
@@ -72,6 +72,7 @@ RAM: 1 370–1 500 B von 2 048 B, je nach Ablageort (die LMIC legt die Dateipfad
 - Join beim ersten Senden nach etwa 12 s, Uplink mit FCnt 0 kommt an, RX1-Delay 1 s aus dem Join-Accept.
 - Nächster Zyklus und Reset (neu aufgespielt): kein neuer Join, Session aus dem EEPROM, FCnt läuft weiter.
 - Link-Check (zum Test bei jedem Uplink): Antwort kommt an. Danach Session in TTN gelöscht: drei Link-Checks ohne Antwort, beim nächsten Senden neuer Join, FCnt wieder ab 0.
+- I2C gestört (SDA an GND bzw. offen): Ohne I2C-Timeout hängt der Sketch dauerhaft, auch nach Lösen. Seit 08.11.2026 setzen beide Fassungen (ABP und OTAA) `Wire.setWireTimeout(25000, true)` vor `rtc.begin()` (+34 B bzw. +22 B Flash): Logger sendet weiter, nach Wiederverbinden sofort normal. Bei totem Bus bleibt /INT der Uhr LOW, der Sketch wertet das wie den Service-Schalter (Wecken alle 5 min, Service-Wert 99 bzw. 1).
 - Dauerlauf: läuft seit 08.11.2026.
 
 **Nicht getestet:** Pro Mini mit 8 MHz. Der Join braucht die Empfangsfenster (Join-Accept nach 5 s). Wenn der Join dort nicht klappt, liegt es vermutlich am RX-Timing. Bitte melden, dann sehe ich es mir an.

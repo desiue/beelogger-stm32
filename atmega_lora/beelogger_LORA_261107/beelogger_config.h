@@ -47,6 +47,7 @@ const float Alarm_Gewicht = 1.0;
   Global Libraries
 ****************************************************************/
 #include "Sodaq_DS3231.h"
+#include <Wire.h>  // 08.11.2026 fuer Wire.setWireTimeout()
 #include <LowPower.h>
 
 

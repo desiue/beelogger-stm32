@@ -302,3 +302,23 @@ diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/be
  void LMIC_setClockError(u2_t error);
  
  // Declare onEvent() function, to make sure any definition will have the
+--- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/beelogger_config.h	2025-03-26 07:38:16.000000000 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261108/beelogger_config.h	2026-11-08 10:11:09.203635824 +0100
+@@ -47,6 +47,7 @@
+   Global Libraries
+ ****************************************************************/
+ #include "Sodaq_DS3231.h"
++#include <Wire.h>  // 08.11.2026 fuer Wire.setWireTimeout()
+ #include <LowPower.h>
+ 
+ 
+--- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/beelogger_utility_lora.ino	2025-03-26 08:10:56.000000000 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261108/beelogger_utility_lora.ino	2026-11-08 11:11:01.642052920 +0100
+@@ -243,6 +243,7 @@
+   digitalWrite(Power_Pin, HIGH);
+   calldelay(10);             // vcc stable
+ 
++  Wire.setWireTimeout(25000, true);  // 08.11.2026 I2C-Timeout 25 ms, Bus-Reset: kein Haenger bei gestoertem Bus (vor rtc.begin, das schon liest)
+   rtc.begin();
+   rtc.clearINTStatus();
+   calldelay(5);                 // wait clear Int

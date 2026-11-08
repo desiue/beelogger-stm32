@@ -243,6 +243,7 @@ void System_On() {
   digitalWrite(Power_Pin, HIGH);
   calldelay(10);             // vcc stable
 
+  Wire.setWireTimeout(25000, true);  // 08.11.2026 I2C-Timeout 25 ms, Bus-Reset: kein Haenger bei gestoertem Bus (vor rtc.begin, das schon liest)
   rtc.begin();
   rtc.clearINTStatus();
   calldelay(5);                 // wait clear Int
