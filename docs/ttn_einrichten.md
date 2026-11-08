@@ -7,6 +7,8 @@ Für diese Firmware (Kennung 261107, LMIC 1.5). Gilt für alle vier Varianten (B
 
 Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 
+Kurzfassung nur für OTAA, Schritt für Schritt mit Bildern (PDF, liegt auch im Lieferpaket): [STM32_LORA_OTAA_Einrichtung_261107.pdf](ttn/STM32_LORA_OTAA_Einrichtung_261107.pdf)
+
 > Bilder: Platzhalter `bilder/…` liegen in `docs/ttn/bilder/`. Bildschirmfotos vor dem Einchecken auf Schlüssel prüfen (AppKey, NwkSKey, AppSKey schwärzen).
 
 ## 1. Application anlegen (einmal)

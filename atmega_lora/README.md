@@ -4,7 +4,7 @@ Der ATmega-LoRa-Sketch **beelogger_LORA_250326** von [beelogger.de](https://beel
 
 Dazu als zweiter Ordner eine Fassung mit **OTAA**: [beelogger_LORA_OTAA_261108](#otaa--vorschlag-261108).
 
-**Stand 07.11.2026:** baut für alle drei Boards. **Auf einem Logger noch nicht getestet**, weil mir kein ATmega-beelogger zur Verfügung steht. Bitte als Vorschlag verstehen. Falls ich etwas übersehen habe, freue ich mich über einen Hinweis.
+**Stand 08.11.2026:** baut für alle drei Boards. Getestet auf einem Steckbrett mit Uno (16 MHz), RFM95 und einem Nano als Uhr ([testaufbau_uno.md](testaufbau_uno.md)). **Auf einem echten beelogger und mit Pro Mini 8 MHz noch nicht getestet**, weil mir kein ATmega-beelogger zur Verfügung steht. Bitte als Vorschlag verstehen. Falls ich etwas übersehen habe, freue ich mich über einen Hinweis.
 
 ## Änderungen
 

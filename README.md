@@ -23,6 +23,7 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 | [Architektur](docs/architektur.md) | Datenweg Logger → TTN → Webhooks → Server und zurück, mit Diagrammen; LoRa und WLAN im Vergleich |
 | [Bauen und flashen](docs/bauen_flashen.md) | PlatformIO, Varianten, Startzeile, Flashen über FTDI, Akkuspannung kalibrieren |
 | [TTN einrichten](docs/ttn_einrichten.md) | Application, Webhooks (auch zweiter Server + Downlink-Key), Gerät ABP/OTAA, Downlinks, MAC-Einstellungen, Fair Use |
+| [OTAA-Einrichtung (PDF)](docs/ttn/STM32_LORA_OTAA_Einrichtung_261107.pdf) | Kurzanleitung nur TTN-Konsole, OTAA, mit Bildern |
 | [Payload](docs/payload.md) | Byte-Formate Uplink FPort 1, Downlink FPort 10 und 11, mit Hex-Beispielen |
 | [Intervalle](docs/intervalle.md) | Tag, Nacht, Winter, Akku, Fern-Intervall: was gilt wann |
 | [Server](docs/server.md) | `beelogger_log.php`: Speicherregeln (200/400 s), Service-Werte, `ServerZeitSteuerung()`, `lora_downlink.php` einbinden |
@@ -53,7 +54,7 @@ Ohne eigenen Build: fertiger Sketch-Ordner für die Arduino IDE im Release (Link
 | [`server/`](server/) | `lora_downlink.php`: Serverquittung für LoRa (Erweiterung für `beelogger_log.php`) |
 | [`scripts/`](scripts/) | `seriell-log.sh`, `ttn-status.sh`, TTN-Anlege-Skripte, `lieferpaket*.sh` |
 | [`orginal_firmware_bibliotheken/`](orginal_firmware_bibliotheken/) | Originale von beelogger.de zum Vergleich |
-| [`docs/ttn/`](docs/ttn/) | Payload-Decoder, TTN-Einstellungen (JSON), Beispielnachrichten, Bilder |
+| [`docs/ttn/`](docs/ttn/) | Payload-Decoder, TTN-Einstellungen (JSON), Beispielnachrichten, Bilder, OTAA-Anleitung (PDF) |
 | [`docs/logs/`](docs/logs/) | serielle Mitschnitte |
 | [`platformio.ini`](platformio.ini) | Board-Umgebungen |
 
