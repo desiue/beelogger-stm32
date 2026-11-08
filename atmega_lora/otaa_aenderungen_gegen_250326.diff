@@ -1,0 +1,304 @@
+--- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/beelogger_LORA_250326.ino	2025-03-26 07:43:14.000000000 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261108/beelogger_LORA_OTAA_261108.ino	2026-11-08 09:03:01.918668668 +0100
+@@ -17,12 +17,14 @@
+ 
+ // beelogger.de - Arduino LoRaWAN Datenlogger für Imker
+ // Version 2025
++// 08.11.2026 OTAA per #define LORA_OTAA (Join, Session im EEPROM, Link-Check), LMIC-Kopie in src/lmic_otaa
++// 07.11.2026 ADR aus (LMIC_setAdrMode(0)), Sketch-ID nur in jedem 10. Uplink (LoRaSeqCounter % 10)
+ // 26.03.2025 Messzyklussteuerung per Solarspannung / Temperatur
+ // 01.04.2023 Universal Platine 2.x
+ // compile error fix oslmic.h line 230 static inline type table_get ## postfix
+ 
+ char ID[] = "MULTI_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
+-long l_ID = 250326;
++long l_ID = 261108;
+ 
+ 
+ #define CFG_noassert 1             // supress error messages in library
+--- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/Config_LORA.h	2025-03-26 08:10:04.000000000 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261108/Config_LORA.h	2026-11-08 09:03:01.918863954 +0100
+@@ -1,8 +1,8 @@
+ /****************************************************************/
+ // LORA Konfiguration
+ /****************************************************************/
+-#include <lmic.h>
+-#include <hal/hal.h>
++#include "src/lmic_otaa/lmic.h"      // angepasste LMIC im Sketch-Ordner (Join, Link-Check)
++#include "src/lmic_otaa/hal/hal.h"
+ #include <SPI.h>
+ 
+ // Verbindungsparameter:
+@@ -23,6 +23,15 @@
+ //static const u4_t DEVADDR =   0x12345678;  //   <-- Change this address for every node!  
+ static const u4_t DEVADDR = 0x12345678;
+ 
++// Aktivierung: 0 = ABP (DEVADDR, NWKSKEY, APPSKEY oben), 1 = OTAA (die drei Werte unten)
++// OTAA in TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B. DEVEUI und APPEUI (JoinEUI) LSB zuerst, APPKEY MSB (wie TTN-Konsole).
++#define LORA_OTAA 1
++#if LORA_OTAA
++static const u1_t PROGMEM DEVEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
++static const u1_t PROGMEM APPEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
++static const u1_t PROGMEM APPKEY[16] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
++#endif
++
+ // LoRaWAN Network Prefix
+ static const uint16_t PREFIX =   0x13;     //   https://www.thethingsnetwork.org/docs/lorawan/prefix-assignments.html  
+ // example: 0x13 = TTN
+--- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/Multi_LORA.ino	2025-03-26 07:38:16.000000000 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261108/Multi_LORA.ino	2026-11-08 09:03:32.324758470 +0100
+@@ -6,6 +6,7 @@
+ //12.02.2021 Lora sequence number in EE-Prom
+ //27.02.22 optimierte Payload, minimiert Ait-Time
+ //25.03.22 more debug info
++//08.11.2026 desiue: OTAA per #define LORA_OTAA in Config_LORA.h
+ 
+ #include <EEPROM.h>
+ 
+@@ -17,7 +18,7 @@
+ 
+ //Folgende Anpassungen an „arduino-lmic\src\lmic\config.h“ notwendig:
+ //#define LMIC_DEBUG_LEVEL 0
+-//#define DISABLE_JOIN
++//#define DISABLE_JOIN      // nicht in src/lmic_otaa (Join für OTAA, ABP joint nie)
+ //#define DISABLE_PING
+ //#define DISABLE_BEACONS
+ //#define DISABLE_MCMD_PING_SET // set ping freq, automatically disabled by DISABLE_PING
+@@ -93,6 +94,63 @@
+ uint8_t data_cnt;       // EE-Prom wear Counter
+ uint16_t LoRaSeqCounter = 0;      // TTN Sequence numbber
+ 
++#if LORA_OTAA
++// OTAA: Join beim ersten Senden. Session im EE-Prom ab 0x60, die Schlüssel werden aus APPKEY neu berechnet.
++// Link-Check alle OTAA_LCHK Uplinks, nach 3 Link-Checks ohne Antwort neuer Join.
++#define JOIN_TM_OUT   30000  // Join + erster Uplink; ohne Erfolg neuer Versuch im nächsten Zyklus
++#define OTAA_LCHK     144    // Link-Check alle 144 Uplinks (bei 10 min etwa einmal am Tag)
++#define OTAA_FCNT_MAX 65000  // vor dem Überlauf von LoRaSeqCounter neu joinen
++#define eeAd_otaa     0x60   // EE-Prom Adresse OTAA-Session (15 Byte)
++
++struct otaa_t {
++  uint32_t devaddr;
++  uint32_t netid;        // Bit 0-23 NetID, Bit 24-31 RxDelay<<4 | Rx2-DR
++  uint8_t  appnonce[3];
++  uint16_t devnonce;
++  uint8_t  fail;         // Link-Checks ohne Antwort
++  uint8_t  sum;          // Prüfsumme über Session (bis fail), DEVEUI und APPKEY
++} otaa_s;              // global: Arduino setzt Funktionsprototypen vor die Struct-Definition
++
++void os_getArtEui(u1_t* buf) { memcpy_P(buf, APPEUI, 8); }
++void os_getDevEui(u1_t* buf) { memcpy_P(buf, DEVEUI, 8); }
++void os_getDevKey(u1_t* buf) { memcpy_P(buf, APPKEY, 16); }
++
++uint8_t otaa_sum() {  // neue Schlüssel im Sketch -> Prüfsumme falsch -> neuer Join
++  uint8_t x = 0x5A;
++  const uint8_t *p = (const uint8_t *)&otaa_s;
++  for (uint8_t i = 0; i < offsetof(otaa_t, fail); i++) x = (x << 1 | x >> 7) + p[i];
++  for (uint8_t i = 0; i < 16; i++) x = (x << 1 | x >> 7) + pgm_read_byte(APPKEY + i) + (i < 8 ? pgm_read_byte(DEVEUI + i) : 0);
++  return x;
++}
++
++bool otaa_load() {  // gültige Session -> LMIC, sonst false (LMIC joint beim Senden, DevAddr = 0)
++  otaa_t &s = otaa_s;
++  EEPROM.get(eeAd_otaa, s);
++  if (s.devaddr == 0 || s.sum != otaa_sum() || LoRaSeqCounter >= OTAA_FCNT_MAX) return false;
++  u1_t an[6];  // AppNonce + NetID, LSB zuerst wie im Join-Accept
++  memcpy(an, s.appnonce, 3);
++  memcpy(an + 3, &s.netid, 3);
++  LMIC_restoreJoin(s.netid & 0xFFFFFF, s.devaddr, s.devnonce, an);
++  return true;
++}
++
++void otaa_save_join() {  // bei EV_JOINED: LMIC.frame enthält noch den entschlüsselten Join-Accept
++  otaa_t &s = otaa_s;
++  s.devaddr = LMIC.devaddr;
++  s.netid = (LMIC.netid & 0xFFFFFF) | (uint32_t)(((LMIC.rxDelay & 0x0F) << 4) | (LMIC.dn2Dr & 0x0F)) << 24;
++  memcpy(s.appnonce, &LMIC.frame[OFF_JA_ARTNONCE], 3);
++  s.devnonce = LMIC.devNonce - 1;  // LMIC zählt nach dem Join-Request hoch
++  s.fail = 0;
++  s.sum = otaa_sum();
++  EEPROM.put(eeAd_otaa, s);
++}
++#else
++// ABP: LMIC enthält den Join-Code, ruft ihn aber nie auf (DevAddr gesetzt)
++void os_getArtEui(u1_t*) {}
++void os_getDevEui(u1_t*) {}
++void os_getDevKey(u1_t*) {}
++#endif
++
+ 
+ //----------------------------------------------------------------
+ // Setup SX1276 - LORA
+@@ -108,11 +166,15 @@
+   // These values are stored in flash and only copied to RAM once.
+   // Copy them to a temporary buffer here, LMIC_setSession will
+   // copy them into a buffer of its own again.
++#if LORA_OTAA
++  bool otaa_ok = otaa_load();
++#else
+   uint8_t appskey[sizeof(APPSKEY)];
+   uint8_t nwkskey[sizeof(NWKSKEY)];
+   memcpy_P(appskey, APPSKEY, sizeof(APPSKEY));
+   memcpy_P(nwkskey, NWKSKEY, sizeof(NWKSKEY));
+   LMIC_setSession (PREFIX, DEVADDR, nwkskey, appskey);
++#endif
+ 
+   //#if defined(CFG_eu868)
+   // Set up the channels used by the Things Network, which corresponds
+@@ -153,12 +215,21 @@
+   // frequency is not configured here.
+ 
+   // Disable link check validation
+-  LMIC_setLinkCheckMode(0);
++  LMIC_setLinkCheckMode(0);
++
++  // ADR aus: LMIC_reset() schaltet ADR ein, der Sketch beantwortet aber keine LinkADRReq
++  LMIC_setAdrMode(0);
+ 
+   LMIC_setClockError(MAX_CLOCK_ERROR * 1 / 100);
+ 
+   // TTN uses SF9 for its RX2 window.
+   LMIC.dn2Dr = DR_SF9;
++#if LORA_OTAA
++  if (otaa_ok) {  // Rx-Werte aus dem Join-Accept
++    LMIC.dn2Dr = (otaa_s.netid >> 24) & 0x0F;
++    LMIC.rxDelay = otaa_s.netid >> 28;
++  }
++#endif
+ 
+   // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)
+   LMIC_setDrTxpow(DR_SF7, 14);  //Low-Power
+@@ -230,17 +301,36 @@
+ #endif
+ 
+     LMIC.seqnoUp = LoRaSeqCounter;
++#if LORA_OTAA
++    bool lchk = LMIC.devaddr != 0 && (LoRaSeqCounter % OTAA_LCHK) == 0;
++    if (lchk) LMIC.lchkReq = 1;  // Link-Check mit diesem Uplink
++    uint16_t tm_out = LMIC.devaddr ? SERVER_TM_OUT : JOIN_TM_OUT;
++    if (LMIC.devaddr == 0) debugprintlnF("Join");
++#else
++    uint16_t tm_out = SERVER_TM_OUT;
++#endif
+     LMIC_setTxData2(1, payload, cnt, 0);
+ 
+     //Run LMIC loop until he as finish or timeout
+     long  send_loop = millis();
+-    while ((flag_TXCOMPLETE == false) && ((millis() - send_loop) < SERVER_TM_OUT))
++    while ((flag_TXCOMPLETE == false) && ((millis() - send_loop) < tm_out))
+     {
+       os_runloop_once();
+     }
+     if (flag_TXCOMPLETE == false) {
+       debugprintlnF(".tout");
+     }
++#if LORA_OTAA
++    if (lchk) {
++      otaa_t &s = otaa_s;
++      EEPROM.get(eeAd_otaa, s);
++      s.fail = (LMIC.lchkReq == 3) ? 0 : s.fail + 1;
++      debugprintF("LCHK fail:");
++      debugprintln(s.fail);
++      if (s.fail >= 3) s.devaddr = 0;  // nächster Versand joint neu
++      EEPROM.put(eeAd_otaa, s);
++    }
++#endif
+   }
+   else {
+     debugprintlnF("err");
+@@ -439,7 +529,7 @@
+   cnt_pld++;
+   debugprintF("S:");  debugprintln(svc);
+ 
+-  if (LMIC.seqnoUp % 10 == 0 ) { // ID not in every transmission
++  if (LoRaSeqCounter % 10 == 0 ) { // ID not in every transmission (LMIC.seqnoUp ist hier noch 0)
+     //payload[cnt_pld] = TYPE_AUX3;
+     //cnt_pld++;
+     PayloadHeader |= TYPE_AUX3;
+@@ -501,6 +591,17 @@
+       inc_LoRaSeq();
+       flag_TXCOMPLETE = true;
+       break;
++#if LORA_OTAA
++    case EV_JOINING:
++      debugprintlnF("Joining");
++      break;
++    case EV_JOINED:
++      otaa_save_join();
++      LoRaSeqCounter = 0;  // neue Session, LMIC sendet den wartenden Uplink mit FCnt 0
++      debugprintF("Joined ");
++      debugprintln(LMIC.devaddr);
++      break;
++#endif
+     case EV_RXCOMPLETE:
+       // data received in ping slot
+       debugprintlnF("RX!");
+diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/config.h atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/config.h
+--- orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/config.h	2023-05-15 07:46:56.000000000 +0200
++++ atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/config.h	2026-11-08 09:01:45.675728258 +0100
+@@ -38,7 +38,7 @@
+ #define LMIC_FAILURE_TO Serial
+ 
+ // Uncomment this to disable all code related to joining
+-#define DISABLE_JOIN  //mod
++//#define DISABLE_JOIN  //mod  beelogger: Join für OTAA (ABP-Geräte joinen nie, DevAddr != 0)
+ // Uncomment this to disable all code related to ping
+ #define DISABLE_PING  //mod
+ // Uncomment this to disable all code related to beacon tracking.
+diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.c atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/lmic.c
+--- orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.c	2023-05-15 07:46:56.000000000 +0200
++++ atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/lmic.c	2026-11-08 09:01:45.675728258 +0100
+@@ -1144,6 +1144,7 @@
+         case MCMD_LCHK_ANS: {
+             //int gwmargin = opts[oidx+1];
+             //int ngws = opts[oidx+2];
++            LMIC.lchkReq = 3;  // beelogger
+             oidx += 3;
+             continue;
+         }
+@@ -1642,6 +1643,11 @@
+         LMIC.dn2Ans = 0;
+     }
+ #endif // !DISABLE_MCMD_DN2P_SET
++    if( LMIC.lchkReq == 1 ) {  // beelogger: link check request
++        LMIC.frame[end] = MCMD_LCHK_REQ;
++        end += 1;
++        LMIC.lchkReq = 2;
++    }
+     if( LMIC.devsAns ) {  // answer to device status
+         LMIC.frame[end+0] = MCMD_DEVS_ANS;
+         LMIC.frame[end+1] = os_getBattLevel();
+@@ -2361,6 +2367,15 @@
+     DO_DEVDB(LMIC.seqnoDn, seqnoDn);
+ }
+ 
++// beelogger: OTAA-Session aus gespeicherten Join-Werten wiederherstellen.
++// artnonce_netid = AppNonce (3) + NetID (3) wie im Join-Accept (LSB zuerst);
++// devnonce = DevNonce des erfolgreichen Join-Request. Schlüssel kommen aus os_getDevKey().
++void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid) {
++    u1_t nwk[16], art[16];
++    aes_sessKeys(devnonce, artnonce_netid, nwk, art);
++    LMIC_setSession(netid, devaddr, nwk, art);
++}
++
+ // Enable/disable link check validation.
+ // LMIC sets the ADRACKREQ bit in UP frames if there were no DN frames
+ // for a while. It expects the network to provide a DN message to prove
+diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.h atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/lmic.h
+--- orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.h	2023-05-15 07:46:56.000000000 +0200
++++ atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/lmic.h	2026-11-08 09:01:45.675806222 +0100
+@@ -215,6 +215,7 @@
+     u1_t        margin;
+     bit_t       ladrAns;      // link adr adapt answer pending
+     bit_t       devsAns;      // device status answer pending
++    u1_t        lchkReq;      // beelogger: 1 = LinkCheckReq senden, 2 = gesendet, 3 = LinkCheckAns erhalten
+     u1_t        adrEnabled;
+     u1_t        moreData;     // NWK has more data pending
+ #if !defined(DISABLE_MCMD_DCAP_REQ)
+@@ -304,6 +305,7 @@
+ 
+ void LMIC_setSession (u4_t netid, devaddr_t devaddr, xref2u1_t nwkKey, xref2u1_t artKey);
+ void LMIC_setLinkCheckMode (bit_t enabled);
++void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid);
+ void LMIC_setClockError(u2_t error);
+ 
+ // Declare onEvent() function, to make sure any definition will have the
