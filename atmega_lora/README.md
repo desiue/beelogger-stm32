@@ -73,7 +73,7 @@ RAM: 1 370–1 500 B von 2 048 B, je nach Ablageort (die LMIC legt die Dateipfad
 - Nächster Zyklus und Reset (neu aufgespielt): kein neuer Join, Session aus dem EEPROM, FCnt läuft weiter.
 - Link-Check (zum Test bei jedem Uplink): Antwort kommt an. Danach Session in TTN gelöscht: drei Link-Checks ohne Antwort, beim nächsten Senden neuer Join, FCnt wieder ab 0.
 - I2C gestört (SDA an GND bzw. offen): Ohne I2C-Timeout hängt der Sketch dauerhaft, auch nach Lösen. Seit 08.11.2026 setzen beide Fassungen (ABP und OTAA) `Wire.setWireTimeout(25000, true)` vor `rtc.begin()` (+34 B bzw. +22 B Flash): Logger sendet weiter, nach Wiederverbinden sofort normal. Bei totem Bus bleibt /INT der Uhr LOW, der Sketch wertet das wie den Service-Schalter (Wecken alle 5 min, Service-Wert 99 bzw. 1).
-- Dauerlauf: läuft seit 08.11.2026.
+- Dauerlauf seit 08.11.2026 (10-min-Takt): nach einem Neustart um 11:34 bis 13:03 FCnt 22–31 lückenlos in TTN, kein neuer Join, kein Timeout. Läuft weiter.
 
 **Nicht getestet:** Pro Mini mit 8 MHz. Der Join braucht die Empfangsfenster (Join-Accept nach 5 s). Wenn der Join dort nicht klappt, liegt es vermutlich am RX-Timing. Bitte melden, dann sehe ich es mir an.
 
