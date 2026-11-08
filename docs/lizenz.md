@@ -15,7 +15,7 @@ Stand: 06.11.2026
 | §4: Urheberrechts- und Lizenzhinweise unverändert lassen | Alle Köpfe der Originaldateien sind erhalten. Die Originale liegen zusätzlich unverändert in `orginal_firmware_bibliotheken/`. |
 | §4: Lizenztext beilegen | `LICENSE` (GPL v3, Volltext) |
 | §5a: Geänderte Dateien tragen einen deutlichen Hinweis mit Datum | Kopfzeilen „Geändert gegenüber beelogger.de STM32_LORA_260705 …“ in `STM32_LORA_260705.ino`, `STM32_LORA.ino`, `STM32_LORA_utility.ino`, `Config_LORA.h.example` (`Config_MULTI.h.example` ist das unveränderte Original) |
-| §5a: Änderungen nachvollziehbar | `docs/aenderungen_gegen_260705.diff` (vollständig, gegen das Original) und README „Änderungen gegenüber 260705“; dazu die Git-Historie |
+| §5a: Änderungen nachvollziehbar | `docs/aenderungen_gegen_260705.diff` (vollständig, gegen das Original) und `docs/entwicklung.md` („Änderungen gegenüber 260705“); dazu die Git-Historie |
 | §5c: Gesamtwerk unter GPL v3 | Ja, siehe `LICENSE` und dieser Abschnitt |
 | §6: Quellcode verfügbar | Das Repo ist der vollständige Quellcode inkl. Build-Konfiguration (`platformio.ini`). Ausgenommen sind nur die LoRaWAN-Schlüssel (persönliche Zugangsdaten, kein Programmcode); Vorlage `src/Config_LORA.h.example`. |
 | §7/§15/§16: kein Ausschluss von Gewährleistungshinweisen | Hinweise der Originale unverändert |

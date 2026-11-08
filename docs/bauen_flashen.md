@@ -1,6 +1,64 @@
-# Firmware bauen und flashen (PlatformIO, Linux-Laptop)
+# Bauen und flashen
 
-Stand: 06.11.2026. Keine Schlüssel in diese Datei. Schlüssel-Archiv: lokal, nicht im Repo. Quelle u. a. Wiki-Kapitel 10 „Firmware bauen und flashen“ (29.10.2026).
+Stand: 08.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit f1a9e0c
+
+## Firmware selbst bauen (PlatformIO)
+
+1. **Repo holen:** `git clone https://github.com/desiue/beelogger-stm32.git` (oder auf GitHub „Code → Download ZIP“).
+2. **VS Code** installieren, darin die Erweiterung **PlatformIO IDE**. Ordner `beelogger-stm32` öffnen. PlatformIO lädt beim ersten Bauen den STM32-Core 2.6.0 selbst nach.
+3. **Vorlagen kopieren:**
+   ```
+   cp src/Config_LORA.h.example src/Config_LORA.h
+   cp src/Config_MULTI.h.example src/Config_MULTI.h
+   ```
+4. **`src/Config_LORA.h` ausfüllen:** `LOGGER_NAME`; Variante wählen mit `#define LORA_OTAA` (siehe „ABP oder OTAA“). ABP (`0`): `DEVADDR`, `NWKSKEY`, `APPSKEY` aus der TTN-Konsole. OTAA (`1`): `DEVEUI`, `APPEUI` (JoinEUI), `APPKEY` – DevEUI und JoinEUI in LSB-Reihenfolge, AppKey in MSB (in der TTN-Konsole umschaltbar). Sendeintervalle `WeckIntervall_*`. `LORA_CHANNELS` (1, 3 oder 8) muss zu den Frequenzen in TTN passen.
+5. **`src/Config_MULTI.h` ausfüllen:** Sensoren, Waagen-Kalibrierung, wie bei der Original-Firmware.
+6. **Board wählen** (unten in der PlatformIO-Leiste oder per Befehl):
+   - BluePill (STM32F103, „Blue“): `bluepill_f103c8`
+   - BlackPill (STM32F411, „Black“): `blackpill_f411ce`, ältere BlackPill: `blackpill_f401cc`
+7. **Bauen:** Häkchen in der PlatformIO-Leiste oder `pio run -e blackpill_f411ce`. Ergebnis: `.pio/build/<board>/firmware.bin`.
+8. **Flashen** über FTDI-Adapter mit stm32loader: siehe [`bauen_flashen.md`](bauen_flashen.md). Vorher an der Startzeile prüfen, welches Gerät am Kabel hängt.
+9. **TTN einstellen** wie unter [TTN-Einstellungen](ttn_einrichten.md#7-mac-einstellungen-im-detail-abp-lmic-dieser-firmware) bzw. in der [TTN-Anleitung](ttn_einrichten.md), sonst kommen Downlinks nicht an.
+
+**ATmega-Logger** (Universal 1.x, beeloggerSMD): eigener Ordner mit eigener Anleitung, siehe [`atmega_lora/README.md`](../atmega_lora/README.md#selbst-bauen).
+
+> **Tipp:** Vor dem Flashen an der [Startzeile](#serielle-konsole-und-startzeile) prüfen, welches Gerät am Kabel hängt – sonst landen die Schlüssel des falschen Geräts auf dem Board.
+
+Hinweise:
+- STM32-Core 2.6.0 (`framework-arduinoststm32@~4.20600`), in `platformio.ini` festgelegt.
+- BluePill: Board `bluepill_f103c8_128k` mit `-DARDUINO_BLUEPILL_F103CB` (die Firmware braucht 128 KB).
+- Flash-Belegung (07.11., mit OTAA): F103CB 56 500 B, F411CE 55 308 B. BluePill: muss unter 63 KB bleiben, darüber liegt die OTAA-Session-Seite.
+- `pio run -t upload` geht beim F411 nicht (stm32flash kennt die Chip-ID 0x431 nicht), deshalb stm32loader.
+
+## Eine Firmware, vier Varianten
+
+| | ABP (`LORA_OTAA 0`) | OTAA (`LORA_OTAA 1`) |
+|---|---|---|
+| **BluePill** F103 (`bluepill_f103c8`) | läuft (beeloggerblue05) | läuft (beelogger011) |
+| **BlackPill** F411/F401 (`blackpill_f411ce`, `blackpill_f401cc`) | läuft (beelogger09) | läuft (beelogger08) |
+
+Board = PlatformIO-Umgebung, ABP/OTAA = Schalter im Geräteblock von `Config_LORA.h`. Sonst ist der Code gleich, Korrekturen gelten für alle Varianten.
+
+## Serielle Konsole und Startzeile
+
+9600 Baud, BluePill an `Serial` (PA9/PA10), BlackPill an `Serial1`. Nach jedem Start (also jedem Zyklus) erscheint:
+
+```
+STM32_LORA_261107 - STM32F411CE
+Name: beelogger09 UID: 353439323337510600410066 DevAddr: 260BD691
+```
+
+- `261107`: Firmware-Kennung (`l_ID`), danach der Chip-Typ.
+- `Name`: `LOGGER_NAME` aus `Config_LORA.h`.
+- `UID`: 96-Bit-Seriennummer des Chips, eindeutig je Board.
+- `DevAddr`: LoRaWAN-Adresse, unter der das Gerät in TTN steht.
+
+Damit sieht man vor dem Flashen, welches Gerät am Kabel hängt und welche Firmware darauf läuft.
+
+
+## Flashen über FTDI (Linux)
+
+Keine Schlüssel in diese Datei.
 
 ## Bauen
 
@@ -61,47 +119,3 @@ Debug-Zeilen `batt.:`, `solar:`, `temperature:` im Block `Data:` zeigen die zwei
 ## Akkuspannung kalibrieren
 
 `Kalib_Spannung` (mV) und `Kalib_Bitwert` in `Config_MULTI.h` sind ein Messpaar: Akkuspannung mit Multimeter messen (nicht in Reihe als Strommesser, das senkt die Spannung), gleichzeitig im Log `ADC-bits: … Bat. [V]` ablesen, beide Werte eintragen. Beispiel beelogger08 (07.11.): 4,20 V bei 1647–1649 Bit → `4200` / `1648` (vorher Black-Vorgabe 4120 / 1650, Anzeige 4,11 V).
-
-## Bekannte Geräte
-
-Startzeile seriell: `Name: <LOGGER_NAME> UID: <w2 w1 w0> DevAddr: <hex>` – die UID steht dort in umgekehrter Wortreihenfolge zu stm32loader.
-
-
-Geräte-ID = `device_id` in TTN (für API und `scripts/ttn-status.sh <app> <device_id>`). Rolle laut Planung Paket 3.
-
-| Nr. | Name | Board | Modus | TTN-App / Gerät (device_id) | Firmware |
-|---|---|---|---|---|---|
-| 1 | beelogger09 | Black F411CE | ABP 260BD691 | beelogger09 / beelogger09 | Paket 2 |
-| 2 | beeloggerblue05 | Blue F103CB | ABP 260B6573 | beeloggerblue05 / eui-70b3d57ed005f5e0 | Paket 2 |
-| 3 | beelogger011 | Blue F103C8 | OTAA | beelogger011 / beelogger011-otaa | 261106 OTAA |
-| 4 | beelogger08 | Black F411CE | OTAA | beelogger08 / beelogger08-otaa | 261106 OTAA |
-| – | beeloggerblue01 | Black F411 | ABP 260B939B | beeloggerblue01 / beeloggerblue01 | 260705 |
-| – | beelogger07 (Feldgerät) | ? | ABP 260BEB70 | beeloggerblue07 / eui-70b3d57ed0066fa2 | alte Eigenbau-FW |
-
-Nr. 1–4 = Testgeräte (Rolle laut Planung Paket 3). UID wie stm32loader sie meldet.
-
-**1 beelogger09** (Quad9, Testboard)
-- UID 0066-0041-33375106-35343932, 512 KB.
-- Alte FW Aux3 = 1. 06.11. kurz versehentlich als 260BEB70 geflasht, dann 260705 als beelogger09 (Uplink 14:44 UTC, FCnt 4), danach Paket 2. 261106 noch nicht geflasht.
-
-**2 beeloggerblue05** (Testboard Blue)
-- Startzeile-UID 32303030303015C40F0C3A0C (stm32loader 3A0C-0F0C-303015C4-32303030, Bootloader 0x22), BluePill am 07.11.2026 getauscht: alte (UID 30003F2A000000001A5A5BB6) hatte keinen funktionierenden I2C-Bus. Reset-Taster defekt (R gegen G brücken).
-- Sensortest 07.11.: BME280 + BH1750 (GY-302) + DS18B20 + 4 Waagen, Config `Config_MULTI.h.bak_beeloggerblue05-sensoren`.
-- Paket 2 abgenommen 06.11. 18:51 UTC. 261106 noch nicht geflasht.
-- Watchdog-Testaufbau an ttyUSB1 (07.11.2026, blue05-ABP-Schlüssel): weitere BluePill, UID stm32loader 391B-0F01-303015C4-32303030 (Startzeile …0F01391B), Bootloader 0x22. Erstes RFM95 defekt (Init-Fehler `hal_failed` mal ja, mal nein; TX done, aber nichts in TTN), ersetzt durch drittes Modul → Uplinks kommen an.
-
-**3 beelogger011** (Testboard Blue)
-- UID 5BB6-1A5A-00000000-301117FD, F103C8T6 meldet 128 KB. DevEUI 70B3D57ED0079D7A. Altes ABP-Gerät `beelogger011` (260BF6FE) steht noch in TTN.
-- Kalibrierung 4150 mV / 1636 Bit.
-- 07.11. 01:17 261106 mit OTAA (Session im Flash): POR → Join 01:18:34 (DevAddr 260B21D9), FCnt 0; 01:23 Neustart aus Flash ohne Join, FCnt 1, t-on 5 s.
-- Davor 261106 ABP seit 06.11.: erster Uplink 20:31 UTC FCnt 1 (FCnt 0 verworfen, Altwert vom März); 20:38 UTC Rx2 DR 3 + Session/MAC-Reset per API.
-
-**4 beelogger08**
-- UID 0030-006E-33375105-35343932, 512 KB. DevEUI 70B3D57ED0079D78. Altes ABP-Gerät `beelogger08` (260B2D40) steht noch in TTN.
-- 261106 OTAA seit 06.11. 22:26 (Join 21:26:29 UTC, erster Uplink FCnt 0). Akku ab/an 22:32–22:40: jedes Mal Neu-Join nach 7–8 s mit neuer DevAddr, FCnt 0 angenommen.
-- 07.11. 02:56 neu geflasht (Kalibrierung 4200 mV / 1648 Bit, Anzeige 4,20 V = Multimeter), Session blieb erhalten.
-- Strom: alte FW wach 24–36 mA, Schlaf 18,2 µA, Wachzeit 18 s; neue FW wach 24–34 mA, Schlaf 18,09 µA. Multimeter in Reihe senkt die angezeigte Akkuspannung (3,8–4,1 V statt 4,21 V).
-
-**beeloggerblue01** (Testumgebung Black): laut 29.10. 256 KB Flash gemeldet, 260705 seit 29.10.
-
-**beelogger07** (Feldgerät): FCnt 8203 am 06.11., Aux3 = 1.

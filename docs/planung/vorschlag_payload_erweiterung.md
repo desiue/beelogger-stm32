@@ -8,7 +8,7 @@ Stand 07.11.2026, **Entwurf**. Noch nichts davon ist in der Firmware umgesetzt.
 
 ## Ausgangslage
 
-- Das Sendeintervall lässt sich jetzt per Downlink ändern (FPort 10, 1 Byte Minuten, siehe [`ttn_anleitung.md`](ttn_anleitung.md) Abschnitt 4). Der Server erfährt aber nicht, welches Intervall der Logger gerade benutzt.
+- Das Sendeintervall lässt sich jetzt per Downlink ändern (FPort 10, 1 Byte Minuten, siehe [`ttn_einrichten.md`](../ttn_einrichten.md) Abschnitt 4). Der Server erfährt aber nicht, welches Intervall der Logger gerade benutzt.
 - Der Server liest schon `Gewicht5` und `Gewicht6` und kennt die Ordnernamen `Penta`/`Hexa`. Firmware und TTN-Decoder können bisher nur 4 Waagen.
 - **Hardware-Grenze:** Blue- und BlackPill-Platine haben Anschlüsse für 2 HX711 mit je 2 Kanälen (A Verstärkung 128, B Verstärkung 32), also 4 Waagen. Pins: `HX711_DT/SCK` in `STM32_beelogger.h`, 2 Pins je HX711. Für Hexa bräuchte es einen 3. HX711 an zwei freien GPIOs, für Octa einen 4. Die Pins hätte der Controller, aber auf der Platine gibt es keinen Steckplatz dafür. Die Firmware wertet bei `Anzahl_Sensoren_Gewicht > 4` gar keine Waage aus (`Sensor_Gewicht()` ist dann leer); nur der DS18B20-Teil kennt schon Penta/Hexa.
 - Die Payload trägt am Ende einen 2-Byte-Header, ein Bit je Feld. **Alle 16 Bits sind belegt** (Bit 15 = Sketch-ID `Aux3`). Für ein neues Feld ist kein Bit mehr frei.
@@ -79,7 +79,7 @@ Ergebnis:
 1. Ist ein Erweiterungsbyte vor dem Header in Ordnung, oder gibt es schon einen Plan für Feld 16+? Im Quelltext ist ein dritter Header-Byte auskommentiert (`0x00FF0000`).
 2. Feldname für das Intervall: `Intervall` oder eins der Aux-Felder? Bei LoRa sind Aux1 = Luftdruck, Aux2 = RSSI, Aux3 = Sketch-ID belegt.
 3. Ignoriert `beelogger_log.php` unbekannte Felder im Webhook, oder lehnt es den Datensatz dann ab?
-4. Soll der Server das Intervall aus seiner Konfiguration selbst per Downlink schicken (wie `T15` in der Antwort an WLAN-Logger)? Dann bräuchte er einen TTN-API-Key, siehe [`ttn_anleitung.md`](ttn_anleitung.md), Abschnitt „Downlink aus der Server-Software“.
+4. Soll der Server das Intervall aus seiner Konfiguration selbst per Downlink schicken (wie `T15` in der Antwort an WLAN-Logger)? Dann bräuchte er einen TTN-API-Key, siehe [`ttn_einrichten.md`](../ttn_einrichten.md), Abschnitt „Downlink aus der Server-Software“.
 5. Waage 7 und 8: Soll der Server `Gewicht7`/`Gewicht8` und einen Ordnernamen (`Hepta`/`Octa`) bekommen, oder ist 6 die Grenze?
 6. Hexa-Hardware: Ist ein 3. HX711 geplant (Zusatzplatine, welche Pins)? Oder ist an andere Wägetechnik gedacht? Ohne neue Hardware bleibt der Payload-Teil für Waage 5–8 Vorarbeit.
 7. Bei mehr als 2 Waagen fallen die Beutentemperaturen weg (Bit 6/7/9/10). Für Hexa ebenso?

@@ -173,7 +173,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
   - Build 260705 unverändert: F103CB 53 612 B Flash (41 %) / 2 316 B RAM; F411CE 53 016 B (10 %) / 2 372 B; F401CC 52 704 B (20 %) / 2 372 B.
   - Startzeile nach der Chip-Zeile in `System_Init()` (`STM32_LORA_utility.ino`): `Name: <LOGGER_NAME> UID: <24 Hex> DevAddr: <8 Hex>`. `LOGGER_NAME` im aktiven Block von `Config_LORA.h` (fehlt er, steht `?`). Kosten ca. 110 B Flash.
   - Mit Startzeile: F103CB 53 724 B, F411CE 53 128 B, F401CC 52 816 B. Platz für Paket 2/3 reichlich, auch auf F103CB (77 KB frei).
-  - **Flashen:** `pio -t upload` scheitert am F411 (stm32flash kennt 0x431 nicht), wie schon am 29.10. Lösung `stm32loader`, Anleitung jetzt in `docs/flashen.md`.
+  - **Flashen:** `pio -t upload` scheitert am F411 (stm32flash kennt 0x431 nicht), wie schon am 29.10. Lösung `stm32loader`, Anleitung jetzt in `docs/bauen_flashen.md`.
   - **Panne:** Testboard für beelogger07 (260BEB70) gehalten und so geflasht. TTN zeigte 14:36 zwei Uplinks unter 260BEB70: echter beelogger07 (FCnt 8203, Aux3 1, 12,8 °C) und Testboard (FCnt 3, Aux3 260705, 23,9 °C). Testboard ist **beelogger09** (260BD691, Block aus lokalem Konfig-Archiv 20260303 übernommen). Falsche Werte bei beelogger07 ab 14:36 auf dem Server löschen.
   - Testgerät in Abschnitt „Testgerät“ ist damit beelogger09, nicht beeloggerblue01.
   - 14:44 UTC (15:44 Ortszeit): beelogger09 mit 260705 geflasht (stm32loader, Verify OK). TTN-App `beelogger09` nimmt Uplink an: FCnt 4 (Zähler überlebte Flash), Aux3 260705, VBatt 4,20 V, TempOut 24,1 °C, RSSI −69. **Abnahme Uplink Paket 1 erfüllt.**
@@ -186,7 +186,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 - **Unsere STM32-Firmware läuft auf dessen Geräten nicht.** Er ist für dieses Projekt kein Ziel, aber für die Wiki-Anleitung 06/06a.
 - Problem nach der Umstellung aus 06a: Gateway empfängt, App bekommt nichts. Logger sendet `f_cnt 62980`. Genau der in 06a (Abschnitt „Voraussetzung Frame Counter“, 6.1, 11) beschriebene Fall: Nach „Reset session and MAC state“ erwartet TTN den Zähler bei 0, Lücke > 16 384 → Uplinks verworfen. „Resets frame counters“ hilft nicht, es erlaubt nur den Sprung zurück auf 0, keine große Lücke nach vorn.
 - (Das Frame-Counter-Problem ist laut Nutzer gelöst, steht im Wiki.)
-- 07.11.: Fall als Zeile in `docs/ttn_anleitung.md` Abschnitt 5 ergänzt (Wiki 06a gilt als veraltet, Repo-Anleitung ist maßgeblich).
+- 07.11.: Fall als Zeile in `docs/ttn_einrichten.md` Abschnitt 5 ergänzt (Wiki 06a gilt als veraltet, Repo-Anleitung ist maßgeblich).
 - **Hinweis für sein Helium-Gerät** (eigener OTAA+ADR-Sketch): Beantwortet der Sketch MAC-Befehle nach dem Tiefschlaf nicht (wie unsere Firmware), entsteht dieselbe Downlink-Schleife wie bei TTN. Abhilfe: im Geräteprofil des Netzservers (bei Helium meist ChirpStack eines Console-Anbieters) Rx1-Delay und Rx2-Datenrate genau auf die Werte des Sketches setzen und ADR nur nutzen, wenn der Sketch LinkADRReq dauerhaft beantwortet (ADR-Zustand über den Tiefschlaf retten). Sonst `LMIC_setAdrMode(0)`. Ungeprüft, kein Helium-Zugang.
 
 ### Helium (Bewertung 06.11.2026, neu bewertet 07.11.2026)
@@ -231,7 +231,7 @@ Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgen
   - F1: `#error` bei `LORA_OTAA` – Flash-Speicher folgt (beelogger011).
   - Build: F103CB ABP 55 172 B, F411CE ABP 54 440 B, F411CE OTAA 55 256 B.
   - TTN: Gerät `beelogger08-otaa` per API angelegt (DevEUI von TTN 70B3D57ED0079D78, JoinEUI 0, AppKey zufällig, direkt in `Config_LORA.h`; LoRaWAN 1.0.2, RP 1.0.2 rev B, Rx1 delay 1, Rx2 DR 3, ADR aus, kein FCnt-Reset). Skript: `scripts/ttn-otaa-anlegen.py <app> <device_id> <LOGGER_NAME> src/Config_LORA.h` (Konto-Key).
-  - beelogger08 geflasht (vier Fehlversuche: BOOT zu früh losgelassen, siehe `flashen.md`). 21:26:29 UTC Join, erster Uplink FCnt 0. 21:28 UTC Neustart per Reset **ohne Neu-Join**, Uplink FCnt 1 in derselben Session → Schlüssel-Neuberechnung stimmt. **Abnahme Paket 3 auf F4: Join und Neustart ohne Join erfüllt; Akku-ab → Neu-Join noch testen.**
+  - beelogger08 geflasht (vier Fehlversuche: BOOT zu früh losgelassen, siehe `bauen_flashen.md`). 21:26:29 UTC Join, erster Uplink FCnt 0. 21:28 UTC Neustart per Reset **ohne Neu-Join**, Uplink FCnt 1 in derselben Session → Schlüssel-Neuberechnung stimmt. **Abnahme Paket 3 auf F4: Join und Neustart ohne Join erfüllt; Akku-ab → Neu-Join noch testen.**
   - Zweitmeinung (`ask review`) zum Diff: nur Fehlalarme.
 
 ## Beobachten (im Auge behalten, später nachprüfen)
@@ -259,21 +259,21 @@ Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgen
 
 **Paket 2 (Rest)**
 - [x] blue05: AS- und NS-Downlink-Zähler per API auf 0 gesetzt (PUT `/api/v3/as/…` und `/api/v3/ns/…` mit Feldmaske `session.last_a_f_cnt_down` bzw. `session.last_n_f_cnt_down`, Key mit „Edit devices“). 18:51 UTC `DL Port 10: 15`, `DL: 15min`, Weckzeit +15 min. **Paket 2 auf F103 abgenommen.**
-- [x] (07.11., `ttn_anleitung.md` Abschnitt 5) In die TTN-Anleitung: FCntDown muss < 65536 sein, in NS **und** AS (`scripts/ttn-status.sh` zeigt beide). Zurücksetzen per API (siehe oben) oder Gerät neu anlegen. beelogger09: AS 39426 – ok, aber im Blick behalten.
+- [x] (07.11., `ttn_einrichten.md` Abschnitt 5) In die TTN-Anleitung: FCntDown muss < 65536 sein, in NS **und** AS (`scripts/ttn-status.sh` zeigt beide). Zurücksetzen per API (siehe oben) oder Gerät neu anlegen. beelogger09: AS 39426 – ok, aber im Blick behalten.
 - [x] **Firmware-Version kenntlich machen:** `l_ID` = 261106 (JJMMTT, Nutzerentscheid 06.11.), README Punkt 5, Diff neu erzeugt. Noch nicht geflasht.
 - [ ] Rückmeldung an den Server (07.11.: Entwurf `docs/vorschlag_payload_erweiterung.md`, wartet auf Rückmeldung der Entwickler), welches Intervall aktiv ist (z. B. in jedem 10. Uplink wie die ID)?
 
-- [x] (07.11., `ttn_anleitung.md` Abschnitt 5) In die TTN-Anleitung: „Reset session and MAC state“ per API = `PATCH /api/v3/ns/applications/<app>/devices/<dev>` mit Body `{"field_mask":{"paths":["session","mac_state"]}}` (nicht `/reset`, das gibt 404); Beispiel: App beelogger011, Gerät beelogger011. Setzt NS-FCntDown auf 0, AS-Zähler extra per PUT. 06.11. an beelogger011 gemacht.
+- [x] (07.11., `ttn_einrichten.md` Abschnitt 5) In die TTN-Anleitung: „Reset session and MAC state“ per API = `PATCH /api/v3/ns/applications/<app>/devices/<dev>` mit Body `{"field_mask":{"paths":["session","mac_state"]}}` (nicht `/reset`, das gibt 404); Beispiel: App beelogger011, Gerät beelogger011. Setzt NS-FCntDown auf 0, AS-Zähler extra per PUT. 06.11. an beelogger011 gemacht.
 
 **Doku / Repo**
 - [x] (06.11., README neu) README-Startseite überarbeiten: Ziel des Projekts in 3 Sätzen; **Schritt-für-Schritt „Firmware selbst bauen“** (Repo laden, VS Code + PlatformIO, Vorlagen kopieren, Env wählen BluePill/BlackPill, Schalter ABP/OTAA (`LORA_OTAA`, ab Paket 3), bauen, flashen); Startzeile `Name/UID/DevAddr` erklären (steht bisher nur knapp unter „Änderungen“).
 - [x] (06.11., README) Abschnitt **„Gefundene Fehler“** (Repo-Doku): Aux3 in jedem Uplink (seqnoUp), Register 4 `WeckIntervallMinuten` gespeichert aber unbenutzt, FCntDown > 65535 → Downlink verworfen, AS-Zähler übersteht MAC-Reset, RX2-SF9 vs. TTN-Vorgabe SF12.
 - [x] (06.11., README) Abschnitt **Fair Use Policy** (TTN: 30 s Airtime/Tag, 10 Downlinks/Tag) mit Paketgrößen und Intervallen; Material aus Wiki `projekte:beelogger_doku` übernehmen.
 - [x] (06.11. Nutzer: **nein**, bleiben im Wiki) Entscheiden: DokuWiki-Seiten zu beelogger (Payload/Bitaufteilung, Verschlüsselung, TTN 06/06a) ins Repo übernehmen (Markdown, ohne Privates)?
-- [x] (07.11., `docs/ttn_anleitung.md` Abschnitt 4, `down/replace` getestet: beelogger011-otaa `0F`, 02:08 MEZ `DL Port 10: 15`, Weckzeit +15 min) Downlink aus der Server-Software: Doku für beelogger-Entwickler, wie ihr Server per TTN-API Downlinks schickt (`POST /api/v3/as/applications/<app>/devices/<dev>/down/push`, API-Key mit „Write downlink application traffic“, FPort 10, Base64-Payload) – Beispiel curl/PHP.
-- [x] TTN-Anleitung mit Screenshots je Variante (siehe Paket 4). 07.11.: `docs/ttn_anleitung.md`, Bilder 01–09.
+- [x] (07.11., `docs/ttn_einrichten.md` Abschnitt 4, `down/replace` getestet: beelogger011-otaa `0F`, 02:08 MEZ `DL Port 10: 15`, Weckzeit +15 min) Downlink aus der Server-Software: Doku für beelogger-Entwickler, wie ihr Server per TTN-API Downlinks schickt (`POST /api/v3/as/applications/<app>/devices/<dev>/down/push`, API-Key mit „Write downlink application traffic“, FPort 10, Base64-Payload) – Beispiel curl/PHP.
+- [x] TTN-Anleitung mit Screenshots je Variante (siehe Paket 4). 07.11.: `docs/ttn_einrichten.md`, Bilder 01–09.
 - [x] (README, 06.11.) Doku (Nutzer 06.11.): Vor- und Nachteile OTAA vs. ABP erklären – warum es beide Varianten gibt.
-- [x] (07.11., `ttn_anleitung.md` Abschnitt 3: Bild 08 Live data, Auszug serielle Konsole mit Join und Downlink) Doku (Nutzer 06.11.): In Beispielen echte Live-Daten aus der TTN-Konsole zeigen (z. B. Uplink von beelogger08), damit neue Nutzer sehen, wie die Daten dort aussehen müssen. Dazu passende Auszüge aus der seriellen Konsole (Startzeile, Join, Uplink, TX done).
+- [x] (07.11., `ttn_einrichten.md` Abschnitt 3: Bild 08 Live data, Auszug serielle Konsole mit Join und Downlink) Doku (Nutzer 06.11.): In Beispielen echte Live-Daten aus der TTN-Konsole zeigen (z. B. Uplink von beelogger08), damit neue Nutzer sehen, wie die Daten dort aussehen müssen. Dazu passende Auszüge aus der seriellen Konsole (Startzeile, Join, Uplink, TX done).
 
 **Messen / Hardware**
 - [x] Wachzeit und Stromverbrauch pro Zyklus messen, **vor und nach** dem Flash der neuen Firmware: am **beelogger08** (vor dem Update!). Log `t-on` und `TX done`-Zeit (ms) vergleichen; Strom mit Multimeter/USB-Meter. 07.11.: neue FW gleich (Schlaf 18,09 µA, wach 24–34 mA).

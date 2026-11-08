@@ -1,6 +1,6 @@
 # beelogger LoRa für ATmega328 – Vorschlag 261107
 
-Der ATmega-LoRa-Sketch **beelogger_LORA_250326** von [beelogger.de](https://beelogger.de/?page_id=200563) (beelogger-Universal 1.x und beeloggerSMD) mit **zwei kleinen Änderungen als Vorschlag**. Es sind dieselben zwei Stellen, die mir im STM32-Sketch 260705 aufgefallen sind (siehe [README](../README.md#gefundene-fehler)). Alles andere ist wie im Original: ABP, Messablauf, Payload, Server.
+Der ATmega-LoRa-Sketch **beelogger_LORA_250326** von [beelogger.de](https://beelogger.de/?page_id=200563) (beelogger-Universal 1.x und beeloggerSMD) mit **zwei kleinen Änderungen als Vorschlag**. Es sind dieselben zwei Stellen, die mir im STM32-Sketch 260705 aufgefallen sind (siehe [README](../docs/entwicklung.md#gefundene-fehler)). Alles andere ist wie im Original: ABP, Messablauf, Payload, Server.
 
 Dazu als zweiter Ordner eine Fassung mit **OTAA**: [beelogger_LORA_OTAA_261108](#otaa--vorschlag-261108).
 
@@ -42,7 +42,7 @@ Ablauf:
 - Alle 144 Uplinks (bei 10 min etwa einmal am Tag) hängt der Sketch einen Link-Check an den Uplink. Bleiben drei Link-Checks in Folge ohne Antwort, joint er neu. Das fängt z. B. ein in TTN gelöschtes oder neu angelegtes Gerät ab.
 - Neuer Join auch, wenn andere Schlüssel aufgespielt werden (Prüfsumme über DEVEUI und APPKEY), und vor dem Überlauf des 16-Bit-Zählers (bei 65 000).
 
-TTN: Gerät mit OTAA anlegen, LoRaWAN 1.0.2, Regional Parameters 1.0.2 rev B, Frequenzplan Europe 863-870 (TTN). Wie bei ABP: ADR Disabled, Status periodicity 0 ([TTN-Anleitung](../docs/ttn_anleitung.md)). In `Config_LORA.h` DEVEUI und APPEUI (JoinEUI) mit LSB zuerst, APPKEY mit MSB zuerst eintragen (die TTN-Konsole kann die Reihenfolge umschalten).
+TTN: Gerät mit OTAA anlegen, LoRaWAN 1.0.2, Regional Parameters 1.0.2 rev B, Frequenzplan Europe 863-870 (TTN). Wie bei ABP: ADR Disabled, Status periodicity 0 ([TTN-Anleitung](../docs/ttn_einrichten.md)). In `Config_LORA.h` DEVEUI und APPEUI (JoinEUI) mit LSB zuerst, APPKEY mit MSB zuerst eintragen (die TTN-Konsole kann die Reihenfolge umschalten).
 
 Speicher (arduino-cli, avr-gcc 7.3, Bibliotheken 2026_04, 1 DS18B20, 1 Waage):
 
@@ -101,7 +101,7 @@ Der Frame-Counter liegt im EEPROM. Beim Aufspielen über den Bootloader (USB-Ser
    - der Uplink hat das ADR-Bit nicht mehr (in den Uplink-Details `"adr": false` oder kein `adr`),
    - Payload-Länge: die Sketch-ID kommt nur noch bei jedem 10. FCnt mit, die übrigen Uplinks sind 4 Byte kürzer.
 2. Am beelogger-Server: Werte kommen wie bisher, die Sketch-ID zeigt 261107.
-3. Einen Tag laufen lassen und in TTN die Zahl der Downlinks ansehen. Mit den Einstellungen aus der [TTN-Anleitung](../docs/ttn_anleitung.md) (ADR Disabled, Status periodicity 0) sollten kaum noch welche kommen.
+3. Einen Tag laufen lassen und in TTN die Zahl der Downlinks ansehen. Mit den Einstellungen aus der [TTN-Anleitung](../docs/ttn_einrichten.md) (ADR Disabled, Status periodicity 0) sollten kaum noch welche kommen.
 
 Wenn etwas anders aussieht als hier beschrieben, bitte melden. Dann habe ich mich vermutlich getäuscht.
 

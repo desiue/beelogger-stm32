@@ -1,6 +1,9 @@
-# TTN-Anleitung: beelogger in The Things Network anlegen
+# TTN einrichten: beelogger in The Things Network anlegen
 
-Für diese Firmware (Kennung 261107, LMIC 1.5). Gilt für alle vier Varianten (BluePill F103, BlackPill F411/F401, jeweils ABP oder OTAA). Welche Variante passt: README, Abschnitt „ABP oder OTAA“.
+Stand: 08.11.2026 · gilt für: STM32 261107 (LMIC 1.5), ABP und OTAA · Abschnitt 1.4 und 4b (FPort 11):
+Branch `p7-serverquittung`, noch nicht in `main`
+
+Für diese Firmware (Kennung 261107, LMIC 1.5). Gilt für alle vier Varianten (BluePill F103, BlackPill F411/F401, jeweils ABP oder OTAA). Welche Variante passt: [abp_otaa.md](abp_otaa.md).
 
 Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 
@@ -14,6 +17,16 @@ Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
    ![Payload-Formatter](ttn/bilder/02_formatter.png)
 3. **Webhooks → + Add webhook → Custom webhook**: Adresse des beelogger-Servers wie bei beelogger.de beschrieben (`…/beelogger_log.php?Passwort=…&LORA=1`), „Uplink message“ an.
    ![Webhook](ttn/bilder/03_webhook.png)
+4. **Optional: zweiter Webhook zum eigenen Server.** Eine Application kann mehrere Webhooks haben; jeder
+   bekommt jeden Uplink. So gehen die Daten z. B. an den Community-Server **und** an einen eigenen Server.
+   Webhook-ID frei wählbar (z. B. `<app>-2`), Base URL des eigenen Servers, „Uplink message“ an.
+   Soll der eigene Server Uhrzeit und Intervall zurückschicken (`lora_downlink.php`, siehe
+   [server.md](server.md#rückkanal-für-lora-lora_downlinkphp-eigene-erweiterung)), zusätzlich:
+   - **Application → API keys → + Add API key**, Recht nur **„Write downlink application traffic“**.
+   - Den Key im Webhook unter **Downlink API key** eintragen. TTN schickt dann bei jedem Uplink die
+     Header `X-Downlink-Apikey` und `X-Downlink-Push`/`X-Downlink-Replace` mit.
+   - Den Key nur dort eintragen, nicht in Dateien auf dem Server oder im Repo.
+   Die Webhook-URL enthält das Upload-Passwort. Nicht in Foren, Bildschirmfotos oder Repos zeigen.
 
 ## 2. Gerät anlegen
 
@@ -38,7 +51,7 @@ Konsole: <https://eu1.cloud.thethings.network/console> (Cluster Europa).
 2. In `src/Config_LORA.h` eintragen, beide Schlüssel in **MSB**-Reihenfolge (Schalter `<>` in der Konsole, Format „C-style“):
    - `DEVADDR = 0x260B….` (Device address)
    - `NWKSKEY[16]`, `APPSKEY[16]`
-3. **General settings → Network layer → Custom MAC settings** genau wie in der Tabelle im README („TTN-Einstellungen“), dazu wie bei OTAA (2b Schritt 4) Status count/time periodicity 0. Wichtig: **Resets frame counters an**, **Rx2 data rate index 3**, **ADR Disabled**, Rx1 delay 1 s. Aktuelle und „Desired“-Werte gleich. **Altgeräte mit alter Firmware** (Feld-Logger, nicht neu geflasht): Rx2 data rate index **0 / 0** wie im Wiki (Kapitel 06a), dann Reset session and MAC state. Entscheidend ist, dass Einstellung, Desired und laufende Session übereinstimmen; das Skript prüft das.
+3. **General settings → Network layer → Custom MAC settings** genau wie in der Tabelle in Abschnitt 7, dazu wie bei OTAA (2b Schritt 4) Status count/time periodicity 0. Wichtig: **Resets frame counters an**, **Rx2 data rate index 3**, **ADR Disabled**, Rx1 delay 1 s. Aktuelle und „Desired“-Werte gleich. **Altgeräte mit alter Firmware** (Feld-Logger, nicht neu geflasht): Rx2 data rate index **0 / 0** (SF12, LMIC-Vorgabe ohne `LMIC.dn2Dr = DR_SF9`), dann Reset session and MAC state. Entscheidend ist, dass Einstellung, Desired und laufende Session übereinstimmen; das Skript prüft das.
 4. Wurden die MAC-Einstellungen bei einem laufenden Gerät geändert: **Reset session and MAC state** (siehe Abschnitt 5), sonst gelten die alten Werte weiter.
 
 ### 2b. OTAA (`#define LORA_OTAA 1`)
@@ -73,7 +86,7 @@ Braucht einen API-Key in `~/.config/ttn/konto.key` (siehe Abschnitt 6). Der Bloc
 
 ## 3. Bauen, flashen, prüfen
 
-Bauen und flashen: README und [`flashen.md`](flashen.md). Danach:
+Bauen und flashen: [`bauen_flashen.md`](bauen_flashen.md). Danach:
 
 1. **Serielle Konsole** (9600 Baud): Startzeile mit Name und DevAddr. OTAA: nach dem ersten Start Join (einige Sekunden), danach steht die neue DevAddr in der Startzeile.
 
@@ -137,7 +150,7 @@ Bauen und flashen: README und [`flashen.md`](flashen.md). Danach:
 
 ![Downlink](ttn/bilder/09_downlink.png)
 
-Fair Use Policy: höchstens 10 Downlinks am Tag (README, „TTN Fair Use Policy“).
+Fair Use Policy: höchstens 10 Downlinks am Tag (Abschnitt 8).
 
 ### Downlink aus der Server-Software (TTN-API)
 
@@ -196,6 +209,13 @@ Hinweise:
 - Kommt der Downlink nie an: FCntDown prüfen (Abschnitt 5).
 - `<app>` ist die TTN-Application-ID (bei uns = Gerätename, z. B. `beelogger011`), `<dev>` die Device-ID (z. B. `beelogger011-otaa`).
 
+### 4b. Automatisch vom eigenen Server: Serverquittung FPort 11
+
+Mit `lora_downlink.php` (Abschnitt 1.4) braucht es keinen Downlink von Hand: Der Server schickt
+das Intervall aus seiner Web-Konfiguration und einmal am Tag die Uhrzeit (FPort 11, 7 Byte). Format:
+[payload.md](payload.md#downlink-fport-11-serverquittung-uhr--intervall), Einbau: [server.md](server.md).
+Ob es ankommt: im seriellen Monitor `DL Port 11: …` und `Uhr gestellt`, auf dem Server `lora_downlink.log`.
+
 ## 5. Wenn etwas nicht geht
 
 | Zeichen | Ursache | Abhilfe |
@@ -223,3 +243,48 @@ Nur für die Skripte nötig, nicht für den Betrieb. Anlegen unter **Application
 | `~/.config/ttn/konto.key` | Applications: devices lesen und schreiben | `ttn-otaa-anlegen.py`; Rückfall für `ttn-status.sh` |
 
 Zum Zurücksetzen der Zähler per API zusätzlich „Edit devices“. Keys mit Ablaufdatum anlegen und danach löschen.
+
+## 7. MAC-Einstellungen im Detail (ABP, LMIC dieser Firmware)
+
+Gilt für ABP. Bei OTAA kommen Rx1-Delay und Rx2 mit dem Join; Frequenzplan, LoRaWAN-Version und ADR aus wie unten.
+
+Die Firmware startet nach jedem Zyklus neu (`LowPower.shutdown()`) und beantwortet keine MAC-Befehle. TTN muss deshalb genau die Werte kennen, die die Firmware fest benutzt. Sonst hängt TTN an jeden Downlink MAC-Befehle („Downlink-Schleife“).
+
+| Einstellung (Advanced MAC settings) | Wert | Grund |
+|---|---|---|
+| LoRaWAN-Version | 1.0.2, PHY 1.0.2 rev B | LMIC 1.5 |
+| Frequenzplan | EU_863_870_TTN | |
+| Frame counter width | 32 bit | |
+| Rx1 delay / Desired | 1 / 1 s | LMIC-Vorgabe |
+| Rx1 data rate offset / Desired | 0 / 0 | |
+| **Rx2 data rate index / Desired** | **3 / 3** (SF9) | `LMIC.dn2Dr = DR_SF9` in `setup_LORA()` |
+| Rx2 frequency / Desired | 869,525 / 869,525 MHz | |
+| Resets frame counters | an | Zähler fängt nach Akku-ab bei 0 an |
+| Factory preset frequencies | 868,1 / 868,3 / 868,5 / 867,1 … 867,9 MHz | muss alle Sendefrequenzen enthalten |
+| ADR | aus (Disabled) | |
+| Status count / time periodicity | 0 / 0 | Vorgabe 200 / 86400: TTN fragt den Gerätestatus per MAC-Befehl ab, Firmware antwortet nicht |
+
+Links („aktuell“) und rechts („Desired“) müssen gleich sein. Beispiel aus der API: `ttn/beelogger09_ns_einstellungen_abp.json`.
+
+**Achtung:** Geänderte MAC-Einstellungen gelten bei einer laufenden ABP-Session erst nach „Reset session and MAC state“ in der TTN-Konsole. Bis dahin nutzt TTN die alten Werte. Beispiel beelogger09 am 06.11.: Settings RX2 = DR3, die laufende Session aber noch DR0 (SF12). Der Downlink kam trotzdem an, weil TTN ihn über RX1 schickte (SF7, gleiche Frequenz wie der Uplink). Mitschnitt: `ttn/beispiele/2026-11-06_beelogger09_live_data_downlink_15min.json`.
+
+**Downlink-Zähler (FCntDown):** Die Firmware beginnt nach jedem Neustart bei FCntDown 0 und sieht nur die unteren 16 Bit. Steht der Zähler in TTN über 65535, wird der Downlink **ohne Meldung verworfen**. Das passiert bei Geräten, die lange in der Downlink-Schleife hingen (beeloggerblue05: 224 647). Den Zähler führt TTN **zweimal**, im Network Server und im Application Server. „Reset session and MAC state“ setzt nur den ersten zurück. Abhilfe: beide per API auf 0 setzen (PUT auf `/api/v3/ns/…` und `/api/v3/as/…/devices/<dev>`, Feldmaske `session.last_n_f_cnt_down` bzw. `session.last_a_f_cnt_down`, API-Key mit „Edit devices“) oder das Gerät neu anlegen. `scripts/ttn-status.sh <app> <device>` zeigt beide Werte und warnt ab 65536.
+
+Kanäle: `LORA_CHANNELS` in `Config_LORA.h` (1, 3 oder 8). Testgeräte: 3.
+
+Downlink senden (TTN-Konsole → Gerät → Messaging → Downlink): FPort 10, Payload hex `0F` = 15 min, `00` = Firmware-Vorgabe.
+
+## 8. TTN Fair Use Policy
+
+Pro Gerät im Schnitt **30 s Uplink-Airtime** und **höchstens 10 Downlinks** in 24 h.
+
+| Intervall | Uplinks/Tag | Airtime/Tag bei SF7 (ca. 77 ms je Uplink) |
+|---|---|---|
+| 5 min | 288 | 22,2 s (74 %) |
+| 10 min | 144 | 11,1 s |
+| 15 min | 96 | 7,4 s |
+
+- Bei 5 min und SF8 wäre die Grenze überschritten, deshalb ist SF7 fest eingestellt. Mehr Payload (z. B. weitere Waagen) braucht längere Intervalle.
+- Ein Intervall-Downlink ist ein einzelner Downlink und liegt weit unter der Grenze.
+- Ein Gerät in der Downlink-Schleife bekommt dagegen bis zu 288 Downlinks am Tag, fast das 30-Fache. Deshalb die MAC-Einstellungen (Abschnitt 7) genau übernehmen.
+- Kürzere Intervalle in der Schwarmzeit und Senden nur bei Gewichtsänderung: siehe [Idee Sendeplan/Schwarmalarm](planung/idee_sendeplan_schwarmalarm.md). Für `main` nicht vorgesehen: Laut beelogger-Team ist die Schwarmlogik des Servers auf den 10-min-Takt ausgelegt (Windböen), öfter senden bringt nichts.
