@@ -125,8 +125,8 @@ rechnet bei Bedarf den Abstand dazu.
 - Solange die Uhr falsch geht, schaltet die Nacht- und Winterlogik zur falschen Zeit. Die Messwerte selbst
   sind nicht betroffen, weil der Server mit seiner eigenen Zeit stempelt.
 - Ist `lora_downlink.php` eingebunden, ist die Uhr spätestens am selben Tag wieder richtig: Der Server sendet
-  einmal täglich die Zeit. Das Format ist dasselbe wie in der WLAN-Antwort: Unixzeit, in der Sommerzeit plus
-  eine Stunde.
+  einmal täglich die Zeit. Das Format ist dasselbe wie in der WLAN-Antwort: Ortszeit (MEZ, in der Sommerzeit
+  MESZ) als Unixzeit.
 - Ohne Rückkanal bleibt die Uhr beim Startwert und läuft von dort weiter. Die Firmware hat keinen anderen Weg,
   die Uhr zu stellen.
 

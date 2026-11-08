@@ -40,7 +40,7 @@ function lora_downlink($MessIntervall){
   $st=array();
   if(file_exists($stateFile)){$st=json_decode(file_get_contents($stateFile),true);if(!is_array($st))$st=array();}
 
-  $tRx=$rx+date("I",$rx)*3600;                                // Format wie WLAN-Quittung
+  $tRx=$rx+date("Z",$rx);                                     // Ortszeit wie WLAN-Quittung (MEZ/MESZ)
   $gapMin=0;                                                   // Abstand der letzten beiden Uplinks
   if(isset($st['fcnt'],$st['rx']) && $fcnt==$st['fcnt']+1){
     $g=(int)round(($rx-$st['rx'])/60);

@@ -121,7 +121,7 @@ Der Wert bleibt im RTC-Backup-Register erhalten, auch über den Tiefschlaf hinwe
 | Byte | Inhalt |
 |---|---|
 | 0 | unteres Byte des Frame-Counters des Uplinks, zu dem der Downlink gehört |
-| 1–4 | Empfangszeit dieses Uplinks: Unixzeit (UTC), in der Sommerzeit + 3600 s; `0` = keine Zeit |
+| 1–4 | Empfangszeit dieses Uplinks: Ortszeit als Unixzeit: UTC + 3600 s (MEZ), in der Sommerzeit + 7200 s (MESZ), wie die WLAN-Antwort; `0` = keine Zeit |
 | 5 | Abstand der letzten beiden Uplinks in Minuten, `0` = unbekannt |
 | 6 | Messintervall in Minuten (5–60), `0` = unverändert |
 
@@ -132,11 +132,11 @@ So wertet der Logger aus (`onEvent()`, `EV_TXCOMPLETE`):
 - Sonst bleibt die Uhr unverändert.
 - Byte 6 zwischen 5 und 60: neues Fern-Intervall, auf 5 abgerundet.
 
-Beispiel: Uplink mit FCnt 42 (`2A`), empfangen am 08.11.2026 14:50:00 UTC (Winterzeit, kein Zuschlag),
+Beispiel: Uplink mit FCnt 42 (`2A`), empfangen am 08.11.2026 14:50:00 UTC = 15:50:00 MEZ (Winterzeit, + 3600 s),
 Abstand 10 min, Intervall 10 min:
 
 ```
-2A  6A F0 8C 18  0A  0A        Base64: KmrwjBgKCg==
+2A  6A F0 9A 28  0A  0A        Base64: KmrwmigKCg==
 ```
 
 Serieller Monitor: `DL Port 11: 42 1794149400 10 10`, danach `Uhr gestellt`.
