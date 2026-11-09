@@ -3,7 +3,7 @@
 [← Übersicht](README.md)
 
 Stand: 09.11.2026 · gilt für: STM32 261107, Rückkanal FPort 11 (Branch `p7-serverquittung`, noch nicht in
-`main`) · geprüft gegen Code: Commit 80673f1
+`main`) · geprüft gegen Code: Commit 863302f
 
 Fragen, die beim Austausch mit dem beelogger-Team und anderen Nutzern aufkamen. Die Antworten sind kurz,
 die Links führen zu den Einzelheiten.
