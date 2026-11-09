@@ -1,5 +1,7 @@
 # Server: was mit einer Meldung auf dem beelogger-Server passiert
 
+[← Übersicht](README.md)
+
 Stand: 09.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261004), `server/lora_downlink.php` vom 08.11.2026 ·
 geprüft gegen Code: `beelogger1/beelogger_log.php` aus M40_261004, Commit 80673f1 ·
 `lora_downlink.php`: Branch `p7-serverquittung`, noch nicht in `main`

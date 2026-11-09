@@ -1,5 +1,7 @@
 # Speicher: was sich der Logger merkt und wann es verloren geht
 
+[← Übersicht](README.md)
+
 Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
 
 Der STM32-Logger schläft zwischen zwei Messungen im **Shutdown** (Standby, `LowPower.shutdown()` in

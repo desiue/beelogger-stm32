@@ -1,5 +1,7 @@
 # Doku-Pflege: eine Quelle pro Information
 
+[← Übersicht](README.md)
+
 Stand: 08.11.2026 · gilt für: alle Firmware-Varianten in diesem Repo
 
 Rund um den beelogger gibt es Informationen an mehreren Stellen: Code, diese GitHub-Doku, Wikis, Notizen,

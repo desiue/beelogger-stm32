@@ -1,5 +1,7 @@
 # Intervalle: wann der Logger misst und sendet
 
+[← Übersicht](README.md)
+
 Stand: 08.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit f1a9e0c
 (`src/STM32_LORA_utility.ino`, `Alarm_konfigurieren()`; `src/STM32_LORA_260705.ino`, `loop()`;
 `src/Config_LORA.h.example`) · FPort 11: Branch `p7-serverquittung`, noch nicht in `main`

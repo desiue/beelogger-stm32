@@ -1,5 +1,7 @@
 # Architektur: wie die Messwerte vom Bienenstand auf den Server kommen
 
+[← Übersicht](README.md)
+
 Stand: 09.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit 80673f1
 (Rückkanal FPort 11: Branch `p7-serverquittung`, noch nicht in `main`)
 

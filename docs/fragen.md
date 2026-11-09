@@ -1,5 +1,7 @@
 # Häufige Fragen
 
+[← Übersicht](README.md)
+
 Stand: 09.11.2026 · gilt für: STM32 261107, Rückkanal FPort 11 (Branch `p7-serverquittung`, noch nicht in
 `main`) · geprüft gegen Code: Commit 80673f1
 

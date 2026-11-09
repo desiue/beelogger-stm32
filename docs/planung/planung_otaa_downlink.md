@@ -1,5 +1,7 @@
 # Planung: OTAA und Fernsteuerung per Downlink
 
+[← Übersicht](../README.md)
+
 Stand: 06.11.2026. Sammelt Entscheidungen, Fakten und offene Fragen aus der Planung.
 Keine Schlüssel in diese Datei.
 

@@ -1,5 +1,7 @@
 # Lizenz und Einhaltung der Lizenzbedingungen
 
+[← Übersicht](README.md)
+
 Stand: 06.11.2026
 
 ## Kurzfassung

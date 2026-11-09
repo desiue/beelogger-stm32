@@ -1,5 +1,7 @@
 # Idee: Sendeplan, Schwarmalarm, was aus der Ferne verstellbar sein soll
 
+[← Übersicht](../README.md)
+
 Stand 07.11.2026, **zur Diskussion**, nichts davon ist umgesetzt.
 
 **Antwort beelogger-Team (07.11.):** LoRa sendet ohnehin mindestens alle 10 min, forciertes Senden braucht es nicht. Öfter bringt nichts: Der Server ignoriert kurze Abstände (Okt–März 400 s), und die Schwarmlogik ist auf den 10-min-Takt ausgelegt (Windböen). Dabei bleibt es. **Status: nicht für `main`**, höchstens als Experiment im eigenen Branch mit eigenem Server.

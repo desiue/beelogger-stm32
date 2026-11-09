@@ -1,5 +1,7 @@
 # Vorschlag: Payload-Erweiterung (Intervall-Rückmeldung, Waage 5–8)
 
+[← Übersicht](../README.md)
+
 Stand 07.11.2026, **Entwurf**. Noch nichts davon ist in der Firmware umgesetzt.
 
 **Einordnung (07.11.):** Nicht für `main` und nicht für den Community-Server. Eine andere Payload oder Waage 5–8 kommt in einen **eigenen Branch** und wird auf einem eigenen beelogger-Server getestet. Die Fragen unten sind für den Fall gesammelt, dass die Entwickler später Interesse haben.
