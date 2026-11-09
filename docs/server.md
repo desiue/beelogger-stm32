@@ -2,12 +2,12 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261004), `server/lora_downlink.php` vom 09.11.2026 ·
-geprüft gegen Code: `beelogger1/beelogger_log.php` aus M40_261004, Commit 863302f ·
+Stand: 09.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261109), `server/lora_downlink.php` vom 09.11.2026 ·
+geprüft gegen Code: `server/M40_261109/beelogger1/beelogger_log.php`, Commit 863302f ·
 `lora_downlink.php`: Branch `p7-serverquittung`, noch nicht in `main`
 
-Die Server-Skripte stammen von beelogger.de und liegen **nicht** in diesem Repo. Zeilennummern beziehen sich
-auf `beelogger_log.php` aus M40_261004. Überblick über den Datenweg: [architektur.md](architektur.md).
+Die Server-Skripte stammen von beelogger.de (GPLv3). Eine unveränderte Kopie des Pakets M40_261109 liegt unter
+[`server/M40_261109/`](../server/M40_261109/). Zeilennummern beziehen sich auf deren `beelogger1/beelogger_log.php`. Überblick über den Datenweg: [architektur.md](architektur.md).
 
 ## Ordner und Dateien
 
@@ -47,18 +47,18 @@ Wichtige Dateien im Ordner:
 
 ## Speicherregel: Mindestabstand
 
-`beelogger_log.php`, ab Zeile 761: Eine Meldung wird nur gespeichert, wenn ihr Zeitstempel weit genug hinter
+`beelogger_log.php`, ab Zeile 573: Eine Meldung wird nur gespeichert, wenn ihr Zeitstempel weit genug hinter
 der zuletzt gespeicherten liegt.
 
 | Bedingung | Mindestabstand |
 |---|---|
-| normal | **mehr als 200 s** |
+| normal | **mehr als 220 s**, auf community.beelogger.de Oktober bis Februar **mehr als 520 s** |
 | Service-Wert negativ (z. B. RSSI) | mehr als 110 s |
 | Service = 99 (Arbeitsschalter) | jede Meldung, die später als die letzte ist |
 | Kalibriertemperatur = `99.9` (Einstellung) | mehr als 55 s |
 
-**Community-Server:** Laut beelogger-Team (07.11.2026) gelten dort **Oktober bis März 400 s** statt 200 s.
-Die Skripte M40_261004 enthalten nur die 200-s-Regel. Folge: Ein Logger mit 5-min-Intervall verliert im
+**Community-Server:** Die 520 s gelten nur, wenn der Server `community.beelogger.de` heißt (Monat < 3 oder > 9).
+Eigene Server bleiben bei 220 s. Folge: Ein Logger mit 5-min-Intervall verliert im
 Winter auf dem Community-Server etwa jede zweite Meldung. Das ist so gewollt. Wer alle sehen möchte, sendet
 im Winter alle 10 min (siehe [intervalle.md](intervalle.md)).
 
@@ -82,7 +82,7 @@ unter 99 liegt. So löst eine Durchsicht am Volk (Arbeitsschalter, Gewicht ände
 
 ## Sendeintervall vom Server: `ServerZeitSteuerung()`
 
-Zeile 438. Der Server rechnet aus der Web-Konfiguration ein Intervall aus und schickt es WLAN-Loggern in der
+Zeile 415. Der Server rechnet aus der Web-Konfiguration ein Intervall aus und schickt es WLAN-Loggern in der
 Antwort. Mit `lora_downlink.php` erreicht es auch LoRa-Logger.
 
 | Einstellung (`beelogger_ini.php`) | Wirkung |
@@ -157,16 +157,22 @@ Die Uhrzeit kommt dann erst am nächsten Tag wieder, ein geändertes Intervall e
 
 ### Einbinden
 
+Ab Server-Skripten **M40_261109** ist alles enthalten: `beelogger_log.php` ruft `lora_downlink()` selbst auf
+(Zeile 804), und `local_Updater.php` kopiert `lora_downlink.php` in jeden Logger-Ordner. Ältere Skripte:
+
 1. `lora_downlink.php` in den Logger-Ordner kopieren (neben `beelogger_log.php`).
 2. In `beelogger_log.php` in der Funktion `Auswertung()` direkt **vor** der Antwortzeile einfügen:
    ```php
    if(isset($_GET["LORA"]) && file_exists("lora_downlink.php")){include_once("lora_downlink.php");lora_downlink($MessIntervall);}
    ```
-   `isset($_GET["LORA"])` ist nötig, weil `$LORA` in `Auswertung()` nicht global ist.
-3. Im TTN-Webhook, der zu diesem Server führt, einen **Downlink API key** eintragen (Recht
+   `isset($_GET["LORA"])` ist dort nötig, weil `$LORA` in `Auswertung()` erst ab M40_261109 global ist.
+
+Für beide gilt:
+
+1. Im TTN-Webhook, der zu diesem Server führt, einen **Downlink API key** eintragen (Recht
    `traffic down write`, siehe [ttn_einrichten.md](ttn_einrichten.md)). Ohne Key schickt TTN keine
    Push-URL mit, und die Erweiterung schreibt nur einen Hinweis ins Log.
-4. Soll der Logger auch die Uhrzeit bekommen: in der Webhook-Adresse `&Z=2` anhängen (siehe
+2. Soll der Logger auch die Uhrzeit bekommen: in der Webhook-Adresse `&Z=2` anhängen (siehe
    [Wann gesendet wird](#wann-gesendet-wird)).
 
 Fehlt die Datei, läuft `beelogger_log.php` unverändert weiter.

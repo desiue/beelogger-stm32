@@ -104,12 +104,12 @@ rechnet bei Bedarf den Abstand dazu.
   `X-Downlink-Replace` und `X-Downlink-Apikey` mit.
 
 ### Server
-- `beelogger_log.php` (Server-Skripte M40_261004): Passwort prüfen, Zeitstempel = Serverzeit (Sekunden 00),
+- `beelogger_log.php` (Server-Skripte M40_261109, Kopie in `server/M40_261109/`): Passwort prüfen, Zeitstempel = Serverzeit (Sekunden 00),
   Waagen temperaturkompensieren, in `beelogger.csv`, `month.csv`, `week.csv` schreiben, Schwarmalarm prüfen.
   Anzeige mit `beelogger_show.php`.
 - Der Ordnername bestimmt die Zahl der Waagen: `beelogger`=1, `Duo`=2, `Triple`=3, `Quad`=4, `Penta`=5, `Hexa`=6.
-- Gespeichert wird nur mit Mindestabstand zur letzten Zeile (200 s, auf dem Community-Server Oktober–März
-  400 s). Details und Ausnahmen: [server.md](server.md).
+- Gespeichert wird nur mit Mindestabstand zur letzten Zeile (220 s, auf dem Community-Server Oktober–Februar
+  520 s). Details und Ausnahmen: [server.md](server.md).
 
 ### Rückkanal (Downlink)
 | FPort | Länge | Inhalt | Wer sendet |

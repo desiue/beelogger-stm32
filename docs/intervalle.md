@@ -96,10 +96,10 @@ Byte-Formate: [payload.md](payload.md).
 
 ## Zusammenspiel mit dem Server
 
-Der Server speichert eine Meldung nur, wenn seit der letzten genug Zeit vergangen ist: 200 s, auf dem
-Community-Server von **Oktober bis März 400 s** (Details: [server.md](server.md)).
+Der Server speichert eine Meldung nur, wenn seit der letzten genug Zeit vergangen ist: 220 s, auf dem
+Community-Server von **Oktober bis Februar 520 s** (Details: [server.md](server.md)).
 
-| Intervall | Sommer (200 s) | Okt–März auf dem Community-Server (400 s) |
+| Intervall | normal (220 s) | Okt–Feb auf dem Community-Server (520 s) |
 |---|---|---|
 | 5 min (300 s) | jede Meldung gespeichert | nur etwa **jede zweite** gespeichert |
 | ab 10 min | jede | jede |

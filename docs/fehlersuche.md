@@ -4,7 +4,7 @@
 
 Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
 (Meldungen aus `src/STM32_LORA.ino`, `src/STM32_LORA_utility.ino`, `src/STM32_LORA_260705.ino`;
-Serverantworten aus `beelogger_log.php` M40_261004)
+Serverantworten aus `beelogger_log.php` M40_261109)
 
 Vorgehen: **von vorn nach hinten** am Datenweg entlang (siehe [architektur.md](architektur.md)).
 Erst prüfen, ob der Logger sendet, dann ob TTN empfängt, dann ob der Server speichert.
@@ -76,7 +76,7 @@ ankommen.
 
 | Zeichen | Ursache |
 |---|---|
-| Webhook ok, aber Lücken in der Anzeige | Mindestabstand: weniger als 200 s (Community-Server Okt–März 400 s) seit der letzten Zeile → verworfen. Bei 5-min-Intervall im Winter jeder zweite Wert. Siehe [server.md](server.md). |
+| Webhook ok, aber Lücken in der Anzeige | Mindestabstand: weniger als 220 s (Community-Server Okt–Feb 520 s) seit der letzten Zeile → verworfen. Bei 5-min-Intervall im Winter jeder zweite Wert. Siehe [server.md](server.md). |
 | Gewicht springt | Kalibriertemperatur `99.9` im Betrieb gesetzt (nur für Tests), oder Temperaturkompensation falsch |
 | Kein Schwarmalarm nach Durchsicht | gewollt: Service 99 schaltet ihn für diese und die nächste Meldung ab |
 | Durchsicht-Symbol ohne Durchsicht | Service-Wert über 240 |

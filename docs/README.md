@@ -19,7 +19,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 | [Bauen und flashen](bauen_flashen.md) | PlatformIO, Varianten, Startzeile, Flashen über FTDI, Akkuspannung kalibrieren |
 | [TTN einrichten](ttn_einrichten.md) | Application, Webhooks (auch zweiter Server + Downlink-Key), Gerät ABP/OTAA, Downlinks, MAC-Einstellungen, Fair Use |
 | [OTAA-Einrichtung (PDF)](ttn/STM32_LORA_OTAA_Einrichtung_261107.pdf) | Kurzanleitung nur TTN-Konsole, OTAA, mit Bildern |
-| [Server](server.md) | `beelogger_log.php`: Speicherregeln (200/400 s), Service-Werte, `ServerZeitSteuerung()`, `lora_downlink.php` einbinden |
+| [Server](server.md) | `beelogger_log.php`: Speicherregeln (220/520 s), Service-Werte, `ServerZeitSteuerung()`, `lora_downlink.php` einbinden |
 | [ATmega-Logger](../atmega_lora/README.md) | Universal 1.x und beeloggerSMD: Vorschlag 261107 (ABP) und 261108 (OTAA), [Testaufbau Uno](../atmega_lora/testaufbau_uno.md) |
 
 ## Wie es funktioniert
@@ -64,7 +64,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 | [`src/`](../src/) | Sketch 260705 mit Änderungen, Vorlagen `Config_*.h.example`, LMIC-Kopie `src/lmic_otaa/` |
 | [`lib/`](../lib/) | beelogger-Bibliotheken 2026_04, unverändert |
 | [`atmega_lora/`](../atmega_lora/) | ATmega328-LoRa-Sketch (ABP 261107, OTAA 261108) mit eigener Anleitung |
-| [`server/`](../server/) | `lora_downlink.php`: Serverquittung für LoRa (Erweiterung für `beelogger_log.php`) |
+| [`server/`](../server/) | `lora_downlink.php`: Serverquittung für LoRa (Erweiterung für `beelogger_log.php`); `M40_261109/`: unveränderte Kopie der Server-Skripte von beelogger.de (GPLv3) |
 | [`scripts/`](../scripts/) | `seriell-log.sh`, `ttn-status.sh`, TTN-Anlege-Skripte, `lieferpaket*.sh` |
 | [`orginal_firmware_bibliotheken/`](../orginal_firmware_bibliotheken/) | Originale von beelogger.de zum Vergleich |
 | [`docs/ttn/`](ttn/) | Payload-Decoder, TTN-Einstellungen (JSON), Beispielnachrichten, Bilder, OTAA-Anleitung (PDF) |
