@@ -1,6 +1,6 @@
 # Bauen und flashen
 
-Stand: 08.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit f1a9e0c
+Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
 
 ## Firmware selbst bauen (PlatformIO)
 
@@ -27,7 +27,7 @@ Stand: 08.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit f1a9
 Hinweise:
 - STM32-Core 2.6.0 (`framework-arduinoststm32@~4.20600`), in `platformio.ini` festgelegt.
 - BluePill: Board `bluepill_f103c8_128k` mit `-DARDUINO_BLUEPILL_F103CB` (die Firmware braucht 128 KB).
-- Flash-Belegung (07.11., mit OTAA): F103CB 56 500 B, F411CE 55 308 B. BluePill: muss unter 63 KB bleiben, darüber liegt die OTAA-Session-Seite.
+- Flash-Belegung (07.11., mit OTAA): F103CB 56 500 B, F411CE 55 308 B. BluePill: Die OTAA-Session liegt in der letzten Flash-Seite (F103CB: bei 127 KB). Reicht das Programm bis dorthin, speichert der Logger keine Session und joint bei jedem Start ([speicher.md](speicher.md)).
 - `pio run -t upload` geht beim F411 nicht (stm32flash kennt die Chip-ID 0x431 nicht), deshalb stm32loader.
 
 ## Eine Firmware, vier Varianten

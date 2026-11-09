@@ -28,8 +28,10 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 | [Intervalle](docs/intervalle.md) | Tag, Nacht, Winter, Akku, Fern-Intervall: was gilt wann |
 | [Server](docs/server.md) | `beelogger_log.php`: Speicherregeln (200/400 s), Service-Werte, `ServerZeitSteuerung()`, `lora_downlink.php` einbinden |
 | [ABP oder OTAA](docs/abp_otaa.md) | Unterschiede, Session-Speicher, Mitschnitte |
+| [Speicher](docs/speicher.md) | Backup-Register, Flash beim BluePill, was nach Stromausfall oder Update bleibt |
 | [Fehlersuche](docs/fehlersuche.md) | Meldungen im seriellen Monitor, TTN, Webhook, Server |
 | [Entwicklung](docs/entwicklung.md) | Änderungen gegenüber 260705, gefundene Fehler, Stand |
+| [Häufige Fragen](docs/fragen.md) | Rückkanal, Uhr, Speicher: kurze Antworten mit Links |
 | [Doku-Pflege](docs/doku_pflege.md) | welche Quelle gilt, Prüfstempel, Ablauf bei Änderungen |
 | [Lizenz](docs/lizenz.md) | GPL und Bibliotheken |
 | [`docs/planung/`](docs/planung/) | Planung, Ideen und Vorschläge (nicht in `main`) |

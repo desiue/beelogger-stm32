@@ -1,7 +1,7 @@
 # Server: was mit einer Meldung auf dem beelogger-Server passiert
 
-Stand: 08.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261004), `server/lora_downlink.php` vom 08.11.2026 ·
-geprüft gegen Code: `beelogger1/beelogger_log.php` aus M40_261004, Commit f1a9e0c ·
+Stand: 09.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261004), `server/lora_downlink.php` vom 08.11.2026 ·
+geprüft gegen Code: `beelogger1/beelogger_log.php` aus M40_261004, Commit 80673f1 ·
 `lora_downlink.php`: Branch `p7-serverquittung`, noch nicht in `main`
 
 Die Server-Skripte stammen von beelogger.de und liegen **nicht** in diesem Repo. Zeilennummern beziehen sich
@@ -101,6 +101,57 @@ WLAN-Logger. Format: [payload.md](payload.md#downlink-fport-11-serverquittung-uh
 
 Die Erweiterung ist ein Vorschlag und läuft **nicht** auf dem Community-Server, sondern nur dort, wo sie
 jemand einbindet.
+
+### Warum es diese Datei braucht
+
+Ein WLAN-Logger ruft `beelogger_log.php` selbst auf und liest Uhrzeit und Intervall aus der Antwort. Einen
+LoRa-Logger ruft der Server nie direkt: Der Aufruf kommt von TTN (Webhook), und **TTN verwirft die Antwort**.
+Sie wird auch nicht an den Logger weitergereicht. `lora_downlink.php` umgeht das: Sie bestellt den Downlink
+in einem **zweiten, eigenen Aufruf** bei TTN. Dafür schickt TTN bei jedem Webhook-Aufruf eine Adresse und
+einen Schlüssel mit, unter denen man einen Downlink für genau dieses Gerät bestellen kann.
+
+### Wer macht was wo
+
+| Wo | Wer | Was |
+|---|---|---|
+| Bienenstand | Logger | misst, sendet Uplink FPort 1, öffnet 1 s und 2 s danach je ein kurzes Empfangsfenster, übernimmt Uhrzeit und Intervall aus einem Downlink |
+| Funk | Gateway | leitet Uplink an TTN weiter, sendet Downlinks von TTN aus |
+| TTN | Network Server | entschlüsselt, prüft Zähler, verwaltet die Downlink-Warteschlange je Gerät |
+| TTN | Application Server | Payload-Formatter (Decoder), Webhook-Aufruf an den Server, nimmt Downlink-Bestellungen an |
+| Server | `beelogger_log.php` | speichert Messwerte, rechnet das Intervall (`ServerZeitSteuerung()`), ruft am Ende `lora_downlink()` auf, antwortet an TTN (Antwort verfällt) |
+| Server | `lora_downlink.php` | entscheidet, ob ein Downlink nötig ist, baut die 7 Byte, bestellt den Downlink bei TTN, schreibt Log und Merkdatei |
+
+### Welche Information wohin geht
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant L as Logger
+  participant T as TTN
+  participant B as beelogger_log.php
+  participant D as lora_downlink.php
+  L->>T: Uplink FPort 1: Messwerte, Frame-Counter
+  T->>B: HTTP POST ?Passwort=…&LORA=1<br/>Inhalt: JSON mit Messwerten, f_cnt, received_at<br/>Kopf: X-Downlink-Replace (Adresse), X-Downlink-Apikey (Schlüssel)
+  B->>B: speichern, Intervall aus der Web-Konfiguration rechnen
+  B->>D: lora_downlink(Intervall)
+  D->>D: Merkdatei lesen: Intervall geändert?<br/>Uhrzeit heute schon gesendet?
+  opt Downlink nötig
+    D->>T: HTTP POST an die Adresse aus dem Kopf<br/>Authorization: Bearer Schlüssel<br/>JSON: f_port 11, frm_payload (7 Byte, Base64)
+    T-->>D: 200 OK (Downlink steht in der Warteschlange)
+    D->>D: Merkdatei und Log schreiben
+  end
+  B-->>T: Antwort „…ok *“ (TTN verwirft sie)
+  T-->>L: Downlink im Empfangsfenster nach diesem Uplink<br/>(sonst nach dem nächsten)
+  L->>L: Uhr stellen, Fern-Intervall setzen, schlafen
+```
+
+Inhalt der 7 Byte: [payload.md](payload.md#downlink-fport-11-serverquittung-uhr--intervall).
+
+Kommt ein Downlink nicht an (z. B. kein Gateway in Reichweite), passiert nichts Schlimmes: Der Logger behält
+das bisherige Intervall und seine Uhr, die Messwerte kommen trotzdem an, und der Server stempelt sie mit
+seiner eigenen Zeit. Antwortet TTN nicht mit `200`, versucht es `lora_downlink.php` beim nächsten Uplink
+erneut. Hat TTN den Downlink angenommen, der Logger ihn aber nicht empfangen, merkt der Server das nicht:
+Die Uhrzeit kommt dann erst am nächsten Tag wieder, ein geändertes Intervall erst bei der nächsten Änderung.
 
 ### Einbinden
 

@@ -143,13 +143,26 @@ Diese Logger laufen dauerhaft am Schreibtisch (Solarzelle, USB-seriell mitgeschn
 Bei WLAN/LTE antwortet `beelogger_log.php` mit `<Zeit>T<Intervall><A–D>[P]ok *`, und der Logger übernimmt Uhrzeit und Intervall. Bei LoRa verwirft TTN diese Antwort. Neu: `server/lora_downlink.php` schickt dieselbe Information als TTN-Downlink.
 
 - Weg: Der TTN-Webhook liefert pro Uplink `X-Downlink-Replace` und `X-Downlink-Apikey` im Header (wenn im Webhook ein Downlink-API-Key gesetzt ist). Der Server legt den Downlink damit selbst in die Warteschlange, ohne Zwischendienst.
-- FPort 11, 7 Byte (big endian): FCnt-Bezug (unteres Byte), Empfangszeit des Uplinks (Unixzeit + Sommerzeit-Stunde, wie WLAN), Abstand der letzten beiden Uplinks [min], Intervall [min] aus `ServerZeitSteuerung()` (Webseiten-Einstellung).
+- FPort 11, 7 Byte (big endian): FCnt-Bezug (unteres Byte), Empfangszeit des Uplinks (Ortszeit MEZ/MESZ als Unixzeit, wie WLAN; bis 08.11. abends fälschlich UTC), Abstand der letzten beiden Uplinks [min], Intervall [min] aus `ServerZeitSteuerung()` (Webseiten-Einstellung).
 - Gesendet wird nur bei Intervalländerung oder einmal pro Tag für die Uhr (TTN Fair Use).
 - **Beobachtet:** Der Downlink kommt im RX-Fenster **desselben** Uplinks an (Webhook schnell genug). Für den Fall, dass er erst nach dem nächsten Uplink kommt, rechnet der Logger den Abstand dazu.
 - Logger: Uhr per `rtc_stm.setEpoch()`, `time_on` wird mitkorrigiert. Intervall wie FPort 10 in `FernIntervall` (Backup-Register 5), kein neues Register nötig.
-- Uhr zeigt wie bei WLAN UTC + Sommerzeit-Stunde (Winter: 1 h hinter Ortszeit).
+- Uhr zeigt wie bei WLAN Ortszeit (MEZ/MESZ). Fehler bis 08.11. abends: Server schickte UTC, Uhren 1 h nach; behoben 80673f1.
 - Test 08.11.: Black und Blue stellen die Uhr (von 2022 auf die richtige Zeit) und übernehmen 15 min. Intervalländerung 15 → 10 auf der Webseite kommt beim nächsten Uplink an.
 - Offen: Uhr-Stellen beim Tageswechsel prüfen; Vorschlag an Rudolf (Server-Teil ist sein Code, Einbindung eine Zeile); ATmega (kein Flash frei).
+
+### Rückmeldung beelogger-Team (09.11.2026) und Plan
+
+- Register-Belegung bleibt wie sie ist (Variante 1). Bei einer späteren Angleichung: Hinweis „nach dem Update einmal Strom trennen (Jumper ziehen)“.
+- Steuerung vorrangig über Solarspannung, Schwelle **1 V** für alle Systeme (heute Vorlage 0,1 V). Uhrzeit im Rückkanal ist erlaubt.
+- Auswahl über den Webhook wie bei WLAN mit `Z=2`: steht `Z=2` in der Webhook-Adresse, Intervall und Uhr (FPort 11, 7 Byte), sonst nur Intervall (FPort 10, 1 Byte). Keine Einstellung in der Web-Konfiguration nötig.
+- Geplant (noch nicht gebaut):
+  - [ ] `lora_downlink.php`: `Z=2` auswerten, ohne `Z=2` FPort 10 mit 1 Byte
+  - [ ] Uhrzeit sofort schicken bei Neustart des Loggers (f_cnt kleiner als zuletzt) und nach Sommer-/Winterzeit-Wechsel (`date("I")` in der Merkdatei)
+  - [ ] Vorlage `Config_LORA.h.example`: `SOLAR_ZYKLUS_aktiv 1`, `SolarSpannung_Sommertag 1.0`; Temperatur für Winter prüfen
+  - [ ] Abweichung der Uhr pro Tag im Langzeittest messen (Uhr vor dem Stellen loggen)
+  - [ ] Idee beelogger-Team: Tag-/Nachtintervall per Downlink im Logger hinterlegen statt Voreinstellung
+- Eigene Logger und eigener Server: Variante mit Uhr läuft weiter (Langzeittest).
 
 ## Arbeitspakete (je eine eigene Sitzung)
 

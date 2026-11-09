@@ -1,6 +1,6 @@
 # Entwicklung: Änderungen, gefundene Fehler, Stand
 
-Stand: 08.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit f1a9e0c
+Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
 
 ## Änderungen gegenüber 260705
 
@@ -36,6 +36,8 @@ Vollständig in [`aenderungen_gegen_260705.diff`](aenderungen_gegen_260705.diff)
 | TTN-Vorgabe RX2 = SF12 (DR0), Firmware hört auf SF9 (DR3) | TTN schickt Antworten ins Leere und wiederholt MAC-Befehle („Downlink-Schleife“), bis zu 288 Downlinks/Tag | TTN auf Rx2 DR 3 stellen (siehe [ttn_einrichten.md](ttn_einrichten.md#7-mac-einstellungen-im-detail-abp-lmic-dieser-firmware)) |
 | FCntDown in TTN > 65535; LMIC nutzt nach jedem Neustart nur 16 Bit | Downlink wird **ohne Meldung verworfen** | Zähler in TTN auf 0 setzen (siehe [ttn_einrichten.md](ttn_einrichten.md#7-mac-einstellungen-im-detail-abp-lmic-dieser-firmware)) |
 | „Reset session and MAC state“ setzt nur den Zähler im Network Server zurück, nicht im Application Server | Downlink bleibt verworfen, obwohl die Konsole 0 zeigt | beide Zähler per API zurücksetzen |
+| OTAA-Session beim BluePill fest bei 63 KB im Flash (eigener Fehler, 06.11.) | Firmware mit BME280 + Licht ist ca. 64 KB: der erste Join löschte ein Stück des eigenen Programms | behoben 07.11.: letzte Seite laut Chip, Prüfung gegen Programmende ([speicher.md](speicher.md)) |
+| `lora_downlink.php` schickte UTC statt Ortszeit (eigener Fehler, nur Branch `p7-serverquittung`) | Uhren nach dem Stellen im Winter 1 h nach | behoben 08.11. abends, Commit 80673f1 ([architektur.md](architektur.md#uhr-wann-sie-stimmt-und-wann-nicht)) |
 
 9. **Serverquittung per Downlink FPort 11** (Branch `p7-serverquittung`, noch nicht in `main`): `onEvent()` wertet 7 Byte aus (FCnt-Bezug, Zeit, Abstand, Intervall), stellt die RTC (`rtc_stm.setEpoch()`) und das Fern-Intervall (5–60 min). Gegenstück auf dem Server: `server/lora_downlink.php`. Damit bekommen LoRa-Logger wie WLAN-Logger Uhrzeit und Intervall vom Server; Nacht- und Winterlogik arbeiten mit der richtigen Uhrzeit. Format: [payload.md](payload.md#downlink-fport-11-serverquittung-uhr--intervall), Einbau: [server.md](server.md#rückkanal-für-lora-lora_downlinkphp-eigene-erweiterung). Getestet am 08.11.2026 mit BlackPill F411 (OTAA) und BluePill F103 (OTAA) über TTN und einen eigenen Server.
 

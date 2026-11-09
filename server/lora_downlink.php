@@ -14,7 +14,7 @@
  * Payload FPort 11, 7 Byte, big endian:
  *   Byte 0     FCnt des Uplinks, zu dem der Downlink erzeugt wurde (unteres Byte)
  *   Byte 1..4  Empfangszeit dieses Uplinks, Format wie WLAN-Quittung
- *              (Unixzeit + Sommerzeit-Stunde), 0 = keine Zeit
+ *              (Ortszeit MEZ/MESZ als Unixzeit), 0 = keine Zeit
  *   Byte 5     Abstand der letzten beiden Uplinks in Minuten, 0 = unbekannt
  *   Byte 6     Messintervall in Minuten (5..60), 0 = keine Änderung
  * Der Downlink kommt meist noch im RX-Fenster desselben Uplinks an (Test 08.11.),

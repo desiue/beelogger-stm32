@@ -1,6 +1,6 @@
 # Architektur: wie die Messwerte vom Bienenstand auf den Server kommen
 
-Stand: 08.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit f1a9e0c
+Stand: 09.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit 80673f1
 (Rückkanal FPort 11: Branch `p7-serverquittung`, noch nicht in `main`)
 
 ## Überblick
@@ -118,17 +118,39 @@ rechnet bei Bedarf den Abstand dazu.
 - Die STM32-Firmware wertet beide aus.
 - Die ATmega-Version zeigt Downlinks nur im seriellen Monitor an und wertet sie nicht aus.
 
-## Stromausfall und ungestellte Uhr
+## Uhr: wann sie stimmt und wann nicht
 
-- Die LoRa-Logger haben keine Uhrzeit aus dem Netz. Nach einem Stromverlust (Akku ab) startet die RTC der
-  STM32-Logger am **01.01.2022 00:00**.
-- Solange die Uhr falsch geht, schaltet die Nacht- und Winterlogik zur falschen Zeit. Die Messwerte selbst
-  sind nicht betroffen, weil der Server mit seiner eigenen Zeit stempelt.
-- Ist `lora_downlink.php` eingebunden, ist die Uhr spätestens am selben Tag wieder richtig: Der Server sendet
-  einmal täglich die Zeit. Das Format ist dasselbe wie in der WLAN-Antwort: Ortszeit (MEZ, in der Sommerzeit
-  MESZ) als Unixzeit.
-- Ohne Rückkanal bleibt die Uhr beim Startwert und läuft von dort weiter. Die Firmware hat keinen anderen Weg,
-  die Uhr zu stellen.
+Die STM32-Logger haben eine eingebaute Uhr (RTC), die an einem 32-kHz-Uhrenquarz läuft (LSE). Eine
+Uhrbatterie gibt es nicht. Die Uhr braucht der Logger für die Weckzeit und, je nach Config, für Tag/Nacht
+und Winter (siehe [intervalle.md](intervalle.md)). Die Messwerte selbst stempelt der Server mit seiner
+eigenen Zeit, sie sind von einer falschen Logger-Uhr nie betroffen.
+
+**Woher die Uhrzeit kommt:** Die LoRa-Logger bekommen aus dem Funknetz keine Uhrzeit. Gestellt wird die Uhr
+nur über den Downlink FPort 11 von `lora_downlink.php`. Ohne diesen Rückkanal läuft sie ab dem Startwert
+einfach weiter.
+
+**Format:** wie in der WLAN-Antwort, Ortszeit als Unixzeit, also MEZ (UTC + 1 h) und in der Sommerzeit MESZ
+(UTC + 2 h). Der Server rechnet `Empfangszeit + date("Z")`. In der WLAN-Antwort entsteht dasselbe auf
+anderem Weg: `beelogger_log.php` zieht `new DateTime('1970-01-01 00:00:00')` ab, und das liegt in der
+Zeitzone des Servers eine Stunde vor dem UTC-Nullpunkt.
+
+| Situation | Uhr | wieder richtig |
+|---|---|---|
+| Normalbetrieb mit `lora_downlink.php` | wird einmal am Tag gestellt (erster Uplink nach Mitternacht) | – |
+| Stromausfall (Akku ab) | startet am **01.01.2022 00:00** | beim ersten Uplink des nächsten Tages (Server hat die Uhrzeit für heute schon geschickt) |
+| Umstellung Sommer-/Winterzeit (nachts um 2 bzw. 3 Uhr) | geht 1 h falsch, weil die Uhr um Mitternacht schon gestellt wurde | beim ersten Uplink des nächsten Tages |
+| ohne Rückkanal | läuft vom Startwert aus weiter | nie |
+
+Wie weit die Uhr ohne Stellen pro Tag wegläuft, ist noch nicht gemessen. Der Langzeittest seit 08.11.2026
+soll das zeigen.
+
+**Ohne gestellte Uhr** schaltet die Nacht- und Winterlogik nach Uhrzeit und Monat zur falschen Zeit. Nach
+einem Stromausfall gilt sofort „Nacht“ (00:00) und „Winter“ (Januar). Wer keinen Rückkanal hat, nimmt
+besser die Umschaltung nach Solarspannung und Temperatur (siehe [intervalle.md](intervalle.md)). Was der
+Logger nach einem Stromausfall sonst noch vergisst: [speicher.md](speicher.md).
+
+Fehler bis 08.11.2026 abends (nur Branch): `lora_downlink.php` schickte UTC statt Ortszeit. Die Uhren
+gingen im Winter eine Stunde nach. Behoben mit Commit 80673f1.
 
 ## Weiterlesen
 
@@ -137,3 +159,5 @@ rechnet bei Bedarf den Abstand dazu.
 - [server.md](server.md): Speicherregeln, Service-Werte, `lora_downlink.php` einbinden
 - [ttn_einrichten.md](ttn_einrichten.md): Gerät, Decoder, Webhooks
 - [abp_otaa.md](abp_otaa.md): Aktivierungsarten
+- [speicher.md](speicher.md): Backup-Register, Flash, was nach Stromausfall bleibt
+- [fragen.md](fragen.md): häufige Fragen

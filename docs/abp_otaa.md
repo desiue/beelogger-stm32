@@ -1,6 +1,6 @@
 # ABP oder OTAA
 
-Stand: 08.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit f1a9e0c
+Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
 
 
 **ABP** (Activation by Personalization): DevAddr und Sitzungsschlüssel stehen fest in der Firmware. Das Gerät sendet sofort.
@@ -26,7 +26,7 @@ Stand: 08.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit f1a9
 
 **Warum beide:** Die vorhandenen Feldgeräte laufen mit ABP und sollen nach dem Update ohne Neuanlage in TTN weiterlaufen. Neue Geräte sollen OTAA nutzen: sicherer, weniger Fehlerquellen bei den TTN-Einstellungen, und ein Netzausfall wird erkannt. Beides aus einer Codebasis, damit Korrekturen nur einmal nötig sind.
 
-OTAA-Gerät in TTN anlegen: LoRaWAN 1.0.2, RP 1.0.2 rev B, Frequenzplan EU_863_870_TTN, ADR aus. Die Session (DevAddr, Nonces, Rx-Werte, 4 × 32 Bit) liegt bei der BlackPill in RTC-Backup-Registern 10–13, beim BluePill in einer Flash-Seite bei 0x0800FC00 (63 KB, auch beim C8 vorhanden; geschrieben nur bei Änderung: Join, 1 Link-Check/Tag, Löschen). Sie übersteht den Tiefschlaf; die Sitzungsschlüssel werden daraus neu berechnet und nicht gespeichert. Neu-Join nach Stromausfall (POR), unbekanntem Frame-Zähler, FCnt ≥ 16000 (vor dem Überlauf des 14-Bit-Zählers), ungültiger Prüfsumme der Session oder 3 Tagen ohne Link-Check-Antwort.
+OTAA-Gerät in TTN anlegen: LoRaWAN 1.0.2, RP 1.0.2 rev B, Frequenzplan EU_863_870_TTN, ADR aus. Die Session (DevAddr, Nonces, Rx-Werte, 4 × 32 Bit) liegt bei der BlackPill in RTC-Backup-Registern 10–13, beim BluePill in der letzten Flash-Seite laut Chip (F103CB: 0x0801FC00; geschrieben nur bei Änderung: Join, 1 Link-Check/Tag, Löschen; liegt die Seite im Programm, wird nichts gespeichert). Details: [speicher.md](speicher.md). Sie übersteht den Tiefschlaf; die Sitzungsschlüssel werden daraus neu berechnet und nicht gespeichert. Neu-Join nach Stromausfall (POR), unbekanntem Frame-Zähler, FCnt ≥ 16000 (vor dem Überlauf des 14-Bit-Zählers), ungültiger Prüfsumme der Session oder 3 Tagen ohne Link-Check-Antwort.
 
 Mitschnitt OTAA (beelogger08, BlackPill, nach Akku ab/an):
 ```

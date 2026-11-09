@@ -1,6 +1,6 @@
 # Fehlersuche
 
-Stand: 08.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit f1a9e0c
+Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
 (Meldungen aus `src/STM32_LORA.ino`, `src/STM32_LORA_utility.ino`, `src/STM32_LORA_260705.ino`;
 Serverantworten aus `beelogger_log.php` M40_261004)
 
@@ -32,7 +32,7 @@ nach dem Start zeigt Firmware-Kennung, Name, Chip-UID und DevAddr. So ist klar, 
 | `WDT: ohne I2C-Sensoren` | nach einem Sensor-Hänger einmal ohne I2C-Sensoren gemessen | Sensor prüfen |
 | `WDT: Zyklus ausgelassen` | nach LoRa-Hänger oder zwei Neustarts in Folge: diesmal nur schlafen | wenn es dauernd kommt: Funkmodul |
 | `WDT: LMIC-Fehler` | die LoRa-Bibliothek hat abgebrochen (`hal_failed()`), z. B. Funkmodul antwortet nicht | Verdrahtung RFM95 (NSS PA4, SPI PA5–PA7) |
-| `OTAA: kein Flash frei fuer Session, Join bei jedem Start` | BluePill: Flash-Seite für die Session nicht nutzbar | Board/Build prüfen (Flash ≤ 63 KB) |
+| `OTAA: kein Flash frei fuer Session, Join bei jedem Start` | BluePill: Flash-Seite für die Session nicht nutzbar | Programm reicht bis in die letzte Flash-Seite: Chip mit 128 KB nehmen (F103CB) oder Sensoren in der Config abwählen ([speicher.md](speicher.md)) |
 | `Weckzeit 01.01.2022 …` | Uhr ungestellt | normal ohne Serverquittung; siehe [intervalle.md](intervalle.md) |
 
 **Payload-Bytes im Log:** Im Block `Data:` stehen die Bytes dezimal ohne Trennzeichen.
