@@ -6,6 +6,14 @@ geprüft gegen Code: Commit f1a9e0c (`src/STM32_LORA.ino`, `prep_payload()`, `on
 
 Überblick: [architektur.md](architektur.md)
 
+```mermaid
+flowchart LR
+  L[Logger] -->|"FPort 1: 9–28 Byte Messwerte"| T[TTN<br/>Payload-Decoder]
+  T -->|"Webhook (JSON)"| S[Server<br/>beelogger_log.php]
+  K[TTN-Konsole / API] -.->|"FPort 10: 1 Byte Intervall"| L
+  S -.->|"FPort 11: 7 Byte Uhr + Intervall<br/>(lora_downlink.php, nur Branch)"| L
+```
+
 ## Übersicht der Ports
 
 | Richtung | FPort | Länge | Inhalt |

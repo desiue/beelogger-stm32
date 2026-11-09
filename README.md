@@ -4,6 +4,20 @@ Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogge
 
 **Download für die Arduino IDE:** [beelogger_STM32_LORA_261107.zip](https://github.com/desiue/beelogger-stm32/releases/download/STM32_LORA_261107/beelogger_STM32_LORA_261107.zip) ([Release](https://github.com/desiue/beelogger-stm32/releases/tag/STM32_LORA_261107)) – Sketch-Ordner wie bei beelogger.de, ohne Schlüssel. Neu bauen mit `scripts/lieferpaket.sh`.
 
+**Übersicht: was geht wohin** (Einzelheiten in [Architektur](docs/architektur.md))
+
+```mermaid
+flowchart LR
+  subgraph Logger["beelogger (STM32 oder ATmega)"]
+    F[Firmware<br/>bauen_flashen.md]
+  end
+  F -->|"Uplink FPort 1 (Messwerte)"| T[TTN<br/>ttn_einrichten.md]
+  T -->|Webhook| C[Community-Server<br/>beelogger_log.php]
+  T -->|"Webhook 2 (optional)"| E[eigener Server<br/>server.md]
+  T -.->|"Downlink FPort 10 (Intervall, von Hand)"| F
+  E -.->|"Downlink FPort 11 (Uhr + Intervall, nur Branch)"| T
+```
+
 **Auf einen Blick**
 
 - **Maximal kompatibel zum Original:** Messablauf, Waagenzahl, Payload-Format und beelogger-Server bleiben wie beim Original 260705. Neu sind nur Downlinks (ABP und OTAA) und Fehlerkorrekturen. Weitergehende Ideen (mehr Waagen, andere Payload, eigener Sendeplan) kommen nicht in `main`, sondern in einen eigenen Branch mit eigenem Server ([Idee](docs/planung/idee_sendeplan_schwarmalarm.md), [Payload](docs/planung/vorschlag_payload_erweiterung.md)).

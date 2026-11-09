@@ -2,6 +2,16 @@
 
 Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
 
+```mermaid
+flowchart LR
+  A[Repo holen] --> B[Config_LORA.h und<br/>Config_MULTI.h ausfüllen]
+  B --> C[Board wählen<br/>bluepill_f103c8 / blackpill_f411ce]
+  C --> D[pio run<br/>firmware.bin]
+  D --> E[Startzeile prüfen:<br/>welches Gerät hängt am Kabel?]
+  E --> F[Flashen über FTDI<br/>stm32loader]
+  F --> G[TTN einstellen<br/>ttn_einrichten.md]
+```
+
 ## Firmware selbst bauen (PlatformIO)
 
 1. **Repo holen:** `git clone https://github.com/desiue/beelogger-stm32.git` (oder auf GitHub „Code → Download ZIP“).

@@ -11,6 +11,19 @@ Kurzfassung nur für OTAA, Schritt für Schritt mit Bildern (PDF, liegt auch im 
 
 > Bilder: Platzhalter `bilder/…` liegen in `docs/ttn/bilder/`. Bildschirmfotos vor dem Einchecken auf Schlüssel prüfen (AppKey, NwkSKey, AppSKey schwärzen).
 
+```mermaid
+flowchart TD
+  A["1. Application<br/>Payload-Formatter + Webhook"] --> A2["optional: 2. Webhook zum eigenen Server<br/>+ Downlink-API-Key"]
+  A --> G["2. Gerät anlegen<br/>ADR aus, Rx1 1 s, Rx2 SF9"]
+  A2 --> G
+  G --> V{"LORA_OTAA"}
+  V -->|"0"| P["2a. ABP: DevAddr, NwkSKey, AppSKey"]
+  V -->|"1"| O["2b. OTAA: DevEUI, JoinEUI, AppKey"]
+  P --> B["3. Bauen, flashen, Startzeile prüfen"]
+  O --> B
+  B --> D["4. Downlinks: FPort 10 von Hand,<br/>FPort 11 vom eigenen Server"]
+```
+
 ## 1. Application anlegen (einmal)
 
 1. **Applications → + Create application**, Application ID z. B. `beelogger09`.

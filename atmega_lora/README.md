@@ -6,6 +6,14 @@ Dazu als zweiter Ordner eine Fassung mit **OTAA**: [beelogger_LORA_OTAA_261108](
 
 **Stand 08.11.2026:** baut für alle drei Boards. Getestet auf einem Steckbrett mit Uno (16 MHz), RFM95 und einem Nano als Uhr ([testaufbau_uno.md](testaufbau_uno.md)). **Auf einem echten beelogger und mit Pro Mini 8 MHz noch nicht getestet**, weil mir kein ATmega-beelogger zur Verfügung steht. Bitte als Vorschlag verstehen. Falls ich etwas übersehen habe, freue ich mich über einen Hinweis.
 
+```mermaid
+flowchart LR
+  O["Original 250326<br/>beelogger.de, ABP"] -->|"2 Änderungen:<br/>Sketch-ID, ADR aus"| V["Vorschlag 261107<br/>ABP, Bibliothek unverändert"]
+  V -->|"+ OTAA, LMIC-Kopie<br/>in src/lmic_otaa"| W["Vorschlag 261108<br/>OTAA oder ABP"]
+  V --> B["Pro Mini 8/16 MHz, Nano"]
+  W --> B
+```
+
 ## Änderungen
 
 | Stelle | Vorher | Nachher | Hintergrund |

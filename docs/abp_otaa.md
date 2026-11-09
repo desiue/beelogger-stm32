@@ -3,6 +3,15 @@
 Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
 
 
+```mermaid
+flowchart TD
+  S[Logger startet] --> V{"LORA_OTAA?"}
+  V -->|"0 = ABP"| A[Schlüssel und DevAddr<br/>fest in der Firmware] --> U[Uplink senden]
+  V -->|"1 = OTAA"| K{"gültige Session<br/>gespeichert?"}
+  K -->|ja| W[Session wiederherstellen] --> U
+  K -->|"nein (Stromausfall, FCnt ≥ 16000,<br/>3 Tage ohne Link-Check)"| J[Join bei TTN] --> N[neue DevAddr + Schlüssel<br/>speichern] --> U
+```
+
 **ABP** (Activation by Personalization): DevAddr und Sitzungsschlüssel stehen fest in der Firmware. Das Gerät sendet sofort.
 **OTAA** (Over-the-Air Activation): In der Firmware steht nur ein Stammschlüssel (AppKey). Beim Start meldet sich das Gerät an („Join“), TTN vergibt DevAddr und Sitzungsschlüssel neu.
 
