@@ -74,8 +74,8 @@ sequenceDiagram
   L->>T: Uplink FPort 1
   T->>S: Webhook (POST)
   S->>S: prüfen, speichern
-  opt Intervall geändert oder Uhr heute noch nicht gestellt
-    S->>T: Downlink FPort 11 in die Queue (Push-URL aus dem Webhook)
+  opt Intervall geändert, Neustart oder (mit Z=2) Uhr heute noch nicht gestellt
+    S->>T: Downlink FPort 11 (Z=2) bzw. 10 in die Queue (Push-URL aus dem Webhook)
   end
   T-->>L: RX1 (1 s nach dem Uplink) oder RX2 (SF9, 869,525 MHz)
   L->>L: Downlink auswerten: Uhr und Intervall setzen
@@ -128,7 +128,7 @@ und Winter (siehe [intervalle.md](intervalle.md)). Die Messwerte selbst stempelt
 eigenen Zeit, sie sind von einer falschen Logger-Uhr nie betroffen.
 
 **Woher die Uhrzeit kommt:** Die LoRa-Logger bekommen aus dem Funknetz keine Uhrzeit. Gestellt wird die Uhr
-nur über den Downlink FPort 11 von `lora_downlink.php`. Ohne diesen Rückkanal läuft sie ab dem Startwert
+nur über den Downlink FPort 11 von `lora_downlink.php` (Webhook-Adresse mit `Z=2`). Ohne diesen Rückkanal läuft sie ab dem Startwert
 einfach weiter.
 
 **Format:** wie in der WLAN-Antwort, Ortszeit als Unixzeit, also MEZ (UTC + 1 h) und in der Sommerzeit MESZ
@@ -139,8 +139,8 @@ Zeitzone des Servers eine Stunde vor dem UTC-Nullpunkt.
 | Situation | Uhr | wieder richtig |
 |---|---|---|
 | Normalbetrieb mit `lora_downlink.php` | wird einmal am Tag gestellt (erster Uplink nach Mitternacht) | – |
-| Stromausfall (Akku ab) | startet am **01.01.2022 00:00** | beim ersten Uplink des nächsten Tages (Server hat die Uhrzeit für heute schon geschickt) |
-| Umstellung Sommer-/Winterzeit (nachts um 2 bzw. 3 Uhr) | geht 1 h falsch, weil die Uhr um Mitternacht schon gestellt wurde | beim ersten Uplink des nächsten Tages |
+| Stromausfall (Akku ab) | startet am **01.01.2022 00:00** | beim ersten Uplink nach dem Neustart (Server erkennt den kleineren Frame-Counter) |
+| Umstellung Sommer-/Winterzeit (nachts um 2 bzw. 3 Uhr) | geht kurz 1 h falsch | beim ersten Uplink nach der Umstellung (Server merkt sich `date("I")`) |
 | ohne Rückkanal | läuft vom Startwert aus weiter | nie |
 
 Wie weit die Uhr ohne Stellen pro Tag wegläuft, ist noch nicht gemessen. Der Langzeittest seit 08.11.2026

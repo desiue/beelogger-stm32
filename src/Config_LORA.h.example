@@ -73,8 +73,8 @@ static const uint16_t PREFIX =   0x13;     //   https://www.thethingsnetwork.org
 // alternative Messzyklusumschaltung
 #define TEMP_ZYKLUS_aktiv    0            //  0 / 1 aktiviert Umschaltung Messzyklus Winter per Temperatur
 const float Temperatur_Wintertag = 8.0;   // < = Wintertag
-#define SOLAR_ZYKLUS_aktiv   0            //  0 / 1 aktiviert Umschaltung Messzyklus Tag/Nacht per Solarzellenspannung
-const float SolarSpannung_Sommertag = 0.1;// < = Nacht
+#define SOLAR_ZYKLUS_aktiv   1            //  0 / 1 aktiviert Umschaltung Messzyklus Tag/Nacht per Solarzellenspannung
+const float SolarSpannung_Sommertag = 1.0;// < = Nacht
 
 
 

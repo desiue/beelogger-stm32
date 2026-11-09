@@ -32,7 +32,7 @@ flowchart TD
    ![Application anlegen](ttn/bilder/01_application.png)
 2. **Payload formatters → Uplink**: Formatter type „Custom Javascript formatter“, Inhalt von [`ttn/payload_decoder_ttn.js`](ttn/payload_decoder_ttn.js) einfügen, speichern.
    ![Payload-Formatter](ttn/bilder/02_formatter.png)
-3. **Webhooks → + Add webhook → Custom webhook**: Adresse des beelogger-Servers wie bei beelogger.de beschrieben (`…/beelogger_log.php?Passwort=…&LORA=1`), „Uplink message“ an.
+3. **Webhooks → + Add webhook → Custom webhook**: Adresse des beelogger-Servers wie bei beelogger.de beschrieben (`…/beelogger_log.php?Passwort=…&LORA=1`, mit eigenem Rückkanal und Uhrzeit zusätzlich `&Z=2`, siehe 4b), „Uplink message“ an.
    ![Webhook](ttn/bilder/03_webhook.png)
 4. **Optional: zweiter Webhook zum eigenen Server.** Eine Application kann mehrere Webhooks haben; jeder
    bekommt jeden Uplink. So gehen die Daten z. B. an den Community-Server **und** an einen eigenen Server.
@@ -229,7 +229,8 @@ Hinweise:
 ### 4b. Automatisch vom eigenen Server: Serverquittung FPort 11
 
 Mit `lora_downlink.php` (Abschnitt 1.4) braucht es keinen Downlink von Hand: Der Server schickt
-das Intervall aus seiner Web-Konfiguration und einmal am Tag die Uhrzeit (FPort 11, 7 Byte). Format:
+das Intervall aus seiner Web-Konfiguration, mit `&Z=2` in der Webhook-Adresse auch einmal am Tag die
+Uhrzeit (FPort 11, 7 Byte; ohne `Z=2` FPort 10, 1 Byte). Format:
 [payload.md](payload.md#downlink-fport-11-serverquittung-uhr--intervall), Einbau: [server.md](server.md).
 Ob es ankommt: im seriellen Monitor `DL Port 11: …` und `Uhr gestellt`, auf dem Server `lora_downlink.log`.
 

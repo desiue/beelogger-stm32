@@ -33,12 +33,13 @@ nächsten Uplink. Dafür trägt der Downlink Frame-Counter-Bezug und Abstand mit
 nach dem Langzeittest.
 
 **Wie viele Downlinks entstehen?**
-Einer am Tag für die Uhr, dazu einer bei jeder Änderung des Intervalls (z. B. Tag/Nacht). TTN erlaubt etwa
+Mit `Z=2` einer am Tag für die Uhr, dazu einer bei jeder Änderung des Intervalls (z. B. Tag/Nacht) und nach einem Neustart des Loggers. TTN erlaubt etwa
 10 pro Gerät und Tag. → [server.md: Wann gesendet wird](server.md#wann-gesendet-wird)
 
 **1 Byte oder 7 Byte?**
 Die Firmware versteht beides: FPort 10 mit 1 Byte (nur Intervall) und FPort 11 mit 7 Byte (Intervall und
-Uhr). Geplant ist, dass man das wie bei WLAN mit `Z=2` in der Webhook-Adresse auswählt (noch nicht gebaut).
+Uhr). Ausgewählt wird wie bei WLAN über die Webhook-Adresse: mit `Z=2` FPort 11, sonst FPort 10.
+→ [server.md: Wann gesendet wird](server.md#wann-gesendet-wird)
 → [payload.md](payload.md), [Planung](planung/planung_otaa_downlink.md)
 
 ## Uhr
@@ -52,14 +53,14 @@ Sie läuft am 32-kHz-Uhrenquarz. Wie weit sie pro Tag wegläuft, ist noch nicht 
 soll es zeigen.
 
 **Was ist nach einem Stromausfall, und dauert es einen Tag, bis die Uhr stimmt?**
-Nach dem Stromausfall steht sie auf 01.01.2022. Heute kommt die Uhrzeit erst mit dem ersten Uplink des
-nächsten Tages. Bei der Sommer-/Winterzeit-Umstellung geht sie bis dahin 1 h falsch. Geplant ist, die Uhrzeit
-in beiden Fällen sofort zu schicken. → [architektur.md: Uhr](architektur.md#uhr-wann-sie-stimmt-und-wann-nicht)
+Nach dem Stromausfall steht sie auf 01.01.2022. Mit `Z=2` schickt der Server die Uhrzeit gleich nach dem
+ersten Uplink, weil er den Neustart am kleineren Frame-Counter erkennt. Ebenso nach der Sommer-/Winterzeit-
+Umstellung. Ohne `Z=2` wird die Uhr nie gestellt. → [architektur.md: Uhr](architektur.md#uhr-wann-sie-stimmt-und-wann-nicht)
 
 **Geht es auch ohne Uhr?**
 Ja: Tag/Nacht nach Solarspannung (`SOLAR_ZYKLUS_aktiv`) und Winter nach Temperatur (`TEMP_ZYKLUS_aktiv`)
-brauchen keine Uhr. Das beelogger-Team empfiehlt die Solarspannung als Standard, mit 1 V als Schwelle (in
-der Vorlage steht heute noch 0,1 V). → [intervalle.md](intervalle.md#tag-und-nacht)
+brauchen keine Uhr. Das beelogger-Team empfiehlt die Solarspannung als Standard, mit 1 V als Schwelle; so
+steht es in der Vorlage `Config_LORA.h.example`. → [intervalle.md](intervalle.md#tag-und-nacht)
 
 ## Speicher
 

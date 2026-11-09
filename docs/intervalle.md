@@ -59,11 +59,12 @@ auskommentierte Alternativen.
 
 ## Tag und Nacht
 
-Standard: nach der **Uhrzeit**. Nacht ist, wenn die Stunde ≥ `WeckIntervall_Nacht_Anfang` (23) oder
+Ohne Solarumschaltung: nach der **Uhrzeit**. Nacht ist, wenn die Stunde ≥ `WeckIntervall_Nacht_Anfang` (23) oder
 < `WeckIntervall_Nacht_Ende` (6) ist.
 
-Alternativ nach der **Solarspannung** (`SOLAR_ZYKLUS_aktiv 1`): Nacht, solange die Solarspannung unter
-`SolarSpannung_Sommertag` (0,1 V) liegt. Das funktioniert auch ohne gestellte Uhr.
+Nach der **Solarspannung** (`SOLAR_ZYKLUS_aktiv 1`, Voreinstellung in `Config_LORA.h.example`): Nacht,
+solange die Solarspannung unter `SolarSpannung_Sommertag` (1,0 V) liegt. Ersetzt die Uhrzeit-Regel und
+funktioniert auch ohne gestellte Uhr.
 
 ## Winter
 

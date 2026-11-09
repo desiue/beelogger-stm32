@@ -121,7 +121,7 @@ einen Schlüssel mit, unter denen man einen Downlink für genau dieses Gerät be
 | TTN | Network Server | entschlüsselt, prüft Zähler, verwaltet die Downlink-Warteschlange je Gerät |
 | TTN | Application Server | Payload-Formatter (Decoder), Webhook-Aufruf an den Server, nimmt Downlink-Bestellungen an |
 | Server | `beelogger_log.php` | speichert Messwerte, rechnet das Intervall (`ServerZeitSteuerung()`), ruft am Ende `lora_downlink()` auf, antwortet an TTN (Antwort verfällt) |
-| Server | `lora_downlink.php` | entscheidet, ob ein Downlink nötig ist, baut die 7 Byte, bestellt den Downlink bei TTN, schreibt Log und Merkdatei |
+| Server | `lora_downlink.php` | entscheidet, ob ein Downlink nötig ist, baut 1 Byte (FPort 10) oder mit `Z=2` 7 Byte (FPort 11), bestellt den Downlink bei TTN, schreibt Log und Merkdatei |
 
 ### Welche Information wohin geht
 
@@ -136,9 +136,9 @@ sequenceDiagram
   T->>B: HTTP POST ?Passwort=…&LORA=1<br/>Inhalt: JSON mit Messwerten, f_cnt, received_at<br/>Kopf: X-Downlink-Replace (Adresse), X-Downlink-Apikey (Schlüssel)
   B->>B: speichern, Intervall aus der Web-Konfiguration rechnen
   B->>D: lora_downlink(Intervall)
-  D->>D: Merkdatei lesen: Intervall geändert?<br/>Uhrzeit heute schon gesendet?
+  D->>D: Merkdatei lesen: Intervall geändert?<br/>Neustart? Mit Z=2: Uhrzeit heute schon gesendet?
   opt Downlink nötig
-    D->>T: HTTP POST an die Adresse aus dem Kopf<br/>Authorization: Bearer Schlüssel<br/>JSON: f_port 11, frm_payload (7 Byte, Base64)
+    D->>T: HTTP POST an die Adresse aus dem Kopf<br/>Authorization: Bearer Schlüssel<br/>JSON: f_port 11 (Z=2, 7 Byte) oder 10 (1 Byte), Base64
     T-->>D: 200 OK (Downlink steht in der Warteschlange)
     D->>D: Merkdatei und Log schreiben
   end
@@ -166,23 +166,36 @@ Die Uhrzeit kommt dann erst am nächsten Tag wieder, ein geändertes Intervall e
 3. Im TTN-Webhook, der zu diesem Server führt, einen **Downlink API key** eintragen (Recht
    `traffic down write`, siehe [ttn_einrichten.md](ttn_einrichten.md)). Ohne Key schickt TTN keine
    Push-URL mit, und die Erweiterung schreibt nur einen Hinweis ins Log.
+4. Soll der Logger auch die Uhrzeit bekommen: in der Webhook-Adresse `&Z=2` anhängen (siehe
+   [Wann gesendet wird](#wann-gesendet-wird)).
 
 Fehlt die Datei, läuft `beelogger_log.php` unverändert weiter.
 
 ### Wann gesendet wird
 
-Bei **jeder** LoRa-Meldung prüft die Funktion, ob ein Downlink nötig ist. Gesendet wird nur, wenn
-- sich das Intervall gegenüber dem zuletzt gesendeten geändert hat, oder
-- heute noch keine Uhrzeit gesendet wurde.
+Was gesendet wird, wählt man wie bei WLAN über die Webhook-Adresse:
 
-Im Normalbetrieb ist das **ein Downlink pro Tag** (TTN Fair Use: etwa 10 pro Gerät und Tag).
-Nur Intervalle von 5–60 min werden übertragen, sonst steht 0 (unverändert) im Byte.
+| Webhook-Adresse | Downlink | Inhalt |
+|---|---|---|
+| mit `&Z=2` (z. B. `…beelogger_log.php?Passwort=…&LORA=1&Z=2`) | FPort 11, 7 Byte | Intervall und Uhrzeit |
+| ohne `Z=2` | FPort 10, 1 Byte | nur Intervall |
+
+Bei **jeder** LoRa-Meldung prüft die Funktion, ob ein Downlink nötig ist. Gesendet wird nur, wenn
+- sich das Intervall gegenüber dem zuletzt gesendeten geändert hat,
+- der Logger neu gestartet ist (Frame-Counter kleiner als beim letzten Uplink, z. B. nach Akku ab):
+  Das Fern-Intervall übersteht keinen Stromausfall, also wird es neu geschickt, mit `Z=2` auch die Uhrzeit,
+- nur mit `Z=2`: heute noch keine Uhrzeit gesendet wurde oder Sommer-/Winterzeit seit dem letzten Stellen
+  gewechselt hat (`date("I")`).
+
+Im Normalbetrieb ist das mit `Z=2` **ein Downlink pro Tag**, ohne `Z=2` nur einer bei jeder Änderung des
+Intervalls (TTN Fair Use: etwa 10 pro Gerät und Tag). Nur Intervalle von 5–60 min werden übertragen; mit
+`Z=2` steht sonst 0 (unverändert) im Byte, ohne `Z=2` wird dann nichts gesendet.
 
 ### Dateien, die die Erweiterung anlegt
 
 | Datei | Inhalt |
 |---|---|
-| `lora_downlink_state.json` | letzter FCnt, Empfangszeit, gesendetes Intervall, Tag der letzten Uhrzeit |
+| `lora_downlink_state.json` | letzter FCnt, Empfangszeit, gesendetes Intervall, Tag und Sommerzeit-Merker der letzten Uhrzeit, offener Neustart |
 | `lora_downlink.log` | eine Zeile pro Downlink-Versuch mit HTTP-Antwort von TTN |
 
 Beispielzeile im Log:
