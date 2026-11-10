@@ -52,6 +52,7 @@ nav:
       - Bauen und flashen: bauen_flashen.md
       - TTN einrichten: ttn_einrichten.md
       - Server: server.md
+      - Server-Alarme: server_alarme.md
   - Wie es funktioniert:
       - Hardware: hardware.md
       - LoRaWAN: lorawan.md
@@ -60,6 +61,7 @@ nav:
       - Speicher: speicher.md
   - Wenn etwas nicht geht:
       - Fehlersuche: fehlersuche.md
+      - TTN-Downlink-Schleife: ttn_downlink_schleife.md
   - Über das Projekt:
       - Entwicklung: entwicklung.md
       - Doku-Pflege: doku_pflege.md

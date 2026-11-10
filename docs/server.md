@@ -3,7 +3,8 @@
 [← Übersicht](README.md)
 
 Stand: 10.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261109), `server/lora_downlink.php` vom 09.11.2026 ·
-geprüft gegen Code: `server/M40_261109/beelogger1/beelogger_log.php`, Commit 7ccdb38 ·
+geprüft gegen Code: `server/M40_261109/beelogger1/beelogger_log.php`, Commit 7ccdb38; CSV, Zahlenformate,
+Kompensation, Installation: Commit a688002 ·
 `lora_downlink.php`: Branch `p7-serverquittung`, noch nicht in `main`
 
 Die Server-Skripte stammen von beelogger.de (GPLv3). Eine unveränderte Kopie des Pakets M40_261109 liegt unter
@@ -31,6 +32,20 @@ Wichtige Dateien im Ordner:
 | `beelogger_show.php` | Anzeige (Diagramme) |
 | `beelogger.csv`, `month.csv`, `week.csv` | Messdaten: alles, letzter Monat, letzte Woche |
 
+**Installation (Original-Skripte).** Laut beelogger.de: PHP 8, für einige Funktionen cURL. Ein Basisordner mit
+Schreibrecht enthält `general_ini.php` (Sprache, Tageswächter, Schlüssel für Wetter/Karte), `beelogger_cron21.php`,
+`Errorchecker*.php`, `beelogger_mobileWatch.php`, `beelogger_mobileCheck.php`, Dygraph-Dateien, Icons und Sprachen,
+darunter je Logger ein Ordner. Fehlende Dateien (`beelogger_ini.php`, CSV-Dateien, `notes.csv`, `Schwarminfo.php` …)
+legen die Skripte selbst an. Fehlerprotokolle von `beelogger_log.php` (falsches Passwort, fehlerhafte Daten)
+landen in `ErrorcheckerData.php` im Basisordner. `local_Updater.php` kopiert neue Skripte in bestehende Ordner:
+ohne Option nur Anzeige, `?U` Skripte, `?X` Icons und Sprachen. Weitere Logger-Ordner legt die Web-Konfiguration
+an; die Ordnernamen nicht von Hand ändern.
+
+**Oberfläche.** `beelogger_show.php` zeichnet mit Dygraph bis zu 26 Datenreihen (CSV-Spalten 2–27) aus
+`week.csv`, `month.csv` oder `beelogger.csv`, mit Anmerkungen aus `notes.csv`. Zugang zur Konfiguration mit dem
+Show-Passwort (`$BeeloggerShowPasswort`), die Annahme mit dem Log-Passwort (`$BeeloggerLogPasswort`). Im Paket
+M40_261109 fehlt `beelogger_show.php`; vorhanden ist die schlanke Variante `beelogger_sml.php`.
+
 ## Ablauf bei einer LoRa-Meldung
 
 1. TTN ruft `beelogger_log.php?Passwort=<LogPasswort>&LORA=1` per POST auf, mit dem Uplink als JSON.
@@ -41,9 +56,10 @@ Wichtige Dateien im Ordner:
    Sketch-ID `LORA_<Aux3>` gemerkt. Fehlt das Feld (9 von 10 Uplinks), bleibt die zuletzt gemerkte ID.
 4. **Zeitstempel = Serverzeit** (Europe/Berlin), Sekunden auf 00 gesetzt. Die Uhr im Logger spielt dafür
    keine Rolle.
-5. Temperaturkompensation der Waagen (Korrekturwert je °C, in der Web-Konfiguration).
+5. [Temperaturkompensation](#temperaturkompensation-der-waagen) der Waagen (Korrekturwert je °C, in der Web-Konfiguration).
 6. **Speicherregel** prüfen (nächster Abschnitt), dann in die CSV-Dateien schreiben.
-7. Schwarmalarm, Trigger-Alarme, Weitergabe (z. B. BEEP, ThingSpeak) nach Einstellung.
+7. Schwarmalarm, Trigger-Alarme, Weitergabe (z. B. BEEP, ThingSpeak) nach Einstellung, siehe
+   [server_alarme.md](server_alarme.md).
 8. Antwort an den Aufrufer: `<Zeit>T<Intervall>B<Service>ok *`. Ein WLAN-Logger liest daraus Uhrzeit und
    Intervall. **Bei LoRa verwirft TTN diese Antwort**, dafür gibt es `lora_downlink.php` (unten).
 
@@ -81,6 +97,84 @@ Der Logger schickt in jeder Meldung ein Byte `Service` (siehe [payload.md](paylo
 
 Der **Schwarmalarm** prüft nur, wenn Service in der aktuellen **und** in der zuletzt gespeicherten Meldung
 unter 99 liegt. So löst eine Durchsicht am Volk (Arbeitsschalter, Gewicht ändert sich) keinen Alarm aus.
+
+## Was gespeichert wird: CSV-Dateien
+
+Wird gespeichert, hängt der Server dieselbe Zeile an `beelogger.csv`, `month.csv` und `week.csv` an
+(Zeilenende `\r\n`, Zeilen 630–675). Bei Multi-Loggern bekommt zusätzlich jede Waage eine Zeile im Format des
+Einzel-Loggers im Unterordner `beelogger<Kennbuchstabe><Nr>_<Waage>` (z. B. `beeloggerQ4_1` … `beeloggerQ4_4`,
+Kennbuchstabe D/T/Q/P/H).
+
+**Kürzen** (`CSVbuilder_log()`, Zeile 1188): nach dem Speichern, wenn die Stunde kleiner als 8 ist und
+`month.csv` mehr als 20 Zeilen hat. `month.csv` behält die letzten 31 Tage (2 678 400 s vor dem jüngsten
+Zeitstempel), `week.csv` die letzten 7 Tage (604 800 s). `beelogger.csv` wird nie gekürzt.
+
+**Multi-Logger** (Ordner im Beispiel Quad, *n* = 4 Waagen, 30 Spalten):
+
+| Spalte (Quad) | Inhalt |
+|---|---|
+| 1 | Zeit `YYYY/MM/DD HH:MM:00` (Europe/Berlin) |
+| 2 | Wägezellentemperatur (= `TempOut`) |
+| 3 | Außentemperatur |
+| 4 | Luftfeuchte außen |
+| 5 | Service |
+| 6 | Licht |
+| 7–10 | Gewicht 1…*n*, temperaturkompensiert |
+| 11–14 | Temperatur Beute 1…*n* |
+| 15–18 | Luftfeuchte Beute 1…*n* |
+| 19, 20 | Akku `VBatt`, Solar `VSolar` |
+| 21–24 | Gewicht 1…*n*, roh |
+| 25, 26, 27 | `Aux1` (Luftdruck), `Aux2` (RSSI), `Aux3` (Sketch-ID) |
+| 28, 29 | leer |
+| 30 | Unix-Zeitstempel |
+
+Bei Duo, Triple, Penta, Hexa ändert sich nur *n*.
+
+**Einzel-Logger und Unterordner** (17 Spalten): Zeit, Temperatur Beute, Temperatur außen, Feuchte Beute,
+Feuchte außen, Licht, Gewicht kompensiert, VBatt, VSolar, Service, Gewicht roh, Aux1, Aux2, Aux3, leer, leer,
+Zeitstempel. Fehlt `VBatt` (Bienenzähler), stehen in Spalte 8 und 9 `BienenIn` und `BienenOut`.
+
+Bei WLAN/LTE-Loggern bedeuten `Aux1`–`Aux3` Luftdruck, Regen, Systemtemperatur; bei LoRa Luftdruck, RSSI,
+Sketch-ID.
+
+## Zahlenformate
+
+Vor dem Speichern (Zeilen 583–605). `number_format` rundet kaufmännisch (0,5 aufwärts).
+
+| Wert | Nachkommastellen | Beispiel |
+|---|---|---|
+| Wägezellentemperatur | 2 | 19,56 → `19.56` |
+| Außen- und Beutentemperatur, Feuchten, Licht | 1 | 19,56 → `19.6` |
+| VBatt, VSolar | 2 | 4,078 → `4.08` |
+| Aux1 (Luftdruck) | 1, vorher `+ $KorrPressure` | 1013,2 → `1013.2` |
+| Aux2, Aux3 | 1 | −74 → `-74.0` |
+| Gewicht roh | 3 unter 14,5 (auch negativ), sonst 2 | −65,52 → `-65.520`; 44,44 → `44.44` |
+| Service | −1 → leer, über 1000 → 99, sonst auf 1 Stelle gerundet | |
+
+## Temperaturkompensation der Waagen
+
+Zeilen 608–628. Je Waage *k* mit Korrekturwert `$KorrekturwertArray[k]` und `$KalibrierTemperatur` aus der
+Web-Konfiguration. Als Temperatur dient die Wägezellentemperatur, bei LoRa also `TempOut`.
+
+```
+Δ = (Temperatur − KalibrierTemperatur) × Korrekturwert[k]
+|Korrekturwert| < 2  (kg/°C):  Gewicht = round(Gewicht_roh + Δ, 3 Stellen unter 10 kg, sonst 2)
+sonst                (g/°C):   Gewicht = round(Gewicht_roh + Δ)
+```
+
+Ist der Korrekturwert 0 oder leer, die Kalibriertemperatur leer oder kein Gewicht da, bleibt das Rohgewicht.
+
+**Korrekturwert bestimmen** (Verfahren von beelogger.de): Waage mit festem Gewicht belasten, Korrekturwert 0,
+über mehrere Tage mit deutlichen Temperaturschwankungen aufzeichnen. Weil der Server Gewichte kompensiert
+**und** roh speichert, reicht die Rohreihe. Aus einem Abschnitt mit großem Temperaturhub:
+
+```
+Korrekturwert [kg/°C] = −1 × Gewichtsdifferenz / Temperaturdifferenz
+Beispiel: −1 × (2,72 − 2,40) kg / (7 − 16) °C = 0,0355 kg/°C
+```
+
+Kalibriertemperatur = Temperatur, bei der die Waage das aufgelegte Gewicht genau anzeigt. Der Logger muss
+dafür nicht neu geflasht werden.
 
 ## Sendeintervall vom Server: `ServerZeitSteuerung()`
 

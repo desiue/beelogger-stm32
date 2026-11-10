@@ -20,6 +20,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 | [TTN einrichten](ttn_einrichten.md) | Application, Webhooks (auch zweiter Server + Downlink-Key), Gerät ABP/OTAA, Downlinks, MAC-Einstellungen, Fair Use |
 | [OTAA-Einrichtung (PDF)](ttn/STM32_LORA_OTAA_Einrichtung_261107.pdf) | Kurzanleitung nur TTN-Konsole, OTAA, mit Bildern |
 | [Server](server.md) | `beelogger_log.php`: Speicherregeln (220/520 s), Service-Werte, `ServerZeitSteuerung()`, `lora_downlink.php` einbinden |
+| [Server-Alarme](server_alarme.md) | Schwarmalarm, Triggeralarme, Tageswächter, Weitergabe an BEEP/ThingSpeak |
 | [ATmega-Logger](../atmega_lora/README.md) | Universal 1.x und beeloggerSMD: Vorschlag 261107 (ABP) und 261108 (OTAA), [Testaufbau Uno](../atmega_lora/testaufbau_uno.md) |
 
 ## Wie es funktioniert
@@ -37,6 +38,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 | Seite | Inhalt |
 |---|---|
 | [Fehlersuche](fehlersuche.md) | Meldungen im seriellen Monitor, TTN, Webhook, Server |
+| [TTN-Downlink-Schleife](ttn_downlink_schleife.md) | Warum TTN ohne passende MAC-Werte bei jedem Uplink Downlinks schickt, und wie man es abstellt |
 
 ## Über das Projekt
 

@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1 (Serverteil: M40_261109, Commit 7ccdb38)
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1 (Serverteil: M40_261109, Commit 7ccdb38; Ergänzungen 10.11.: Commit a688002)
 (Meldungen aus `src/STM32_LORA.ino`, `src/STM32_LORA_utility.ino`, `src/STM32_LORA_260705.ino`;
 Serverantworten aus `beelogger_log.php` M40_261109)
 
@@ -68,6 +68,8 @@ Antworten von `beelogger_log.php`:
 | `…ok *` | angenommen (Format `<Zeit>T<Intervall>B<Service>ok *`) |
 | `PwErrorT55Dok *` | falsches Passwort im Parameter `Passwort=` |
 | `typErrT25Dok *` | Ordnername passt nicht zur Zahl der Waagen in den Daten |
+| `NotIniT55Dok *` | im Ordner fehlt `beelogger_ini.php`: Logger-Ordner nicht über die Web-Konfiguration angelegt |
+| `<Zeit>T15Aok *` | Meldung nicht gespeichert, weil älter als die letzte gespeicherte (nur WLAN/LTE mit eigener Zeit; bei LoRa vergibt der Server die Zeit) |
 
 Häufig: URL ohne `&LORA=1`, Tippfehler im Ordnernamen, Passwort mit Sonderzeichen, die in der URL anders
 ankommen.
@@ -80,6 +82,25 @@ ankommen.
 | Gewicht springt | Kalibriertemperatur `99.9` im Betrieb gesetzt (nur für Tests), oder Temperaturkompensation falsch |
 | Kein Schwarmalarm nach Durchsicht | gewollt: Service 99 schaltet ihn für diese und die nächste Meldung ab |
 | Durchsicht-Symbol ohne Durchsicht | Service-Wert über 240 |
+| Gewicht `-1`, `-65.52` oder `0` | Waage nicht angeschlossen oder nicht kalibriert (`Taragewicht`, `Skalierung` in `Config_MULTI.h`) |
+| `FeuchteOut` immer 100 % | Feuchtesensor nass oder defekt |
+| Sketch-ID (`Aux3`) zeigt eine alte Kennung | die ID kommt nur in jeder 10. Meldung und in der ersten nach dem Einschalten; der Server merkt sich die letzte |
+| Akku fällt trotz Sonne | `VSolar` im Verlauf ansehen; unter `VAlternativ` (3,8 V) sendet der Logger nur noch alle 120 min ([intervalle.md](intervalle.md)) |
+
+Fehlerprotokoll von `beelogger_log.php` (falsches Passwort, fehlerhafte Daten): `ErrorcheckerData.php` im
+Basisordner, anzeigen mit `Errorchecker.php`. Bei `PwError` steht dort auch das gültige Log-Passwort; die Datei
+nicht öffentlich lesbar machen.
 
 Eigener Server mit `lora_downlink.php`: `lora_downlink.log` im Logger-Ordner zeigt jeden Downlink-Versuch.
 `kein Downlink-Header (Webhook ohne Downlink API key?)` heißt: Im TTN-Webhook fehlt der Downlink-Key.
+
+## Wartung
+
+- **Akku und Solar:** `VBatt` und `VSolar` im Verlauf beobachten. Die Spannungsmessung alle paar Jahre mit einem
+  Multimeter nachprüfen und bei Bedarf neu kalibrieren ([bauen_flashen.md](bauen_flashen.md)).
+- **Waagen:** nach einem Wägezellenwechsel Tara und Skalierung neu bestimmen, danach den Korrekturwert für die
+  [Temperaturkompensation](server.md#temperaturkompensation-der-waagen) auf dem Server.
+- **Zähler:** ABP startet nach Stromausfall bei FCnt 0, in TTN muss *Resets frame counters* an sein. OTAA joint
+  ab FCnt 16000 und nach Stromausfall neu ([lorawan.md](lorawan.md#frame-counter-16-bit-auf-dem-funk-32-bit-in-der-rechnung)).
+- **Schlüssel erneuern**, wenn sie je in Chats, Foren, Wikis oder Bildschirmfotos standen: in TTN neu erzeugen
+  und neu flashen.

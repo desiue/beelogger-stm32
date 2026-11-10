@@ -33,6 +33,8 @@ flowchart TD
 2. **Payload formatters → Uplink**: Formatter type „Custom Javascript formatter“, Inhalt von [`ttn/payload_decoder_ttn.js`](ttn/payload_decoder_ttn.js) einfügen, speichern.
    ![Payload-Formatter](ttn/bilder/02_formatter.png)
 3. **Webhooks → + Add webhook → Custom webhook**: Adresse des beelogger-Servers wie bei beelogger.de beschrieben (`…/beelogger_log.php?Passwort=…&LORA=1`, mit eigenem Rückkanal und Uhrzeit zusätzlich `&Z=2`, siehe 4b), „Uplink message“ an.
+   Der Ordnername in der URL bestimmt, wie viele Waagen der Server erwartet (`beelogger1` = 1, `Quad2` = 4,
+   siehe [server.md](server.md#ordner-und-dateien)).
    ![Webhook](ttn/bilder/03_webhook.png)
 4. **Optional: zweiter Webhook zum eigenen Server.** Eine Application kann mehrere Webhooks haben; jeder
    bekommt jeden Uplink. So gehen die Daten z. B. an den Community-Server **und** an einen eigenen Server.
@@ -282,7 +284,7 @@ Die Firmware startet nach jedem Zyklus neu (`LowPower.shutdown()`) und beantwort
 | ADR | aus (Disabled) | |
 | Status count / time periodicity | 0 / 0 | Vorgabe 200 / 86400: TTN fragt den Gerätestatus per MAC-Befehl ab, Firmware antwortet nicht |
 
-Links („aktuell“) und rechts („Desired“) müssen gleich sein. Beispiel aus der API: `ttn/beelogger09_ns_einstellungen_abp.json`.
+Links („aktuell“) und rechts („Desired“) müssen gleich sein. Warum, welche Einstellung welchen MAC-Befehl auslöst und wie man ein altes Gerät umstellt: [ttn_downlink_schleife.md](ttn_downlink_schleife.md). Beispiel aus der API: `ttn/beelogger09_ns_einstellungen_abp.json`.
 
 **Achtung:** Geänderte MAC-Einstellungen gelten bei einer laufenden ABP-Session erst nach „Reset session and MAC state“ in der TTN-Konsole. Bis dahin nutzt TTN die alten Werte. Beispiel beelogger09 am 06.11.: Settings RX2 = DR3, die laufende Session aber noch DR0 (SF12). Der Downlink kam trotzdem an, weil TTN ihn über RX1 schickte (SF7, gleiche Frequenz wie der Uplink). Mitschnitt: `ttn/beispiele/2026-11-06_beelogger09_live_data_downlink_15min.json`.
 
