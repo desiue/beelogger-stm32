@@ -5,9 +5,23 @@
 Stand: 10.11.2026 · gilt für: STM32 261107 (Pinbelegung gleich wie 260705) · geprüft gegen Code: Commit a3ac566
 
 Die **Pinbelegung** stammt aus dem Code (`src/STM32_beelogger.h`, `src/STM32_LORA.ino`) und gilt für alle
-Platinen. Die **Bauteilwerte** unter „Baugruppen“ sind aus dem Schaltplanbild `beelogger_STM32F4` gelesen.
-Sie stehen nicht im Code und sind nicht nachgemessen. Vor einem Nachbau gegen die Fertigungsdaten von
-beelogger.de prüfen.
+Platinen. Die **Bauteilwerte** unter „Baugruppen“ sind aus Schaltplänen gelesen (siehe
+[Schaltpläne](#schaltpläne)). Sie stehen nicht im Code und sind nicht nachgemessen. Vor einem Nachbau gegen
+die Fertigungsdaten von beelogger.de prüfen.
+
+## Schaltpläne
+
+Die Schaltpläne stehen auf beelogger.de und sind dort urheberrechtlich geschützt. Deshalb sind sie hier nur
+verlinkt, nicht kopiert. Seite: [beelogger-STM32 – Schaltung](https://beelogger.de/?p=211876).
+
+| Plan | Platine | Inhalt |
+|---|---|---|
+| [BLK20_scm_NT.png](https://beelogger.de/wp-content/uploads/2026/03/BLK20_scm_NT.png) | BlackPill 2.0 (ab V1.4) | Stromversorgung: Lademodul, Spannungsregler, Lastschalter, Spannungsteiler |
+| [STM32_BLK_12_nt_scm.png](https://beelogger.de/wp-content/uploads/2024/02/STM32_BLK_12_nt_scm.png) | BlackPill V1.2 | Stromversorgung mit SPV1040-Option |
+
+Ein älteres Schaltplanbild `beelogger_STM32F4` von 2022, älter als V1.2, war die Grundlage für die Angaben zu
+Funkmodul, Waagen, Temperatur und EEPROM. Die Stromversorgung ist gegen den Plan BlackPill 2.0 geprüft
+(10.11.2026).
 
 ## Mikrocontroller
 
@@ -60,6 +74,8 @@ braucht für Waage 3 und 4 andere Leitungen als eine für die BlackPill.
   steht hinter `#if 0`.
 - **Stromversorgung:** eine Li-Ion-Zelle (18650), Solarzelle mit Lademodul „Solar-Charger 1.0“ (CN3065),
   zwei Spannungsregler MCP1702-33. Einer versorgt den Mikrocontroller dauernd, der zweite die Peripherie.
+  Am Solareingang sitzt eine Diode 1N4004. Optional (Plan BlackPill 2.0): Step-up-Wandler MT3608 auf 5 V
+  (`VCCSW`) mit Spannungsregler MCP1702-50; Bestückungsplatz für LF33CV (U1) parallel zum geschalteten MCP1702-33.
   Bis BlackPill V1.2 (und BluePill 1.02/1.04) gab es statt des Moduls eine SMD-Ladeschaltung mit SPV1040
   als Option, ab V1.3 ist sie entfernt (beelogger.de, „beelogger-STM32 – Platinenversionen“ und
   „Bauteile und Bezug“). Der Laderegler bestimmt die passende Schwelle `SolarSpannung_Sommertag`, siehe
@@ -107,5 +123,5 @@ Plausibilität: Der Teiler 470 / (1000 + 470) = 0,32 bringt 4,2 V Akku auf etwa 
 ## Offene Punkte
 
 - Eine Stückliste mit geprüften Bauteilwerten fehlt.
-- Ob der Schaltplan `beelogger_STM32F4` zur Platine 2.0 oder zu einem älteren Stand gehört, ist nicht belegt.
-  Die Pinbelegung oben gilt unabhängig davon.
+- Funkmodul, Waagen, Temperatur und EEPROM sind nur gegen das Schaltplanbild von 2022 gelesen, nicht gegen
+  einen Plan der Platine 2.0. Die Pinbelegung oben gilt unabhängig davon.
