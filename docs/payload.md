@@ -3,8 +3,8 @@
 [← Übersicht](README.md)
 
 Stand: 08.11.2026 · gilt für: STM32 261107 (Uplink identisch mit 260705 und ATmega 250326/261107) ·
-geprüft gegen Code: Commit f1a9e0c (`src/STM32_LORA.ino`, `prep_payload()`, `onEvent()`;
-`docs/ttn/payload_decoder_ttn.js`) · FPort 11: Branch `p7-serverquittung`, noch nicht in `main`
+geprüft gegen Code: Commit 325d02b (`src/STM32_LORA.ino`, `prep_payload()`, `onEvent()`;
+`docs/ttn/payload_decoder_ttn.js`, `server/lora_downlink.php`) · FPort 11: Branch `p7-serverquittung`, noch nicht in `main`
 
 Überblick: [architektur.md](architektur.md)
 
@@ -128,6 +128,8 @@ unter der TTN-Grenze von 30 s.
 | `0` | Fern-Intervall aus, der Logger rechnet wieder selbst (Tag/Nacht/Winter) |
 | 5 – 180 | feste Minuten, auf 5 abgerundet |
 
+Auch `server/lora_downlink.php` sendet FPort 10, wenn der Aufruf kein `Z=2` enthält (mit dem Höchstwert des Servers, siehe [server.md](server.md)).
+
 Beispiel: 15 min = `0F`, in der TTN-Konsole unter *Messaging → Downlink*: FPort 10, Payload `0F`.
 Über die TTN-API ist `frm_payload` Base64, also `"Dw=="`. Im seriellen Monitor erscheint `DL Port 10: 15`.
 Der Wert bleibt im RTC-Backup-Register erhalten, auch über den Tiefschlaf hinweg, nicht aber
@@ -135,7 +137,9 @@ Der Wert bleibt im RTC-Backup-Register erhalten, auch über den Tiefschlaf hinwe
 
 ## Downlink FPort 11: Serverquittung (Uhr + Intervall)
 
-7 Byte, gesendet von `server/lora_downlink.php` (siehe [server.md](server.md)).
+7 Byte, gesendet von `server/lora_downlink.php` (siehe [server.md](server.md)), nur wenn der Aufruf `Z=2`
+enthält. Das Skript sendet, wenn sich das Intervall ändert, die Uhr heute noch nicht gestellt wurde, nach einem
+Wechsel Sommer-/Winterzeit oder nach einem Neustart des Loggers.
 
 | Byte | Inhalt |
 |---|---|

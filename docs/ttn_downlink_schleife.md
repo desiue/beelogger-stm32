@@ -3,7 +3,7 @@
 [← Übersicht](README.md)
 
 Stand: 10.11.2026 · gilt für: Original-Firmware 230711/260705 (ABP) und STM32 261107 (ABP/OTAA) ·
-geprüft gegen Code: Commit a688002 · Messungen: The Things Stack Sandbox eu1, v3.37.0, 23.10.–07.11.2026
+geprüft gegen Code: Commit a688002, Kanäle/CFList: 325d02b · Messungen: The Things Stack Sandbox eu1, v3.37.0, 23.10.–07.11.2026
 
 Hintergrund zu [ttn_einrichten.md, Abschnitt 7](ttn_einrichten.md#7-mac-einstellungen-im-detail-abp-lmic-dieser-firmware).
 Wer nur einen Logger richtig anlegen will, braucht diese Seite nicht.
@@ -156,12 +156,18 @@ der erweiterten Firmware kommt dann kein Downlink an, bis beide Zähler auf 0 st
 Feldgeräte mit Original-Firmware bleiben bei Rx2 0 / 0: ein Wechsel bräuchte einen weiteren Session-Reset und
 bringt dort nichts (Entscheidung 07.11.2026).
 
+## OTAA: Kanalliste aus dem Join-Accept (CFList)
+
+Laut Code (`src/lmic_otaa/lmic/lmic.c`, Join-Accept; `src/STM32_LORA.ino`, Setup): Beim Join übernimmt LMIC
+die Kanäle 3–7 aus der CFList, aber nur im RAM. Der Logger startet nach jedem Schlaf neu. Dann setzt er die
+Session wieder (`LMIC_restoreJoin()` → `LMIC_setSession()`) und danach seine eigenen Kanäle aus
+`LORA_CHANNELS`. Die CFList gilt also nur bis zum ersten Schlaf nach dem Join, danach sendet der Logger nur auf
+den Kanälen aus `Config_LORA.h`. Gemessen ist das nicht.
+
 ## Offene Punkte
 
 - Ob Custom MAC settings am Gerät ein zugewiesenes MAC settings profile überschreiben: nicht getestet.
 - Ob *Reset session and MAC state* den Uplink-Zähler im NS auf 0 setzt: steht nicht in der TTS-Dokumentation.
-- OTAA: Der Join-Accept kann eine Kanalliste (CFList) enthalten. Ob die Firmware sie nutzt oder beim nächsten
-  Aufwachen wieder nur ihre eigenen Kanäle setzt (`LMIC_setupChannel`, `LORA_CHANNELS`): nicht geprüft.
 - Welche der fünf Änderungen den Ausschlag gab, lässt sich aus den Logs nicht trennen. Weil jeder Befehl genau
   einer Einstellung zugeordnet ist, ist die Wirkung trotzdem plausibel.
 
