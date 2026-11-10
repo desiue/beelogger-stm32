@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit a3ac566
 
 ## Änderungen gegenüber 260705
 
@@ -26,6 +26,17 @@ Vollständig in [`aenderungen_gegen_260705.diff`](aenderungen_gegen_260705.diff)
 7. **ADR aus** (`LMIC_setAdrMode(0)` in `setup_LORA()`): Die LMIC schaltet ADR in `LMIC_reset()` ein, die Firmware beantwortet aber keine LinkADRReq. Uplinks tragen kein ADR-Bit mehr. TTN-Einstellung „ADR Disabled“ bleibt empfohlen für Altgeräte. Noch nicht auf Gerät getestet.
 8. **Software-Watchdog und I2C-Bus freitakten** (`STM32_LORA_utility.ino`, Aufruf in `loop()`): Hängt ein Sensor oder das Funkmodul, blieb der Logger bisher bis zum Stromausfall stehen (auch im Original). Jetzt zählt TIM4 im Sekundentakt, nur in der Wachphase: Sensoren 60 s, LoRa 100 s, Schlaf vorbereiten 20 s. Läuft eine Phase über, merkt sich der Logger das im Backup-Register (F1: 10, F4: 14) und startet neu. Nach einem Sensor-Hänger misst er einmal ohne I2C-Sensoren und sendet; nach einem LoRa-Hänger oder zwei Neustarts in Folge schläft er bis zum nächsten Termin. Vor der Sensorabfrage wird ein hängender I2C-Bus (SDA low) mit bis zu 9 Takten freigegeben. Der Hardware-Watchdog (IWDG) passt nicht, weil er im Standby weiterläuft und den Logger alle ~26 s wecken würde. Bricht die LMIC mit `hal_failed()` ab (z. B. Funkmodul antwortet beim Start nicht), sperrte sie bisher alle Interrupts und blieb stehen, sodass auch der Watchdog nicht mehr griff; in der LMIC-Kopie ruft `hal_failed()` jetzt `lmic_fehler()` aus dem Sketch auf (Phase merken, Neustart). Build ca. 2 KB größer.
    - Getestet 07.11.2026 auf BluePill F103 mit simulierten Hängern: Sensor-Hänger → Neustart nach 60 s → ohne I2C gemessen und gesendet (in TTN angekommen); zweiter Neustart in Folge → Zyklus ausgelassen; LMIC-Fehler → sofort Neustart, Zyklus ausgelassen. Den LMIC-Totalhänger hat ein defektes RFM95 im Test tatsächlich ausgelöst. SDA fest an GND bzw. SDA mit SCL kurzgeschlossen (BME280, BH1750) führt dagegen zu keinem Hänger: Der STM32-Kern bricht die I2C-Zugriffe per Timeout ab, die Sensoren liefern -1, gesendet wird normal.
+
+## Ältere Stände der Original-Firmware
+
+Die Kennung `l_ID` hat die Form JJMMTT. Grundlage dieses Repos ist **260705** (`src/STM32_LORA_260705.ino`).
+Ältere Stände liegen nicht im Repo, belegt ist nur:
+
+| Stand | Unterschied | Beleg |
+|---|---|---|
+| 220326 | gleiches Bitmasken-Format wie heute | Testpayload von beelogger.de mit Aux3 220326, dekodiert mit dem heutigen Decoder ([payload.md](payload.md)) |
+| bis 230711 | Frame-Counter im externen EEPROM, Rücksprung bei 16382 | Code dafür noch in `STM32_LORA.ino` hinter `#if 0` ([doku_pflege.md](doku_pflege.md)) |
+| 260705 | Frame-Counter im RTC-Backup-Register 3, Rücksprung nach 16384, 0 nach Stromausfall | `inc_LoRaSeq()`, `System_Init()` |
 
 ## Gefundene Fehler
 

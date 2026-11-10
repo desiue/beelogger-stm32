@@ -35,8 +35,10 @@ Wichtige Dateien im Ordner:
 
 1. TTN ruft `beelogger_log.php?Passwort=<LogPasswort>&LORA=1` per POST auf, mit dem Uplink als JSON.
 2. Passwort prüfen (`$BeeloggerLogPasswort` aus `beelogger_ini.php`).
-3. Werte aus `decoded_payload` übernehmen. Nur Zeichen `0-9 - .` sind erlaubt, der RSSI des ersten Gateways
-   landet in `Aux2`.
+3. Werte aus `decoded_payload` übernehmen. Jedes Feld muss auf `^[0-9\-\.]+$` passen, sonst bleibt es leer.
+   Der RSSI des ersten Gateways landet in `Aux2`. Felder der Waagen 2 ff. (`Gewicht2`, `TempIn2` …) liest der
+   Server nur, wenn der Ordnername so viele Waagen erwartet. Mehr gesendete Waagen fallen weg. `Aux3` wird als
+   Sketch-ID `LORA_<Aux3>` gemerkt. Fehlt das Feld (9 von 10 Uplinks), bleibt die zuletzt gemerkte ID.
 4. **Zeitstempel = Serverzeit** (Europe/Berlin), Sekunden auf 00 gesetzt. Die Uhr im Logger spielt dafür
    keine Rolle.
 5. Temperaturkompensation der Waagen (Korrekturwert je °C, in der Web-Konfiguration).

@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit a3ac566
 
 ```mermaid
 flowchart LR
@@ -41,6 +41,33 @@ Hinweise:
 - BluePill: Board `bluepill_f103c8_128k` mit `-DARDUINO_BLUEPILL_F103CB` (die Firmware braucht 128 KB).
 - Flash-Belegung (07.11., mit OTAA): F103CB 56 500 B, F411CE 55 308 B. BluePill: Die OTAA-Session liegt in der letzten Flash-Seite (F103CB: bei 127 KB). Reicht das Programm bis dorthin, speichert der Logger keine Session und joint bei jedem Start ([speicher.md](speicher.md)).
 - `pio run -t upload` geht beim F411 nicht (stm32flash kennt die Chip-ID 0x431 nicht), deshalb stm32loader.
+
+## Konfiguration (Auswahl)
+
+Werte der Vorlagen `Config_LORA.h.example` und `Config_MULTI.h.example`. Wie die Intervalle zusammenspielen:
+[intervalle.md](intervalle.md).
+
+| Datei / Name | Bedeutung | Vorlage |
+|---|---|---|
+| `Config_LORA.h`: `LOGGER_NAME` | Name in der Startzeile | `"beelogger"` |
+| `LORA_OTAA` | 0 = ABP, 1 = OTAA | 0 |
+| `DEVADDR`, `NWKSKEY`, `APPSKEY` bzw. `DEVEUI`, `APPEUI`, `APPKEY` | Schlüssel je Gerät aus TTN | leer |
+| `PREFIX` | Netz-Präfix der DevAddr (TTN) | `0x13` |
+| `LORA_CHANNELS` | 1, 3 oder 8 Kanäle ([lorawan.md](lorawan.md#kanäle-und-empfangsfenster-eu868)) | 3 |
+| `WeckIntervall_Tag` / `_Nacht` | Intervall in Minuten | 10 / 30 |
+| `WeckIntervall_Nacht_Anfang` / `_Ende` | Nachtfenster (Stunde) | 23 / 6 |
+| `WeckIntervall_Winter_aktiv`, `_Winter`, `_Winter_Anfang` / `_Ende` | Winterintervall nach Monat | aus, 60, 9 / 4 |
+| `TEMP_ZYKLUS_aktiv`, `SOLAR_ZYKLUS_aktiv` | Winter nach Temperatur, Nacht nach Solarspannung | 0, 1 |
+| `AlternativIntervallMinuten` | Intervall bei schwachem Akku | 120 |
+| `Config_MULTI.h`: `Anzahl_Sensoren_*` | Sensoren (DHT, Si7021, SHT31, BME280, DS18B20, Licht) | ein DS18B20 |
+| `Aussenwerte`, `Beute1` … `Beute4`, `Temp_Zelle` | welcher Sensor (Nr. 1–11) wohin gehört, 0 = keiner | 8, 0, 8 |
+| `Anzahl_Sensoren_Gewicht` | Waagen 1–4 | 1 |
+| `Taragewicht[4]`, `Skalierung[4]` | Kalibrierung je Waage, Tara `10` = Waage nicht benutzt | 10 / 1.0 |
+| `Kalib_Spannung`, `Kalib_Bitwert` | Akkumessung, **muss ersetzt werden** (unten) | 1000 / 100 |
+| `VAlternativ`, `VMinimum` | Akku: ab hier 120 min, darunter nichts senden | 3.8 / 3.75 V |
+| `USER_INT_TM` | Pause in Minuten bei dauernd gedrücktem Arbeitsschalter, höchstens 150 | 30 |
+
+Sensor-Nummern: 1–2 DHT, 3 Si7021, 4–5 SHT31, 6–7 BME280, 8–9 DS18B20 (Kommentar in `Config_MULTI.h.example`).
 
 ## Eine Firmware, vier Varianten
 

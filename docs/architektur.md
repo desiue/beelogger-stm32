@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit 7ccdb38
+Stand: 10.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit a3ac566
 (Rückkanal FPort 11: Branch `p7-serverquittung`, noch nicht in `main`)
 
 ## Überblick
@@ -88,6 +88,69 @@ der TTN-Queue und kommt nach dem **nächsten** Uplink. Deshalb trägt FPort 11 d
 und den Abstand der letzten beiden Uplinks mit. Der Logger erkennt so, zu welchem Uplink die Zeit gehört, und
 rechnet bei Bedarf den Abstand dazu.
 
+### Im Logger Schritt für Schritt (STM32)
+
+Der STM32 schaltet zwischen zwei Messungen ganz ab (`LowPower.shutdown()`). Das Wecken durch die RTC wirkt
+wie ein Reset: Der Sketch beginnt jedes Mal bei `setup()`, nur RTC und Backup-Register behalten ihren Inhalt
+([speicher.md](speicher.md)).
+
+```
+Wecken (RTC-Alarm oder Arbeitsschalter PA0) → Neustart
+setup()
+  System_Init()       RTC am Uhrenquarz, ADC 12 Bit
+                      nach Stromausfall: Datum 01.01.2022, Frame-Counter 0, OTAA-Session löschen
+                      sonst: Werte aus den Backup-Registern holen
+  wdt_init()          Software-Watchdog: Merker vom letzten Lauf lesen
+  Spannungen_messen() Akku und Solar, je 16 Messungen gemittelt
+  System_On()         PB5 = HIGH: Sensoren, Waagen und Funkmodul bekommen Strom
+loop()
+  Akku-Sparmodus an unter VAlternativ, aus über VAlternativ + 0,1 V
+  wenn Akku > VMinimum:
+    Arbeitsschalter prüfen (User_Int_req)
+    normal:            Sensoren lesen, Waagen messen, Daten_Senden()
+    Schalter dauernd:  nur Waagen kurz messen, nicht senden
+  System_ShutDown()   nächste Weckzeit setzen (intervalle.md), Werte in Backup-Register,
+                      PB5 = LOW, Standby
+```
+
+`Daten_Senden()` in `STM32_LORA.ino`: Funkmodul einrichten (Session bzw. Join, Kanäle, ADR aus, RX2 SF9,
+SF7/14 dBm), Payload bauen, Frame-Counter setzen, unbestätigt auf FPort 1 senden. Die Firmware wartet bis
+`EV_TXCOMPLETE` (also bis nach den Empfangsfenstern), höchstens 8 s, beim Join 60 s. Nur nach
+`EV_TXCOMPLETE` zählt sie den Frame-Counter hoch. Danach schaltet sie das Funkmodul ab. Einzelheiten zum
+Funkweg: [lorawan.md](lorawan.md).
+
+**Waagen** (`Sensor_Gewicht()`): Mittel aus 10 Lesungen, `(Rohwert − Taragewicht) / Skalierung` in kg.
+Weicht das Ergebnis um 0,5 kg oder mehr vom letzten Wert ab, misst die Firmware nach 2 s ein zweites Mal
+und nimmt dieses Ergebnis. Eine Waage mit `Taragewicht = 10` wird übersprungen. Antwortet ein HX711 nicht
+innerhalb von 2 s, steht `-1` im Feld. Einen Gewichtsalarm mit Extra-Uplink gibt es bei LoRa nicht, der
+Rückgabewert von `Sensor_Gewicht()` wird nicht ausgewertet. Temperaturkompensation und Schwarmalarm macht
+der Server.
+
+**Watchdog:** Jede Phase (Sensoren 60 s, Funk 100 s, Schlaf vorbereiten 20 s) hat ein Zeitlimit. Hängt
+etwas, startet der Logger neu ([entwicklung.md](entwicklung.md), Änderung 8).
+
+## Eigenschaften, die man kennen sollte
+
+- **Kein Zwischenspeicher.** Anders als die WLAN/LTE-Sketche puffert der LoRa-Logger keine Messwerte. Ein
+  Uplink, den kein Gateway hört, ist verloren. Die Lücke sieht man auf dem Server.
+- **Ein Uplink pro Zyklus.** Jede Messung geht sofort raus, eine Sendung ohne Messung gibt es nicht.
+- **Zeitstempel vom Server.** Der Logger schickt keine Uhrzeit mit. Der Server stempelt beim Empfang.
+- **Zähler im Logger.** Frame-Counter, Fern-Intervall und OTAA-Session überstehen den Tiefschlaf, nicht
+  aber einen Stromausfall ([speicher.md](speicher.md)).
+- **Funk nur kurz nach dem Uplink.** Downlinks kommen nur in den zwei Empfangsfenstern direkt danach an.
+
+## Mengengerüst
+
+| | Wert | Quelle |
+|---|---|---|
+| Payload | 9–28 Byte, typisch 18 (Quad mit Außensensor), mit Sketch-ID 22 | [payload.md](payload.md#länge-und-sendezeit) |
+| Frame auf dem Funk | Payload + 13 Byte | [lorawan.md](lorawan.md#aufbau-eines-uplinks) |
+| Sendezeit je Uplink | 57–87 ms, typisch 72 ms (SF7) | [lorawan.md](lorawan.md#sendezeit-airtime) |
+| Uplinks pro Tag | 288 bei 5 min, 144 bei 10 min (Vorlage) | `WeckIntervall_*` |
+| Sendezeit pro Tag | ca. 21 s bei 5 min (TTN-Grenze 30 s) | [lorawan.md](lorawan.md#grenzen) |
+| Wachzeit je Zyklus | ca. 15–80 s, steht im Feld `Service` | [payload.md](payload.md#service-feld) |
+| Strom (BlackPill F411) | Schlaf 18,1 µA, wach 24–34 mA (gemessen) | [abp_otaa.md](abp_otaa.md) |
+
 ## Bausteine
 
 ### Logger
@@ -143,8 +206,10 @@ Zeitzone des Servers eine Stunde vor dem UTC-Nullpunkt.
 | Umstellung Sommer-/Winterzeit (nachts um 2 bzw. 3 Uhr) | geht kurz 1 h falsch | beim ersten Uplink nach der Umstellung (Server merkt sich `date("I")`) |
 | ohne Rückkanal | läuft vom Startwert aus weiter | nie |
 
-Wie weit die Uhr ohne Stellen pro Tag wegläuft, ist noch nicht gemessen. Der Langzeittest seit 08.11.2026
-soll das zeigen.
+Wie weit die Uhr ohne Stellen wegläuft, zeigt der Langzeittest seit 08.11.2026: an einer BluePill F103
+etwa **+4 s pro Tag** (gemessen 10.11.2026 zwischen zwei Stellzeitpunkten). Mit dem täglichen Stellen
+durch `lora_downlink.php` bleibt die Abweichung also unter 5 s. Ohne Rückkanal sind es gut 2 min im Monat.
+Andere Boards können anders laufen.
 
 **Ohne gestellte Uhr** schaltet die Nacht- und Winterlogik nach Uhrzeit und Monat zur falschen Zeit. Nach
 einem Stromausfall gilt sofort „Nacht“ (00:00) und „Winter“ (Januar). Wer keinen Rückkanal hat, nimmt
@@ -156,6 +221,8 @@ gingen im Winter eine Stunde nach. Behoben mit Commit 80673f1.
 
 ## Weiterlesen
 
+- [hardware.md](hardware.md): Boards, Pinbelegung, Spannungsmessung
+- [lorawan.md](lorawan.md): Funkweg, Frame-Aufbau, Sendezeit
 - [payload.md](payload.md): Byte-Formate Uplink und Downlink
 - [intervalle.md](intervalle.md): wann der Logger sendet
 - [server.md](server.md): Speicherregeln, Service-Werte, `lora_downlink.php` einbinden

@@ -8,7 +8,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 
 | Seite | Inhalt |
 |---|---|
-| [Architektur](architektur.md) | Datenweg Logger → TTN → Webhooks → Server und zurück, mit Diagrammen; LoRa und WLAN im Vergleich |
+| [Architektur](architektur.md) | Datenweg Logger → TTN → Webhooks → Server und zurück, Ablauf im Logger, Mengengerüst; LoRa und WLAN im Vergleich |
 | [Häufige Fragen](fragen.md) | Rückkanal, Uhr, Speicher: kurze Antworten mit Links |
 | [ABP oder OTAA](abp_otaa.md) | welche Anmeldung passt, Unterschiede, Mitschnitte |
 
@@ -16,7 +16,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 
 | Seite | Inhalt |
 |---|---|
-| [Bauen und flashen](bauen_flashen.md) | PlatformIO, Varianten, Startzeile, Flashen über FTDI, Akkuspannung kalibrieren |
+| [Bauen und flashen](bauen_flashen.md) | PlatformIO, Konfiguration, Varianten, Startzeile, Flashen über FTDI, Akkuspannung kalibrieren |
 | [TTN einrichten](ttn_einrichten.md) | Application, Webhooks (auch zweiter Server + Downlink-Key), Gerät ABP/OTAA, Downlinks, MAC-Einstellungen, Fair Use |
 | [OTAA-Einrichtung (PDF)](ttn/STM32_LORA_OTAA_Einrichtung_261107.pdf) | Kurzanleitung nur TTN-Konsole, OTAA, mit Bildern |
 | [Server](server.md) | `beelogger_log.php`: Speicherregeln (220/520 s), Service-Werte, `ServerZeitSteuerung()`, `lora_downlink.php` einbinden |
@@ -26,6 +26,8 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 
 | Seite | Inhalt |
 |---|---|
+| [Hardware](hardware.md) | Boards, Pinbelegung, Baugruppen, LoRa-Modul je Platine, Spannungsmessung |
+| [LoRaWAN](lorawan.md) | Frame-Aufbau, Verschlüsselung, Frame-Counter, OTAA, Kanäle, Sendezeit |
 | [Payload](payload.md) | Byte-Formate Uplink FPort 1, Downlink FPort 10 und 11, mit Hex-Beispielen |
 | [Intervalle](intervalle.md) | Tag, Nacht, Winter, Akku, Fern-Intervall: was gilt wann |
 | [Speicher](speicher.md) | Backup-Register, Flash beim BluePill, was nach Stromausfall oder Update bleibt |
@@ -40,7 +42,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 
 | Seite | Inhalt |
 |---|---|
-| [Entwicklung](entwicklung.md) | Änderungen gegenüber 260705, gefundene Fehler, Stand |
+| [Entwicklung](entwicklung.md) | Änderungen gegenüber 260705, ältere Stände, gefundene Fehler, Stand |
 | [Doku-Pflege](doku_pflege.md) | welche Quelle gilt, Prüfstempel, Ablauf bei Änderungen |
 | [Lizenz](lizenz.md) | GPL und Bibliotheken |
 | [`planung/`](planung/) | Planung, Ideen und Vorschläge (nicht in `main`) |

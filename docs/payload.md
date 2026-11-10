@@ -87,6 +87,15 @@ Der Decoder in TTN macht daraus:
 
 (beide Beispiele mit `docs/ttn/payload_decoder_ttn.js` unter Node.js nachgeprüft)
 
+**Weitere Prüfwerte** für einen eigenen Decoder (echte Uplinks älterer Firmware, Format gleich, mit dem
+Decoder oben am 10.11.2026 nachgeprüft):
+
+| Payload (hex) | Header | Ergebnis |
+|---|---|---|
+| `04B26410111259001410010F3B117F109827940B00038537F93F` (26 Byte) | F93F | Quad mit allen Feldern: TempOut 12,02; FeuchteOut 100; VBatt 4,113; VSolar 4,697; Licht 20; Gewicht 40,97 / 38,99 / 44,79 / 42,48; Aux1 1013,2 hPa; Service 11; Aux3 230711 |
+| `09C52B0FCE01150100281C0100035CA6E02F` (18 Byte) | E02F | eine Waage mit Luftdruck (Testpayload von beelogger.de): TempOut 25,01; FeuchteOut 43; VBatt 4,046; VSolar 0,277; Gewicht 2,56; Aux1 1026,8; Service 1; Aux3 220326 |
+| `042010591237115C0F7C000000000800000001D92D` (21 Byte) | D92D | ohne FeuchteOut (Bit 1 aus): TempOut 10,56; VBatt 4,185; VSolar 4,663; Gewicht 44,44 / 39,64 / 0 / 0; Service 8; Aux3 1 |
+
 **Selbst prüfen:** In der TTN-Konsole unter *Live data* steht bei jedem Uplink das Feld `frm_payload`
 (Base64) und darunter `decoded_payload`. Im seriellen Monitor (9600 Baud) gibt die Firmware jedes Byte
 dezimal aus (`temperature:`, `batt.:` …).
