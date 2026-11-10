@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit 863302f
+Stand: 10.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit 7ccdb38
 (Rückkanal FPort 11: Branch `p7-serverquittung`, noch nicht in `main`)
 
 ## Überblick

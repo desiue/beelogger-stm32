@@ -2,8 +2,8 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261109), `server/lora_downlink.php` vom 09.11.2026 ·
-geprüft gegen Code: `server/M40_261109/beelogger1/beelogger_log.php`, Commit 863302f ·
+Stand: 10.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261109), `server/lora_downlink.php` vom 09.11.2026 ·
+geprüft gegen Code: `server/M40_261109/beelogger1/beelogger_log.php`, Commit 7ccdb38 ·
 `lora_downlink.php`: Branch `p7-serverquittung`, noch nicht in `main`
 
 Die Server-Skripte stammen von beelogger.de (GPLv3). Eine unveränderte Kopie des Pakets M40_261109 liegt unter

@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1 (Serverteil: M40_261109, Commit 7ccdb38)
 (Meldungen aus `src/STM32_LORA.ino`, `src/STM32_LORA_utility.ino`, `src/STM32_LORA_260705.ino`;
 Serverantworten aus `beelogger_log.php` M40_261109)
 

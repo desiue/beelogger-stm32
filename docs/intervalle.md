@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 863302f
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 7ccdb38
 (`src/STM32_LORA_utility.ino`, `Alarm_konfigurieren()`; `src/STM32_LORA_260705.ino`, `loop()`;
 `src/Config_LORA.h.example`) · FPort 11: Branch `p7-serverquittung`, noch nicht in `main`
 
