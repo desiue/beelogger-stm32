@@ -31,6 +31,8 @@ flowchart LR
 
 **Alle Seiten, Änderungen gegenüber dem Original, Dateien im Repo:** [Dokumentation – Übersicht](docs/README.md)
 
+**Doku als Website (mit Suche):** <https://desiue.github.io/beelogger-stm32/> – Stand Branch `p7-serverquittung`, nach Merge `main`.
+
 ## Kurz gesagt
 
 - Kompatibel zum Original 260705: Messablauf, Waagenzahl, Payload und beelogger-Server bleiben gleich.
