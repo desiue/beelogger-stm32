@@ -66,9 +66,9 @@ Nach der **Solarspannung** (`SOLAR_ZYKLUS_aktiv 1`, Voreinstellung in `Config_LO
 solange die Solarspannung unter `SolarSpannung_Sommertag` (1,0 V) liegt. Ersetzt die Uhrzeit-Regel und
 funktioniert auch ohne gestellte Uhr.
 
-1,0 V passt nur zum Lademodul mit CN3065 oder TP4056 (Standard ab BlackPill V1.3). Mit der älteren
-SPV1040-Ladeschaltung passt der Wert nicht; den richtigen Wert dafür nennt beelogger.de noch nicht
-(Auskunft beelogger-Team, 09.11.2026).
+1,0 V passt nur zum Lademodul mit CN3065 oder TP4056 (Standard ab BlackPill V1.3). Für die ältere
+SPV1040-Ladeschaltung ist 0,25 V der passende Wert; 0,25 V würde nach Auskunft des beelogger-Teams auch für
+die Lademodule funktionieren (Auskunft beelogger-Team, 10.11.2026). Die Vorlage bleibt bei 1,0 V.
 
 ## Winter
 

@@ -44,7 +44,8 @@ an; die Ordnernamen nicht von Hand ändern.
 **Oberfläche.** `beelogger_show.php` zeichnet mit Dygraph bis zu 26 Datenreihen (CSV-Spalten 2–27) aus
 `week.csv`, `month.csv` oder `beelogger.csv`, mit Anmerkungen aus `notes.csv`. Zugang zur Konfiguration mit dem
 Show-Passwort (`$BeeloggerShowPasswort`), die Annahme mit dem Log-Passwort (`$BeeloggerLogPasswort`). Im Paket
-M40_261109 fehlt `beelogger_show.php`; vorhanden ist die schlanke Variante `beelogger_sml.php`.
+M40_261109 fehlt `beelogger_show.php` (Packfehler); vorhanden ist die schlanke Variante `beelogger_sml.php`.
+Das beelogger-Team liefert `beelogger_show.php` mit dem nächsten Paket M41 nach (Auskunft 10.11.2026).
 
 ## Ablauf bei einer LoRa-Meldung
 

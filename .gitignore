@@ -17,6 +17,7 @@ docs/privat/
 mailverkehr/
 # Server-Skripte (fremder Code): nur lokal
 M40_261004_ServerSkripte/
+M41_261110a_ServerSkripte/
 dist/
 # Bau-Kopien mit echten Schlüsseln (z. B. ATmega-Testgerät)
 lokal/
