@@ -353,7 +353,7 @@ void Alarm_konfigurieren() {
       h_now = rtc_stm.getHours();
       month_now = rtc_stm.getMonth();
 #if  SOLAR_ZYKLUS_aktiv
-      if (Solarspannung < SolarSpannung_Sommertag) { // es ist "Tag"
+      if (Solarspannung < SolarSpannung_Sommertag) { // zu wenig Sonne: "Nacht"
         IntervallMinuten = WeckIntervall_Nacht;
       }
       else {
