@@ -75,6 +75,7 @@ static const uint16_t PREFIX =   0x13;     //   https://www.thethingsnetwork.org
 const float Temperatur_Wintertag = 8.0;   // < = Wintertag
 #define SOLAR_ZYKLUS_aktiv   1            //  0 / 1 aktiviert Umschaltung Messzyklus Tag/Nacht per Solarzellenspannung
 const float SolarSpannung_Sommertag = 1.0;// < = Nacht
+                                          // 1.0 V nur mit Lademodul CN3065 oder TP4056, nicht mit SPV1040
 
 
 

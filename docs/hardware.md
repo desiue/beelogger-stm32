@@ -58,8 +58,12 @@ braucht für Waage 3 und 4 andere Leitungen als eine für die BlackPill.
 - **EEPROM:** AT24C-Baustein am I2C. Die Original-Firmware bis 230711 legte darin den Frame-Counter ab.
   Ab 260705 liegt er im RTC-Backup-Register (siehe [speicher.md](speicher.md)), der EEPROM-Code dafür
   steht hinter `#if 0`.
-- **Stromversorgung:** eine Li-Ion-Zelle (18650), Solarzelle mit Laderegler SPV1040 (MPPT), zwei
-  Spannungsregler MCP1702-33. Einer versorgt den Mikrocontroller dauernd, der zweite die Peripherie.
+- **Stromversorgung:** eine Li-Ion-Zelle (18650), Solarzelle mit Lademodul „Solar-Charger 1.0“ (CN3065),
+  zwei Spannungsregler MCP1702-33. Einer versorgt den Mikrocontroller dauernd, der zweite die Peripherie.
+  Bis BlackPill V1.2 (und BluePill 1.02/1.04) gab es statt des Moduls eine SMD-Ladeschaltung mit SPV1040
+  als Option, ab V1.3 ist sie entfernt (beelogger.de, „beelogger-STM32 – Platinenversionen“ und
+  „Bauteile und Bezug“). Der Laderegler bestimmt die passende Schwelle `SolarSpannung_Sommertag`, siehe
+  [intervalle.md](intervalle.md).
 - **Lastschalter:** PB5 schaltet über Transistor und P-MOSFET die Peripherie-Schiene (Sensoren, HX711,
   RFM95). Vor dem Schlafen setzt die Firmware PB5 auf LOW (`System_ShutDown()`).
 - **Spannungsteiler:** 1 MΩ / 470 kΩ mit 100 nF für Akku (PB0) und Solar (PB1). Die Kondensatoren halten
