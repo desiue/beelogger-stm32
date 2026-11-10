@@ -1,0 +1,68 @@
+site_name: beelogger STM32 LoRa – Doku
+site_description: STM32-LoRa-Firmware für den beelogger mit Downlink (ABP/OTAA), Serverquittung und Doku
+repo_url: https://github.com/desiue/beelogger-stm32
+repo_name: desiue/beelogger-stm32
+edit_uri: ""
+docs_dir: docs
+exclude_docs: |
+  privat/
+  hooks/
+  *.diff
+hooks:
+  - docs/hooks/links.py
+theme:
+  name: material
+  language: de
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: amber
+      toggle: {icon: material/weather-night, name: Dunkel}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: amber
+      toggle: {icon: material/weather-sunny, name: Hell}
+plugins:
+  - search:
+      lang: de
+markdown_extensions:
+  - tables
+  - toc:
+      permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+nav:
+  - Übersicht: README.md
+  - Einstieg:
+      - Architektur: architektur.md
+      - Häufige Fragen: fragen.md
+      - ABP oder OTAA: abp_otaa.md
+  - Einrichten:
+      - Bauen und flashen: bauen_flashen.md
+      - TTN einrichten: ttn_einrichten.md
+      - Server: server.md
+  - Wie es funktioniert:
+      - Payload: payload.md
+      - Intervalle: intervalle.md
+      - Speicher: speicher.md
+  - Wenn etwas nicht geht:
+      - Fehlersuche: fehlersuche.md
+  - Über das Projekt:
+      - Entwicklung: entwicklung.md
+      - Doku-Pflege: doku_pflege.md
+      - Lizenz: lizenz.md
+      - Planung:
+          - Idee Sendeplan/Schwarmalarm: planung/idee_sendeplan_schwarmalarm.md
+          - Planung OTAA/Downlink: planung/planung_otaa_downlink.md
+          - Vorschlag Payload-Erweiterung: planung/vorschlag_payload_erweiterung.md
