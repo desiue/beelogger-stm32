@@ -271,6 +271,12 @@ Für beide gilt:
    Push-URL mit, und die Erweiterung schreibt nur einen Hinweis ins Log.
 2. Soll der Logger auch die Uhrzeit bekommen: in der Webhook-Adresse `&Z=2` anhängen (siehe
    [Wann gesendet wird](#wann-gesendet-wird)).
+3. **Mehrere Webhooks (mehrere Server):** Der Key gehört nur in **einen** Webhook. Nur dieser Server
+   bekommt die Header `X-Downlink-Replace` und `X-Downlink-Apikey` und kann Downlinks senden; er bestimmt
+   Intervall und Uhrzeit. Die übrigen Server bekommen nur die Daten, ihre Intervall-Einstellung wirkt nicht
+   auf den Logger. Hätten zwei Webhooks einen Key, würden beide senden. Weil über die Replace-Adresse
+   gesendet wird, ersetzt jeder Downlink den vorigen in der TTN-Warteschlange: Es staut sich nichts, aber
+   es gilt der zuletzt gesendete, und welcher das ist, ist Zufall.
 
 Fehlt die Datei, läuft `beelogger_log.php` unverändert weiter.
 

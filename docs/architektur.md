@@ -20,10 +20,10 @@ flowchart LR
   L[beelogger<br/>STM32 / ATmega + RFM95] -->|Uplink FPort 1| G[Gateway]
   G --> T[TTN<br/>Payload-Decoder]
   T -->|Webhook 1| C[Community-Server<br/>beelogger_log.php]
-  T -->|Webhook 2, optional| E[eigener Server<br/>beelogger_log.php]
+  T -->|"Webhook 2, optional<br/>mit Downlink-Key"| E[eigener Server<br/>beelogger_log.php]
   C --> CA[CSV + Anzeige]
   E --> EA[CSV + Anzeige]
-  E -.->|lora_downlink.php| Q[TTN Downlink-Queue]
+  E -.->|"lora_downlink.php<br/>nur Server mit Key"| Q[TTN Downlink-Queue]
   Q -.-> G
   G -.->|Downlink FPort 11| L
 ```
@@ -164,7 +164,8 @@ etwas, startet der Logger neu ([entwicklung.md](entwicklung.md), Änderung 8).
 - Decoder: [`docs/ttn/payload_decoder_ttn.js`](ttn/payload_decoder_ttn.js).
 - Webhooks: einer pro Ziel-Server. Für den Rückkanal braucht der Webhook des eigenen Servers einen
   **Downlink API key** (Recht `traffic down write`). TTN schickt dann Push-URL und Key in den Headern
-  `X-Downlink-Replace` und `X-Downlink-Apikey` mit.
+  `X-Downlink-Replace` und `X-Downlink-Apikey` mit. Den Key nur in **einem** Webhook eintragen: Nur dieser
+  Server sendet Downlinks und bestimmt Intervall und Uhrzeit (siehe [server.md](server.md)).
 
 ### Server
 - `beelogger_log.php` (Server-Skripte M40_261109, Kopie in `server/M40_261109/`): Passwort prüfen, Zeitstempel = Serverzeit (Sekunden 00),

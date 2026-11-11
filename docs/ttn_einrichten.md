@@ -45,6 +45,8 @@ flowchart TD
    - Den Key im Webhook unter **Downlink API key** eintragen. TTN schickt dann bei jedem Uplink die
      Header `X-Downlink-Apikey` und `X-Downlink-Push`/`X-Downlink-Replace` mit.
    - Den Key nur dort eintragen, nicht in Dateien auf dem Server oder im Repo.
+   - Den Key nur in **einem** Webhook eintragen. Dieser Server bestimmt Intervall und Uhrzeit, die
+     anderen bekommen nur die Daten (siehe [server.md](server.md#rückkanal-für-lora-lora_downlinkphp-eigene-erweiterung)).
    Die Webhook-URL enthält das Upload-Passwort. Nicht in Foren, Bildschirmfotos oder Repos zeigen.
 
 ## 2. Gerät anlegen
