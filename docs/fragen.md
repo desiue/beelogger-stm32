@@ -28,7 +28,7 @@ Nichts Schlimmes: Der Logger behält Intervall und Uhr, die Messwerte kommen tro
 sie mit seiner eigenen Zeit. → [server.md](server.md#welche-information-wohin-geht)
 
 **Wie zuverlässig ist der Rückkanal?**
-Im Test seit 08.11.2026 mit zwei Loggern sind bisher alle Downlinks angekommen, einige erst nach dem
+Im Test seit 08.11.2026 mit zwei Loggern sind bisher (Stand 11.11.) alle Downlinks angekommen, einige erst nach dem
 nächsten Uplink. Dafür trägt der Downlink Frame-Counter-Bezug und Abstand mit. Belastbare Zahlen kommen
 nach dem Langzeittest.
 
@@ -49,8 +49,9 @@ Nur für die eigene Tag/Nacht- und Winterregel nach Uhrzeit und Monat. Kommt ein
 das ohnehin. Die Messwerte stempelt der Server. → [intervalle.md](intervalle.md)
 
 **Wie genau läuft die Uhr?**
-Sie läuft am 32-kHz-Uhrenquarz. Wie weit sie pro Tag wegläuft, ist noch nicht gemessen; der Langzeittest
-soll es zeigen.
+Sie läuft am 32-kHz-Uhrenquarz. Im Langzeittest geht sie an einer BluePill F103 etwa 6 s pro Tag nach
+(gemessen 10./11.11.2026). Mit `Z=2` stellt der Server sie täglich. Andere Boards können anders laufen.
+→ [architektur.md](architektur.md)
 
 **Was ist nach einem Stromausfall, und dauert es einen Tag, bis die Uhr stimmt?**
 Nach dem Stromausfall steht sie auf 01.01.2022. Mit `Z=2` schickt der Server die Uhrzeit gleich nach dem
