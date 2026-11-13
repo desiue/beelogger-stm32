@@ -50,7 +50,7 @@ das ohnehin. Die Messwerte stempelt der Server. → [intervalle.md](intervalle.m
 
 **Wie genau läuft die Uhr?**
 Sie läuft am 32-kHz-Uhrenquarz. Im Langzeittest geht sie an einer BluePill F103 etwa 6 s pro Tag nach
-(gemessen 10./11.11.2026). Mit `Z=2` stellt der Server sie täglich. Andere Boards können anders laufen.
+(gemessen 10. bis 13.11.2026). Mit `Z=2` stellt der Server sie täglich. Andere Boards können anders laufen.
 → [architektur.md](architektur.md)
 
 **Was ist nach einem Stromausfall, und dauert es einen Tag, bis die Uhr stimmt?**

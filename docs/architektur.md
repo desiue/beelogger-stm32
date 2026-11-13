@@ -208,7 +208,7 @@ Zeitzone des Servers eine Stunde vor dem UTC-Nullpunkt.
 | ohne Rückkanal | läuft vom Startwert aus weiter | nie |
 
 Wie weit die Uhr ohne Stellen wegläuft, zeigt der Langzeittest seit 08.11.2026: an einer BluePill F103
-etwa **6 s pro Tag** nach (gemessen vom 10.11. bis 11.11.2026 zwischen zwei Stellzeitpunkten, 1 s
+etwa **6 s pro Tag** nach (gemessen vom 10.11. bis 13.11.2026, jeden Tag +7 s vor dem Stellen, 1 s
 Auflösung). Mit dem täglichen Stellen durch `lora_downlink.php` bleibt die Abweichung also unter 10 s.
 Ohne Rückkanal sind es etwa 3 min im Monat.
 Andere Boards können anders laufen.
