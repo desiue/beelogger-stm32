@@ -121,7 +121,8 @@ Funkweg: [lorawan.md](lorawan.md).
 
 **Waagen** (`Sensor_Gewicht()`): Mittel aus 10 Lesungen, `(Rohwert − Taragewicht) / Skalierung` in kg.
 Weicht das Ergebnis um 0,5 kg oder mehr vom letzten Wert ab, misst die Firmware nach 2 s ein zweites Mal
-und nimmt dieses Ergebnis. Eine Waage mit `Taragewicht = 10` wird übersprungen. Antwortet ein HX711 nicht
+und nimmt dieses Ergebnis. Ist das Gewicht um mehr als 1 kg (`Alarm_Gewicht`) gefallen und liegt unter −1 kg,
+gilt es als Lesefehler des HX711, und der letzte Wert bleibt stehen. Eine Waage mit `Taragewicht = 10` wird übersprungen. Antwortet ein HX711 nicht
 innerhalb von 2 s, steht `-1` im Feld. Einen Gewichtsalarm mit Extra-Uplink gibt es bei LoRa nicht, der
 Rückgabewert von `Sensor_Gewicht()` wird nicht ausgewertet. Temperaturkompensation und Schwarmalarm macht
 der Server.

@@ -28,7 +28,8 @@ flowchart TD
 
 ## 1. Application anlegen (einmal)
 
-1. **Applications → + Create application**, Application ID z. B. `beelogger09`.
+1. **Applications → + Create application**, Application ID z. B. `beelogger09`. Erlaubt sind nur Kleinbuchstaben,
+   Ziffern und Bindestrich. Application ID und End device ID lassen sich später nicht mehr ändern.
    ![Application anlegen](ttn/bilder/01_application.png)
 2. **Payload formatters → Uplink**: Formatter type „Custom Javascript formatter“, Inhalt von [`ttn/payload_decoder_ttn.js`](ttn/payload_decoder_ttn.js) einfügen, speichern.
    ![Payload-Formatter](ttn/bilder/02_formatter.png)

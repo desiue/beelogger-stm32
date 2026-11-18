@@ -69,6 +69,11 @@ Werte der Vorlagen `Config_LORA.h.example` und `Config_MULTI.h.example`. Wie die
 
 Sensor-Nummern: 1–2 DHT, 3 Si7021, 4–5 SHT31, 6–7 BME280, 8–9 DS18B20 (Kommentar in `Config_MULTI.h.example`).
 
+Liefert der Sensor für `Temp_Zelle` (ab 2 Waagen) bzw. `Aussenwerte` (1 Waage) keinen Wert, nimmt die Firmware
+ersatzweise die Chiptemperatur des STM32 plus 3,5 °C (`CPU_TEMP_CORR`, `Sensor_Temp_Zelle()` in
+`STM32_I2C_sensors.ino`). Das ist im Gehäuse nur ein grober Wert. Ab 2 Waagen steuert er als `DS_Temp` auch
+das Winterintervall nach Temperatur (`TEMP_ZYKLUS_aktiv`).
+
 ## Eine Firmware, vier Varianten
 
 | | ABP (`LORA_OTAA 0`) | OTAA (`LORA_OTAA 1`) |
@@ -128,6 +133,10 @@ Stattdessen `stm32loader` aus der PlatformIO-Umgebung:
    ```
 
 Hinweise:
+- Verkabelung FTDI: FTDI-RX an PA9, FTDI-TX an PA10, GND an GND. Zum Mitlesen reicht PA9 → FTDI-RX, zum Flashen
+  braucht es beide Richtungen.
+- Linux: Der Benutzer braucht Zugriff auf `/dev/ttyUSB*` (Gruppe `uucp` bei Arch, `dialout` bei Debian/Ubuntu).
+- Ausgaben auf der Konsole gibt es nur mit `#define myDEBUG 1` in `src/STM32_beelogger.h` (im Repo gesetzt).
 - Debug-Konsole: **9600 Baud** (`monitor_speed` in platformio.ini steht seit 06.11. richtig).
 - Der Frame-Zähler (Backup-Register 3) überlebt das Flashen, solange der Akku dran bleibt (29.10.: 7958 → 7959). Akku ab = POR = Zähler 0.
 - Ausgabe direkt nach dem Flash kann fehlen: Der Logger sendet sofort und geht schlafen; die Startzeile kommt beim nächsten Aufwachen bzw. nach Reset.

@@ -69,7 +69,7 @@ braucht für Waage 3 und 4 andere Leitungen als eine für die BlackPill.
   (`beelogger_HX711_STM.ino`). HX711 Nr. 1: Waage 1 (A) und 2 (B), Nr. 2: Waage 3 (A) und 4 (B).
 - **Temperatur:** DS18B20 an One-Wire mit Pull-up 4,7 kΩ. Optional zwei DHT22 und I2C-Sensoren
   (BME280, SHT31, Si7021, BH1750).
-- **EEPROM:** AT24C-Baustein am I2C. Die Original-Firmware bis 230711 legte darin den Frame-Counter ab.
+- **EEPROM:** AT24C-Baustein am I2C, Adresse 0x57 (`AT24Cxx_CTRL_ID` in `STM32_beelogger.h`). Die Original-Firmware bis 230711 legte darin den Frame-Counter ab.
   Ab 260705 liegt er im RTC-Backup-Register (siehe [speicher.md](speicher.md)), der EEPROM-Code dafür
   steht hinter `#if 0`.
 - **Stromversorgung:** eine Li-Ion-Zelle (18650), Solarzelle mit Lademodul „Solar-Charger 1.0“ (CN3065),

@@ -50,12 +50,14 @@ Reihenfolge der Bitnummern hintereinander. Fehlt ein Sensor, fehlt sein Feld, un
 | 11 | `Gewicht3` | 2 | int16 | ÷ 100 → kg | ab 3 Waagen |
 | 12 | `Gewicht4` | 2 | int16 | ÷ 100 → kg | 4 Waagen |
 | 13 | `Aux1` | 2 | uint16 | ÷ 10 → hPa | Luftdrucksensor vorhanden |
-| 14 | `Service` | 1 | int8 | siehe unten | immer |
+| 14 | `Service` | 1 | uint8 | siehe unten | immer |
 | 15 | `Aux3` | 4 | uint32 | Sketch-ID, z. B. 261107 | jeder 10. Uplink |
 
 Hinweise:
 - Gewichte haben **2 Byte** in 1/100 kg, also −327,68 bis 327,67 kg. Die Kommentare im Code
   („3 bytes“) sind veraltet, Firmware und Decoder nutzen 2 Byte.
+- `Service` setzt die Firmware als `int8_t` ein, über 255 wird es 255. Der Decoder liest das Byte
+  vorzeichenlos (0–255), ein eigener Decoder sollte das auch tun.
 - Die Firmware nennt das Bit 15 `TYPE_AUX2`, der Decoder legt den Wert als `Aux3` ab.
 - Die Sketch-ID geht mit, wenn der Frame-Counter durch 10 teilbar ist (`LoRaSeqCounter % 10 == 0`).
   In 260705 stand dort `LMIC.seqnoUp % 10`. Das war zu diesem Zeitpunkt noch 0, und die ID ging in

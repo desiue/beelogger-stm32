@@ -51,8 +51,11 @@ Zusätzlich:
 - **Arbeitsschalter (Service):** Wird der Schalter eingeschaltet (an Pin PA0, mindestens 2 s), sendet
   der Logger sofort eine Meldung mit Service = 99. Solange der Schalter an bleibt, wacht er alle 5 min
   auf (`INTERVAL_STUCK_SWITCH`), misst nur das Gewicht und sendet nicht. Das dauert höchstens
-  `USER_INT_TM` Minuten. Die Vorlage hat 180, der Code begrenzt auf 150. Danach geht er in den normalen
+  `USER_INT_TM` Minuten. Die Vorlage hat 30, der Code begrenzt auf höchstens 150 (größere Werte ergeben beim
+  Bauen die Warnung `USER_INT_TM set to 150 minutes`). Danach geht er in den normalen
   Takt zurück, auch wenn der Schalter vergessen wurde.
+  LED (PC13): 1 × lang (0,5 s) = Schalter erkannt; ist er 2 s später noch an, 4 × kurz = Meldung mit
+  Service = 99 wird gesendet. Vor jedem Schlafen blinkt sie 2 × sehr kurz (`System_ShutDown()`).
 
 Die Werte für 1-Zellen-Li-Ion stehen in `Config_MULTI.h`. Für 6-V- und 12-V-Akkus sind dort
 auskommentierte Alternativen.

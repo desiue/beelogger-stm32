@@ -73,6 +73,7 @@ Antworten von `beelogger_log.php`:
 | `PwErrorT55Dok *` | falsches Passwort im Parameter `Passwort=` |
 | `typErrT25Dok *` | Ordnername passt nicht zur Zahl der Waagen in den Daten |
 | `NotIniT55Dok *` | im Ordner fehlt `beelogger_ini.php`: Logger-Ordner nicht über die Web-Konfiguration angelegt |
+| `ChSumErrT55Dok *` | Prüfsumme falsch (nur WLAN/LTE, bei `LORA=1` prüft der Server keine Prüfsumme) |
 | `<Zeit>T15Aok *` | Meldung nicht gespeichert, weil älter als die letzte gespeicherte (nur WLAN/LTE mit eigener Zeit; bei LoRa vergibt der Server die Zeit) |
 
 Häufig: URL ohne `&LORA=1`, Tippfehler im Ordnernamen, Passwort mit Sonderzeichen, die in der URL anders
