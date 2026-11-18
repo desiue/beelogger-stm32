@@ -15,7 +15,7 @@ Vollständig in [`aenderungen_gegen_260705.diff`](aenderungen_gegen_260705.diff)
    - Ersetzt Tag/Nacht/Winter-Intervall. Service-Modus und Akkusparmodus haben Vorrang.
    - Class A: wirkt ab dem Zyklus nach dem Uplink, in dessen Empfangsfenster der Downlink kam.
    - Getestet auf BlackPill F411 (beelogger09) und BluePill F103 (beeloggerblue05).
-3. **Sketch-ID-Fehler behoben** (Feld Aux2, siehe „Gefundene Fehler“; in älteren Notizen „Aux3“ genannt).
+3. **Sketch-ID-Fehler behoben** (Header-Bit `TYPE_AUX2` in der Firmware, Feld `Aux3` in Decoder und Server; siehe „Gefundene Fehler“).
 4. `Config_LORA.h`: `LOGGER_NAME` je Geräteblock.
 5. **Firmware-Kennung** `l_ID` = **261107** (261106: ohne ADR-aus) (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 6. **OTAA** (`#define LORA_OTAA 1`, Werte `DEVEUI`, `APPEUI` = JoinEUI, beide LSB, `APPKEY` MSB; TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B):
@@ -42,7 +42,7 @@ Die Kennung `l_ID` hat die Form JJMMTT. Grundlage dieses Repos ist **260705** (`
 
 | Fehler | Folge | Stand |
 |---|---|---|
-| `prep_payload()` prüft `LMIC.seqnoUp % 10`, bevor `seqnoUp` gesetzt ist | Sketch-ID (Aux2, 4 Byte) in **jedem** Uplink statt in jedem 10. → mehr Airtime | behoben: `LoRaSeqCounter % 10` |
+| `prep_payload()` prüft `LMIC.seqnoUp % 10`, bevor `seqnoUp` gesetzt ist | Sketch-ID (`TYPE_AUX2` bzw. Feld `Aux3`, 4 Byte) in **jedem** Uplink statt in jedem 10. → mehr Airtime | behoben: `LoRaSeqCounter % 10` |
 | Kein Watchdog: hängt ein I2C-Sensor (gestörter Bus) oder das Funkmodul, bleibt die Firmware stehen | Logger sendet nicht mehr bis zum Stromausfall (auch Original 260705) | Software-Watchdog + I2C freitakten (Änderung 8), getestet |
 | LMIC `hal_failed()` (z. B. Funkmodul antwortet nicht) sperrt die Interrupts und hält an | Logger steht bis zum Stromausfall, auch ein Timer-Watchdog greift nicht (auch Original) | `hal_failed()` ruft `lmic_fehler()` → Neustart (Änderung 8) |
 | Backup-Register 4 `WeckIntervallMinuten` wird geschrieben, aber nirgends gelesen | toter Code, Register belegt | unverändert, nur dokumentiert |

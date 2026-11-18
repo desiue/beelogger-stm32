@@ -11,9 +11,10 @@ declare -A PLATZ=(
   [USB1]=$BP:4.1.3.4.2:1.0-port0   # CH340, Uhr
   [USB2]=$BP:4.1.3.4.4:1.0-port0   # FT232, Quad8 BlackPill
   [USB3]=$BP:2:1.0-port0           # FT232, Quad4 Blue
+  [USB4]=$BP:3:1.0-port0           # FT232, Quad3 blue05 (Watchdog-Testaufbau)
 )
 meldung=""
-for tag in USB0 USB1 USB2 USB3; do
+for tag in USB0 USB1 USB2 USB3 USB4; do
   p=${PLATZ[$tag]}
   if [ ! -e "$p" ]; then meldung+="$tag: nicht eingesteckt"$'\n'; continue; fi
   dev=$(readlink -f "$p")
