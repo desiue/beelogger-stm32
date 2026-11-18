@@ -102,6 +102,10 @@ Wer schon einen eigenen Sketch 250326 hat, kann stattdessen nur die zwei Zeilen 
 
 Der Frame-Counter liegt im EEPROM. Beim Aufspielen über den Bootloader (USB-Seriell, wie üblich) bleibt er erhalten. Ein ISP-Programmer kann das EEPROM löschen. Dann den Zähler mit `Set_LORA_Seq` aus dem Original-Paket setzen oder in TTN zurücksetzen.
 
+**OTAA: neuen Join erzwingen.** Wer den Join nochmal testen will: Beim Aufspielen über den Bootloader bleibt die gespeicherte Session erhalten, der Logger joint also nicht neu. Zwei Wege:
+- Neue Schlüssel: neues Gerät in TTN anlegen und DEVEUI/APPKEY im Sketch ändern. Die Prüfsumme passt dann nicht mehr, der Logger joint beim nächsten Senden neu.
+- Session löschen: den Sketch [`otaa_join_zuruecksetzen/`](otaa_join_zuruecksetzen/otaa_join_zuruecksetzen.ino) einmal hochladen (9600 Baud, nach zwei Sekunden fertig, die Ausgabe zeigt „OK“), danach wieder den OTAA-Sketch aufspielen. Der Sketch setzt die DevAddr im EEPROM (Adresse 0x60) auf 0, das heißt „keine gültige Session“. Der Frame-Zähler bleibt erhalten, TTN setzt ihn mit dem Join zurück. Der Sketch ist für Uno und Pro Mini 8 MHz übersetzt, aber **noch nicht an einem Gerät ausprobiert**.
+
 ## Test auf einem Logger
 
 1. In TTN unter Live data einen Uplink vor und einen nach dem Aufspielen vergleichen:

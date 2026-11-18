@@ -307,6 +307,11 @@ Intervalls (TTN Fair Use: etwa 10 pro Gerät und Tag). Nur Intervalle von 5–60
 | `lora_downlink_state.json` | letzter FCnt, Empfangszeit, gesendetes Intervall, Tag und Sommerzeit-Merker der letzten Uhrzeit, offener Neustart |
 | `lora_downlink.log` | eine Zeile pro Downlink-Versuch mit HTTP-Antwort von TTN |
 
+**Zugriffsrechte:** Beide Dateien liegen im Logger-Ordner und sind über die Webseite abrufbar, solange der Server sie
+ausliefert (Rechte 644). Das Skript setzt in der Fassung vom 17.11.2026 (beelogger-Team, M41) die Rechte der State-Datei
+bei jedem Aufruf auf 0600; auf `community.beelogger.de` schreibt es das Log gar nicht. Wer das Skript von Hand einspielt,
+setzt beide Dateien einmal selbst auf 0600 (danach liefert der Server 403). Das Log liest man dann per SSH.
+
 Beispielzeile im Log:
 
 ```

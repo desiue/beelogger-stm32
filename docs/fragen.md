@@ -28,9 +28,12 @@ Nichts Schlimmes: Der Logger behält Intervall und Uhr, die Messwerte kommen tro
 sie mit seiner eigenen Zeit. → [server.md](server.md#welche-information-wohin-geht)
 
 **Wie zuverlässig ist der Rückkanal?**
-Im Test seit 08.11.2026 mit zwei Loggern sind bisher (Stand 11.11.) alle Downlinks angekommen, einige erst nach dem
-nächsten Uplink. Dafür trägt der Downlink Frame-Counter-Bezug und Abstand mit. Belastbare Zahlen kommen
-nach dem Langzeittest.
+Im Langzeittest vom 10. bis 18.11.2026 (knapp 8 Tage, zwei STM32-Logger an einem eigenen Server mit
+`lora_downlink.php`) hat TTN alle Downlinks angenommen (HTTP 200) und die Logger haben sie übernommen:
+- Logger mit `Z=2` (BluePill F103): 8 von 8 Uhr-Downlinks im Seriell-Log als „Uhr gestellt“ (täglich 00:00).
+- Logger ohne `Z=2` (BlackPill F411): 16 von 16 Intervallwechseln (Tag 10 min / Nacht 60 min) im Seriell-Log.
+Einige Downlinks kommen erst nach dem nächsten Uplink an. Dafür trägt der Downlink Frame-Counter-Bezug und Abstand mit.
+Nicht geprüft: die Zeitumstellung (erst 28.03.2027) und mehr als zwei Logger an einem Server.
 
 **Wie viele Downlinks entstehen?**
 Mit `Z=2` einer am Tag für die Uhr, dazu einer bei jeder Änderung des Intervalls (z. B. Tag/Nacht) und nach einem Neustart des Loggers. TTN erlaubt etwa

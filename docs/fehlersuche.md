@@ -40,6 +40,8 @@ nach dem Start zeigt Firmware-Kennung, Name, Chip-UID und DevAddr. So ist klar, 
 **Payload-Bytes im Log:** Im Block `Data:` stehen die Bytes dezimal ohne Trennzeichen.
 `batt.: 16106` heißt 16 und 106 = `0x10 0x6A` = 4202 mV. Das ist kein Fehler.
 
+**ATmega OTAA: Join nochmal erzwingen.** Die Session steht im EEPROM und überlebt das Aufspielen. Wie man sie löscht, steht im [ATmega-README](../atmega_lora/README.md) (Abschnitt „OTAA: neuen Join erzwingen“).
+
 ## 2. TTN: kommt der Uplink an?
 
 TTN-Konsole → Application → End device → **Live data**.
@@ -91,7 +93,8 @@ Fehlerprotokoll von `beelogger_log.php` (falsches Passwort, fehlerhafte Daten): 
 Basisordner, anzeigen mit `Errorchecker.php`. Bei `PwError` steht dort auch das gültige Log-Passwort; die Datei
 nicht öffentlich lesbar machen.
 
-Eigener Server mit `lora_downlink.php`: `lora_downlink.log` im Logger-Ordner zeigt jeden Downlink-Versuch.
+Eigener Server mit `lora_downlink.php`: `lora_downlink.log` im Logger-Ordner zeigt jeden Downlink-Versuch
+(per SSH lesen, die Datei ist ab Rechte 0600 nicht mehr über die Webseite abrufbar, siehe [server.md](server.md#dateien-die-die-erweiterung-anlegt)).
 `kein Downlink-Header (Webhook ohne Downlink API key?)` heißt: Im TTN-Webhook fehlt der Downlink-Key.
 
 ## Wartung
