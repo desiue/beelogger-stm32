@@ -144,7 +144,7 @@ Bei 288 Uplinks am Tag läuft der Zähler etwa alle 57 Tage über. Die Einstellu
 
 | Punkt | Original (230711, 260705) | erweiterte Firmware (261107) |
 |---|---|---|
-| Downlinks | werden nicht ausgewertet | FPort 10 = Sendeintervall, FPort 11 = Serverquittung (nur Branch `p7-serverquittung`) |
+| Downlinks | werden nicht ausgewertet | FPort 10 = Sendeintervall, FPort 11 = Serverquittung |
 | Rx2 data rate index / Desired | 0 / 0 (gleich sein genügt) | **3 / 3**, weil `LMIC.dn2Dr = DR_SF9`; mit 0 schickt TTN auf SF12, der Logger hört auf SF9 |
 | ADR-Bit im Uplink | an (LMIC-Vorgabe) | aus (`LMIC_setAdrMode(0)`) |
 | OTAA | – | Rx1-Delay und Rx2 kommen mit dem Join-Accept; in TTN trotzdem 1 s / DR 3 eintragen |

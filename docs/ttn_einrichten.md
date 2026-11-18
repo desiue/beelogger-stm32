@@ -2,8 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 08.11.2026 · gilt für: STM32 261107 (LMIC 1.5), ABP und OTAA · Abschnitt 1.4 und 4b (FPort 11):
-Branch `p7-serverquittung`, noch nicht in `main`
+Stand: 08.11.2026 · gilt für: STM32 261107 (LMIC 1.5), ABP und OTAA
 
 Für diese Firmware (Kennung 261107, LMIC 1.5). Gilt für alle vier Varianten (BluePill F103, BlackPill F411/F401, jeweils ABP oder OTAA). Welche Variante passt: [abp_otaa.md](abp_otaa.md).
 

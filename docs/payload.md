@@ -4,7 +4,7 @@
 
 Stand: 08.11.2026 · gilt für: STM32 261107 (Uplink identisch mit 260705 und ATmega 250326/261107) ·
 geprüft gegen Code: Commit 325d02b (`src/STM32_LORA.ino`, `prep_payload()`, `onEvent()`;
-`docs/ttn/payload_decoder_ttn.js`, `server/lora_downlink.php`) · FPort 11: Branch `p7-serverquittung`, noch nicht in `main`
+`docs/ttn/payload_decoder_ttn.js`, `server/lora_downlink.php`)
 
 Überblick: [architektur.md](architektur.md)
 
@@ -13,7 +13,7 @@ flowchart LR
   L[Logger] -->|"FPort 1: 9–28 Byte Messwerte"| T[TTN<br/>Payload-Decoder]
   T -->|"Webhook (JSON)"| S[Server<br/>beelogger_log.php]
   K[TTN-Konsole / API] -.->|"FPort 10: 1 Byte Intervall"| L
-  S -.->|"FPort 11: 7 Byte Uhr + Intervall<br/>(lora_downlink.php, nur Branch)"| L
+  S -.->|"FPort 11: 7 Byte Uhr + Intervall<br/>(lora_downlink.php)"| L
 ```
 
 ## Übersicht der Ports

@@ -54,7 +54,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 
 - **Maximal kompatibel zum Original:** Messablauf, Waagenzahl, Payload-Format und beelogger-Server bleiben wie beim Original 260705. Neu sind nur Downlinks (ABP und OTAA) und Fehlerkorrekturen. Weitergehende Ideen (mehr Waagen, andere Payload, eigener Sendeplan) kommen nicht in `main`, sondern in einen eigenen Branch mit eigenem Server ([Idee](planung/idee_sendeplan_schwarmalarm.md), [Payload](planung/vorschlag_payload_erweiterung.md)).
 - **Sendeintervall aus der Ferne** per TTN-Downlink (FPort 10, 5–180 min), mit ABP und OTAA.
-- **Uhrzeit und Intervall vom Server** wie bei WLAN-Loggern: Serverquittung per Downlink FPort 11 und `server/lora_downlink.php` (Branch `p7-serverquittung`, noch nicht in `main`).
+- **Uhrzeit und Intervall vom Server** wie bei WLAN-Loggern: Serverquittung per Downlink FPort 11 und `server/lora_downlink.php`.
 - **OTAA** für neue Geräte, ABP für vorhandene Feldgeräte – eine Codebasis, umschaltbar per `#define LORA_OTAA`.
 - **BluePill (F103) und BlackPill (F411/F401)**, alle vier Kombinationen auf Testgeräten abgenommen.
 - **Fehler behoben:** Sketch-ID in jedem Uplink, TTN-Downlink-Schleife (Einstellungen dokumentiert), ADR-Bit.

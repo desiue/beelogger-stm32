@@ -35,7 +35,7 @@ Stand: 08.11.2026 · gilt für: STM32 261107, ATmega 261108 · geprüft gegen Co
 
 - Aussagen, die nur für alte Versionen gelten, bleiben stehen, werden aber markiert:
   „bis 260705: …“.
-- Was nur auf einem Branch existiert, heißt „(Branch `p7-serverquittung`, noch nicht in `main`)“.
+- Was nur auf einem Branch existiert, heißt „(Branch `<name>`, noch nicht in `main`)“. Stand 19.11.2026: alles in `main`, kein offener Branch-Stand.
 - Fehlt der Prüfstempel oder ist er älter als die letzte Code-Änderung am Thema, gilt die Seite als ungeprüft.
 
 ## Ablauf bei Änderungen

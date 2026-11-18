@@ -3,7 +3,6 @@
 [← Übersicht](README.md)
 
 Stand: 10.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit a3ac566
-(Rückkanal FPort 11: Branch `p7-serverquittung`, noch nicht in `main`)
 
 ## Überblick
 
@@ -219,7 +218,7 @@ einem Stromausfall gilt sofort „Nacht“ (00:00) und „Winter“ (Januar). We
 besser die Umschaltung nach Solarspannung und Temperatur (siehe [intervalle.md](intervalle.md)). Was der
 Logger nach einem Stromausfall sonst noch vergisst: [speicher.md](speicher.md).
 
-Fehler bis 08.11.2026 abends (nur Branch): `lora_downlink.php` schickte UTC statt Ortszeit. Die Uhren
+Fehler bis 08.11.2026 abends (eigener Fehler): `lora_downlink.php` schickte UTC statt Ortszeit. Die Uhren
 gingen im Winter eine Stunde nach. Behoben mit Commit 80673f1.
 
 ## Weiterlesen

@@ -4,8 +4,7 @@
 
 Stand: 10.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261109), `server/lora_downlink.php` vom 09.11.2026 ·
 geprüft gegen Code: `server/M40_261109/beelogger1/beelogger_log.php`, Commit 7ccdb38; CSV, Zahlenformate,
-Kompensation, Installation: Commit a688002 ·
-`lora_downlink.php`: Branch `p7-serverquittung`, noch nicht in `main`
+Kompensation, Installation: Commit a688002
 
 Die Server-Skripte stammen von beelogger.de (GPLv3). Eine unveränderte Kopie des Pakets M40_261109 liegt unter
 [`server/M40_261109/`](../server/M40_261109/). Zeilennummern beziehen sich auf deren `beelogger1/beelogger_log.php`. Überblick über den Datenweg: [architektur.md](architektur.md).

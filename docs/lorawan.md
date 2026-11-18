@@ -35,8 +35,7 @@ eigene Firmware braucht. Für den normalen Betrieb mit TTN reicht [ttn_einrichte
 
 Ein Frame ist also **Payload + 13 Byte** (ohne FOpts). Beispiel: 18 Byte Payload → 31 Byte auf dem Funk.
 
-Downlinks an den Logger: FPort 10 (Fern-Intervall) und FPort 11 (Serverquittung, Branch
-`p7-serverquittung`), Format in [payload.md](payload.md#übersicht-der-ports).
+Downlinks an den Logger: FPort 10 (Fern-Intervall) und FPort 11 (Serverquittung), Format in [payload.md](payload.md#übersicht-der-ports).
 
 ## Verschlüsselung und MIC
 
