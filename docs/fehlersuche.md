@@ -6,6 +6,8 @@ Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 8067
 (Meldungen aus `src/STM32_LORA.ino`, `src/STM32_LORA_utility.ino`, `src/STM32_LORA_260705.ino`;
 Serverantworten aus `beelogger_log.php` M40_261109)
 
+Schon bekannte Fälle, nach Anzeichen geordnet: [Häufige Fehler](haeufige_fehler.md).
+
 Vorgehen: **von vorn nach hinten** am Datenweg entlang (siehe [architektur.md](architektur.md)).
 Erst prüfen, ob der Logger sendet, dann ob TTN empfängt, dann ob der Server speichert.
 

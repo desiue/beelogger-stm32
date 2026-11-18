@@ -27,7 +27,7 @@ flowchart LR
 | wissen, ob ABP oder OTAA | [ABP oder OTAA](docs/abp_otaa.md) |
 | Uhrzeit und Intervall vom eigenen Server schicken | [Server](docs/server.md) |
 | einen ATmega-Logger (Universal 1.x, beeloggerSMD) | [ATmega](atmega_lora/README.md) |
-| einen Fehler finden | [Fehlersuche](docs/fehlersuche.md), [Häufige Fragen](docs/fragen.md) |
+| einen Fehler finden | [Häufige Fehler](docs/haeufige_fehler.md), [Fehlersuche](docs/fehlersuche.md), [Häufige Fragen](docs/fragen.md) |
 
 **Alle Seiten, Änderungen gegenüber dem Original, Dateien im Repo:** [Dokumentation – Übersicht](docs/README.md)
 

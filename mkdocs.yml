@@ -60,6 +60,7 @@ nav:
       - Intervalle: intervalle.md
       - Speicher: speicher.md
   - Wenn etwas nicht geht:
+      - Häufige Fehler: haeufige_fehler.md
       - Fehlersuche: fehlersuche.md
       - TTN-Downlink-Schleife: ttn_downlink_schleife.md
   - Über das Projekt:

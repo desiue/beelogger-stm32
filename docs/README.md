@@ -37,6 +37,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 
 | Seite | Inhalt |
 |---|---|
+| [Häufige Fehler](haeufige_fehler.md) | Vom Anzeichen in der Anzeige zur Ursache: Akku springt, Sparmodus, Ruhestrom, Neustart, gemischte Werte, Gewicht |
 | [Fehlersuche](fehlersuche.md) | Meldungen im seriellen Monitor, TTN, Webhook, Server |
 | [TTN-Downlink-Schleife](ttn_downlink_schleife.md) | Warum TTN ohne passende MAC-Werte bei jedem Uplink Downlinks schickt, und wie man es abstellt |
 
