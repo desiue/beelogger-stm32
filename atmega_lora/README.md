@@ -1,10 +1,18 @@
 # beelogger LoRa für ATmega328 – Vorschlag 261107
 
-Der ATmega-LoRa-Sketch **beelogger_LORA_250326** von [beelogger.de](https://beelogger.de/?page_id=200563) (beelogger-Universal 1.x und beeloggerSMD) mit **zwei kleinen Änderungen als Vorschlag**. Es sind dieselben zwei Stellen, die mir im STM32-Sketch 260705 aufgefallen sind (siehe [README](../README.md#gefundene-fehler)). Alles andere ist wie im Original: ABP, Messablauf, Payload, Server.
+Der ATmega-LoRa-Sketch **beelogger_LORA_250326** von [beelogger.de](https://beelogger.de/?page_id=200563) (beelogger-Universal 1.x und beeloggerSMD) mit **zwei kleinen Änderungen als Vorschlag**. Es sind dieselben zwei Stellen, die mir im STM32-Sketch 260705 aufgefallen sind (siehe [README](../docs/entwicklung.md#gefundene-fehler)). Alles andere ist wie im Original: ABP, Messablauf, Payload, Server.
 
 Dazu als zweiter Ordner eine Fassung mit **OTAA**: [beelogger_LORA_OTAA_261108](#otaa--vorschlag-261108).
 
-**Stand 07.11.2026:** baut für alle drei Boards. **Auf einem Logger noch nicht getestet**, weil mir kein ATmega-beelogger zur Verfügung steht. Bitte als Vorschlag verstehen. Falls ich etwas übersehen habe, freue ich mich über einen Hinweis.
+**Stand 08.11.2026:** baut für alle drei Boards. Getestet auf einem Steckbrett mit Uno (16 MHz), RFM95 und einem Nano als Uhr ([testaufbau_uno.md](testaufbau_uno.md)). **Auf einem echten beelogger und mit Pro Mini 8 MHz noch nicht getestet**, weil mir kein ATmega-beelogger zur Verfügung steht. Bitte als Vorschlag verstehen. Falls ich etwas übersehen habe, freue ich mich über einen Hinweis.
+
+```mermaid
+flowchart LR
+  O["Original 250326<br/>beelogger.de, ABP"] -->|"2 Änderungen:<br/>Sketch-ID, ADR aus"| V["Vorschlag 261107<br/>ABP, Bibliothek unverändert"]
+  V -->|"+ OTAA, LMIC-Kopie<br/>in src/lmic_otaa"| W["Vorschlag 261108<br/>OTAA oder ABP"]
+  V --> B["Pro Mini 8/16 MHz, Nano"]
+  W --> B
+```
 
 ## Änderungen
 
@@ -42,7 +50,7 @@ Ablauf:
 - Alle 144 Uplinks (bei 10 min etwa einmal am Tag) hängt der Sketch einen Link-Check an den Uplink. Bleiben drei Link-Checks in Folge ohne Antwort, joint er neu. Das fängt z. B. ein in TTN gelöschtes oder neu angelegtes Gerät ab.
 - Neuer Join auch, wenn andere Schlüssel aufgespielt werden (Prüfsumme über DEVEUI und APPKEY), und vor dem Überlauf des 16-Bit-Zählers (bei 65 000).
 
-TTN: Gerät mit OTAA anlegen, LoRaWAN 1.0.2, Regional Parameters 1.0.2 rev B, Frequenzplan Europe 863-870 (TTN). Wie bei ABP: ADR Disabled, Status periodicity 0 ([TTN-Anleitung](../docs/ttn_anleitung.md)). In `Config_LORA.h` DEVEUI und APPEUI (JoinEUI) mit LSB zuerst, APPKEY mit MSB zuerst eintragen (die TTN-Konsole kann die Reihenfolge umschalten).
+TTN: Gerät mit OTAA anlegen, LoRaWAN 1.0.2, Regional Parameters 1.0.2 rev B, Frequenzplan Europe 863-870 (TTN). Wie bei ABP: ADR Disabled, Status periodicity 0 ([TTN-Anleitung](../docs/ttn_einrichten.md)). In `Config_LORA.h` DEVEUI und APPEUI (JoinEUI) mit LSB zuerst, APPKEY mit MSB zuerst eintragen (die TTN-Konsole kann die Reihenfolge umschalten).
 
 Speicher (arduino-cli, avr-gcc 7.3, Bibliotheken 2026_04, 1 DS18B20, 1 Waage):
 
@@ -94,6 +102,10 @@ Wer schon einen eigenen Sketch 250326 hat, kann stattdessen nur die zwei Zeilen 
 
 Der Frame-Counter liegt im EEPROM. Beim Aufspielen über den Bootloader (USB-Seriell, wie üblich) bleibt er erhalten. Ein ISP-Programmer kann das EEPROM löschen. Dann den Zähler mit `Set_LORA_Seq` aus dem Original-Paket setzen oder in TTN zurücksetzen.
 
+**OTAA: neuen Join erzwingen.** Wer den Join nochmal testen will: Beim Aufspielen über den Bootloader bleibt die gespeicherte Session erhalten, der Logger joint also nicht neu. Zwei Wege:
+- Neue Schlüssel: neues Gerät in TTN anlegen und DEVEUI/APPKEY im Sketch ändern. Die Prüfsumme passt dann nicht mehr, der Logger joint beim nächsten Senden neu.
+- Session löschen: den Sketch [`otaa_join_zuruecksetzen/`](otaa_join_zuruecksetzen/otaa_join_zuruecksetzen.ino) einmal hochladen (9600 Baud, nach zwei Sekunden fertig, die Ausgabe zeigt „OK“), danach wieder den OTAA-Sketch aufspielen. Der Sketch setzt die DevAddr im EEPROM (Adresse 0x60) auf 0, das heißt „keine gültige Session“. Der Frame-Zähler bleibt erhalten, TTN setzt ihn mit dem Join zurück. Der Sketch ist für Uno und Pro Mini 8 MHz übersetzt, aber **noch nicht an einem Gerät ausprobiert**.
+
 ## Test auf einem Logger
 
 1. In TTN unter Live data einen Uplink vor und einen nach dem Aufspielen vergleichen:
@@ -101,7 +113,7 @@ Der Frame-Counter liegt im EEPROM. Beim Aufspielen über den Bootloader (USB-Ser
    - der Uplink hat das ADR-Bit nicht mehr (in den Uplink-Details `"adr": false` oder kein `adr`),
    - Payload-Länge: die Sketch-ID kommt nur noch bei jedem 10. FCnt mit, die übrigen Uplinks sind 4 Byte kürzer.
 2. Am beelogger-Server: Werte kommen wie bisher, die Sketch-ID zeigt 261107.
-3. Einen Tag laufen lassen und in TTN die Zahl der Downlinks ansehen. Mit den Einstellungen aus der [TTN-Anleitung](../docs/ttn_anleitung.md) (ADR Disabled, Status periodicity 0) sollten kaum noch welche kommen.
+3. Einen Tag laufen lassen und in TTN die Zahl der Downlinks ansehen. Mit den Einstellungen aus der [TTN-Anleitung](../docs/ttn_einrichten.md) (ADR Disabled, Status periodicity 0) sollten kaum noch welche kommen.
 
 Wenn etwas anders aussieht als hier beschrieben, bitte melden. Dann habe ich mich vermutlich getäuscht.
 

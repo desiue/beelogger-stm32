@@ -2,6 +2,7 @@
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
 //   2026-11-06, desiue: OTAA per #define LORA_OTAA (Join, Session F4: Backup-Register 10-13, F1: letzte Flash-Seite; Link-Check 1x/Tag).
 //   2026-11-07, desiue: F1-Session-Seite aus Flash-Ende statt fest bei 63 KB (Programm wurde überschrieben).
+//   2026-11-08, desiue: Downlink FPort 11 (Serverquittung: Uhr stellen + Intervall, Gegenstueck server/lora_downlink.php).
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 /****************************************************************/
@@ -747,6 +748,23 @@ void onEvent(ev_t ev) {
         debugprintF("DL Port 10: ");
         debugprintln(m);
         if (m == 0 || (m >= 5 && m <= 180)) FernIntervall = m - m % 5;  // Weckzeit rastet auf 5 min
+      }
+      // Downlink FPort 11, 7 Byte: Serverquittung (server/lora_downlink.php)
+      // Byte 0 FCnt-Bezug, 1-4 Empfangszeit des Bezugs-Uplinks (wie WLAN-Quittung), 5 Abstand [min], 6 Intervall (5..60, 0 = unveraendert)
+      if ((LMIC.txrxFlags & TXRX_PORT) && LMIC.dataLen == 7 && LMIC.frame[LMIC.dataBeg - 1] == 11) {
+        const uint8_t* d = &LMIC.frame[LMIC.dataBeg];
+        uint32_t t = ((uint32_t)d[1] << 24) | ((uint32_t)d[2] << 16) | ((uint32_t)d[3] << 8) | d[4];
+        debugprintF("DL Port 11: ");
+        debugprint(d[0]); debugprintF(" "); debugprint(t); debugprintF(" "); debugprint(d[5]); debugprintF(" "); debugprintln(d[6]);
+        uint8_t fc = (uint8_t)LoRaSeqCounter;               // FCnt dieses Uplinks
+        if (t && d[0] != fc) t = (d[0] == (uint8_t)(fc - 1) && d[5]) ? t + 60UL * d[5] : 0;  // Downlink zum vorigen Uplink
+        if (t) {
+          uint32_t alt = rtc_stm.getEpoch();
+          rtc_stm.setEpoch(t + 1);                          // ca. 1 s seit Uplink-Ende (RX-Fenster)
+          time_on += rtc_stm.getEpoch() - alt;              // Wachzeit bleibt richtig
+          debugprintlnF("Uhr gestellt");
+        }
+        if (d[6] >= 5 && d[6] <= 60) FernIntervall = d[6] - d[6] % 5;
       }
       inc_LoRaSeq();
       flag_TXCOMPLETE = true;

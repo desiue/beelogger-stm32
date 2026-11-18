@@ -3,6 +3,17 @@
 Steckbrett-Aufbau zum Testen des Sketches `beelogger_LORA_261107` ohne beelogger-Platine.
 Stand 08.11.2026, ABP-Senden an TTN damit getestet.
 
+```mermaid
+flowchart LR
+  PC[Laptop USB] --- U[Arduino Uno<br/>Logger]
+  PC --- N[Arduino Nano<br/>spielt DS3231]
+  U -->|"SPI D10–D13 über Teiler, DIO0 D8, DIO1 D9"| R[RFM95<br/>3,3 V]
+  N <-->|"I²C A4/A5"| U
+  N -->|"Wecker D2"| U
+  S["2× DS18B20"] -->|D6| U
+  A[Spannungsteiler Akku] -->|A2| U
+```
+
 ## Teile
 
 - Arduino Uno (Nachbau mit CH340, DIP-ATmega328P)
