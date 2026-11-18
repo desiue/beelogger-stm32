@@ -2,7 +2,7 @@ name: Doku (GitHub Pages)
 
 on:
   push:
-    branches: [p7-serverquittung]   # nach Merge auf main: main
+    branches: [main]
     paths: ["docs/**", "mkdocs.yml", ".github/workflows/doku.yml"]
   workflow_dispatch:
 

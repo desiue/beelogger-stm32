@@ -15,7 +15,7 @@ flowchart LR
   T -->|Webhook| C[Community-Server<br/>beelogger_log.php]
   T -->|"Webhook 2 (optional)"| E[eigener Server<br/>server.md]
   T -.->|"Downlink FPort 10 (Intervall, von Hand)"| F
-  E -.->|"Downlink FPort 11 (Uhr + Intervall, nur Branch)"| T
+  E -.->|"Downlink FPort 11 (Uhr + Intervall)"| T
 ```
 ## Wo fange ich an?
 
@@ -31,7 +31,7 @@ flowchart LR
 
 **Alle Seiten, Änderungen gegenüber dem Original, Dateien im Repo:** [Dokumentation – Übersicht](docs/README.md)
 
-**Doku zum Repo (mit Suche):** <https://desiue.github.io/beelogger-stm32/> – Stand Branch `p7-serverquittung`, nach Merge `main`.
+**Doku zum Repo (mit Suche):** <https://desiue.github.io/beelogger-stm32/> – Stand `main`.
 
 ## Kurz gesagt
 
