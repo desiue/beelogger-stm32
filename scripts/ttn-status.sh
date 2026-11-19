@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Zeigt die für die beelogger-Firmware wichtigen TTN-Werte eines Geräts (ohne Schlüssel).
 #   scripts/ttn-status.sh <app-id> <device-id>
-# API-Key (Rechte: devices read, traffic read, downlink write) in ~/.config/ttn/<app-id>.key,
-# sonst Konto-Key ~/.config/ttn/konto.key
+# Konto-Key ~/.config/ttn/konto.key (zuerst), sonst App-Key ~/.config/ttn/<app-id>.key
+# (Rechte: devices read, traffic read, downlink write)
 # Cluster: TTN_CLUSTER (Vorgabe eu1)
 set -e
 APP=$1; DEV=$2
 [ -n "$APP" ] && [ -n "$DEV" ] || { echo "Aufruf: $0 <app-id> <device-id>"; exit 1; }
-KF="$HOME/.config/ttn/$APP.key"; [ -f "$KF" ] || KF="$HOME/.config/ttn/konto.key"  # Konto-Key als Rückfall
+KF="$HOME/.config/ttn/konto.key"; [ -f "$KF" ] || KF="$HOME/.config/ttn/$APP.key"  # Konto-Key zuerst (App-Keys teils abgelaufen, 19.11.)
 KEY=$(tr -d ' \n' < "$KF")
 curl -s -H "Authorization: Bearer $KEY" \
   "https://${TTN_CLUSTER:-eu1}.cloud.thethings.network/api/v3/ns/applications/$APP/devices/$DEV?field_mask=session.last_n_f_cnt_down,session.last_f_cnt_up,session.started_at,mac_settings,mac_state.current_parameters,mac_state.desired_parameters,mac_state.recent_uplinks,mac_state.pending_requests,lorawan_version,supports_join" |

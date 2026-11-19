@@ -261,8 +261,8 @@ Nur für die Skripte nötig, nicht für den Betrieb. Anlegen unter **Application
 
 | Datei | Rechte | genutzt von |
 |---|---|---|
-| `~/.config/ttn/<app>.key` | View devices, Read application traffic | `ttn-status.sh` |
-| `~/.config/ttn/konto.key` | Applications: devices lesen und schreiben | `ttn-otaa-anlegen.py`; Rückfall für `ttn-status.sh` |
+| `~/.config/ttn/konto.key` | Applications: devices lesen und schreiben | `ttn-otaa-anlegen.py`; `ttn-status.sh` nimmt ihn zuerst (`scripts/ttn-status.sh:10`) |
+| `~/.config/ttn/<app>.key` | View devices, Read application traffic | `ttn-status.sh`, nur wenn `konto.key` fehlt |
 
 Zum Zurücksetzen der Zähler per API zusätzlich „Edit devices“. Keys mit Ablaufdatum anlegen und danach löschen.
 
