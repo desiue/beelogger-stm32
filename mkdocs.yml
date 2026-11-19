@@ -58,6 +58,7 @@ nav:
       - LoRaWAN: lorawan.md
       - Payload: payload.md
       - Intervalle: intervalle.md
+      - Fern-Einstellungen: fern_einstellungen.md
       - Speicher: speicher.md
   - Wenn etwas nicht geht:
       - Häufige Fehler: haeufige_fehler.md

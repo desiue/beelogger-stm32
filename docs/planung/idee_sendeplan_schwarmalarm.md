@@ -66,7 +66,9 @@ Der Nutzer hat jeden Punkt einzeln entschieden. Das ist die Vorgabe für S6, noc
 | Uhr stellen, festes Intervall | unverändert über FPort 11 und FPort 10, weil `lora_downlink.php` auf dem Server darauf aufbaut | wie heute |
 | Waagenkonfiguration (Tara, Kalibrierfaktor) | **nicht** per Downlink, bleibt vor Ort (Prüfgewicht, Flashen bzw. seriell). Grund: Kalibrieren braucht ein Prüfgewicht am Stand, ein Wechsel am laufenden Logger macht Sprünge in der Gewichtskurve | – |
 
-### Entwurf Kommando-Format FPort 12 (19.11.2026, noch nicht gebaut)
+### Entwurf Kommando-Format FPort 12 (19.11.2026, gebaut auf Branch `s6-sendeplan`)
+
+Gebauter Stand mit Code-Belegen und Abweichungen vom Entwurf (FPort 10/11 bei Plan ohne Wirkung, Sofort-Sperre 5 min): [fern_einstellungen.md](../fern_einstellungen.md).
 
 Grundlage im Code: FPort 10 (1 Byte Intervall) und FPort 11 (7 Byte Serverquittung) werten nur genau ihre Länge aus (`src/STM32_LORA.ino:746`, `:754`). FPort 12 ist im Repo nicht belegt (grep 19.11.). FPort 10 und 11 bleiben unverändert.
 

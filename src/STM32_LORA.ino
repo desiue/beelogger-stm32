@@ -742,12 +742,17 @@ void onEvent(ev_t ev) {
 
             }
       */
+#if SENDEPLAN
+#define S6_PLAN_GILT s6_plan_gilt()  // gültiger Flash-Plan: Intervall aus FPort 10/11 wird ignoriert
+#else
+#define S6_PLAN_GILT false
+#endif
       // Downlink FPort 10, 1 Byte: Sendeintervall in Minuten (5..180, 0 = Firmware-Vorgabe)
       if ((LMIC.txrxFlags & TXRX_PORT) && LMIC.dataLen == 1 && LMIC.frame[LMIC.dataBeg - 1] == 10) {
         uint8_t m = LMIC.frame[LMIC.dataBeg];
         debugprintF("DL Port 10: ");
         debugprintln(m);
-        if (m == 0 || (m >= 5 && m <= 180)) FernIntervall = m - m % 5;  // Weckzeit rastet auf 5 min
+        if ((m == 0 || (m >= 5 && m <= 180)) && !S6_PLAN_GILT) FernIntervall = m - m % 5;  // Weckzeit rastet auf 5 min; Flash-Plan geht vor
       }
       // Downlink FPort 11, 7 Byte: Serverquittung (server/lora_downlink.php)
       // Byte 0 FCnt-Bezug, 1-4 Empfangszeit des Bezugs-Uplinks (wie WLAN-Quittung), 5 Abstand [min], 6 Intervall (5..60, 0 = unveraendert)
@@ -764,7 +769,7 @@ void onEvent(ev_t ev) {
           time_on += rtc_stm.getEpoch() - alt;              // Wachzeit bleibt richtig
           debugprintlnF("Uhr gestellt");
         }
-        if (d[6] >= 5 && d[6] <= 60) FernIntervall = d[6] - d[6] % 5;
+        if (d[6] >= 5 && d[6] <= 60 && !S6_PLAN_GILT) FernIntervall = d[6] - d[6] % 5;  // Flash-Plan geht vor, Uhr gilt trotzdem
       }
 #if SENDEPLAN
       // Downlink FPort 12: Sendeplan-Kommandos (STM32_sendeplan.ino), ausgeführt nach dem Uplink

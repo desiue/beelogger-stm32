@@ -89,6 +89,8 @@ Ohne diesen Rückkanal sind die Varianten nach Solarspannung und Temperatur die 
 
 ## Fern-Intervall per Downlink
 
+Übersicht aller per Downlink verstellbaren Werte, auch Sendeplan FPort 12 (nur Branch `s6-sendeplan`, dort setzen FPort 10/11 bei gültigem Plan kein Intervall): [fern_einstellungen.md](fern_einstellungen.md).
+
 - **FPort 10** (von Hand in der TTN-Konsole): 1 Byte Minuten, 5–180. `0` schaltet zurück auf die eigene
   Logik. Beispiel: `1E` = 30 min.
 - **FPort 11** (automatisch von `lora_downlink.php`): Byte 6 = Intervall 5–60 min. Der Server nimmt dafür

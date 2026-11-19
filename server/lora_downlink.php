@@ -73,7 +73,7 @@ function lora_downlink($MessIntervall){
   if($ivNeu || $zeitNeu){
     $grund=!empty($st['neustart'])?" (Neustart)":"";
     $h=function_exists('getallheaders')?array_change_key_case(getallheaders(),CASE_LOWER):array();
-    $url=isset($h['x-downlink-replace'])?$h['x-downlink-replace']:'';
+    $url=isset($h['x-downlink-push'])?$h['x-downlink-push']:'';
     $key=isset($h['x-downlink-apikey'])?$h['x-downlink-apikey']:'';
     if($url && $key && preg_match('#^https://[a-z0-9.\-]+\.cloud\.thethings\.network/#',$url)){
       if($z2){ $port=11; $pl=chr($fcnt&0xFF).pack("N",$tRx).chr($gapMin).chr($iv); }

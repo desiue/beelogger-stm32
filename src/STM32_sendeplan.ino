@@ -133,6 +133,7 @@ bool s6_ov_aktiv() {  // Kommando 10 läuft (nur plausible Werte, sonst Register
   return w >= 1 && w <= 60 && s >= 5 && s <= 180;
 }
 bool s6_neu() { return s6_aktiv || s6_ov_aktiv(); }  // neuer Code-Pfad
+bool s6_plan_gilt() { return s6_aktiv; }  // für onEvent: FPort 10/11 setzen dann kein Intervall
 bool s6_nacht() { return s6p[P_SOLAR] && Solarspannung < s6p[P_SOLAR] * 0.05f; }
 
 void s6_start() {  // Anfang loop(): Plan laden, Kommando 10 abgelaufen?
