@@ -2,7 +2,7 @@
 
 [← Übersicht](../README.md)
 
-Stand 07.11.2026, **zur Diskussion**, nichts davon ist umgesetzt.
+Stand 07.11.2026, ergänzt 19.11.2026 (Variante 10 min senden / 5 min wiegen), **zur Diskussion**, nichts davon ist umgesetzt.
 
 **Antwort beelogger-Team (07.11.):** LoRa sendet ohnehin mindestens alle 10 min, forciertes Senden braucht es nicht. Öfter bringt nichts: Der Server ignoriert kurze Abstände (Okt–März 400 s; *Stand Code M41: 220 s, auf community.beelogger.de Okt–Feb 520 s, `beelogger_log.php` Z. 573–574, vom Team am 18.11. bestätigt*), und die Schwarmlogik ist auf den 10-min-Takt ausgelegt (Windböen). Dabei bleibt es. **Status: nicht für `main`**, höchstens als Experiment im eigenen Branch mit eigenem Server.
 
@@ -96,6 +96,38 @@ Zu klären:
 - Kennzeichnung im Uplink, z. B. eigener FPort. Dann kann der Server sofort benachrichtigen. **Betrifft Server und Decoder → später, mit den Entwicklern abstimmen.** Ohne Kennzeichnung sieht der Server einen normalen Datensatz und prüft wie immer.
 - Jede Minute wiegen kostet Strom (Aufwachen, Waagen einschwingen), aber keine Sendezeit. Im Sommer tagsüber mit Solar laut Nutzer kein Problem. Messen und Senden müssen in der Firmware getrennt werden, heute ist jede Messung ein Uplink; Weckzeit-Raster 5 min → 1 min.
 
+## Variante 19.11.: alle 10 min senden, alle 5 min wiegen
+
+Vorschlag Nutzer (19.11.2026), Stand **zur Diskussion, nicht umgesetzt**. Ziel: weniger Sendezeit, Akku und Server-Daten, ohne die heutige 5-Minuten-Alarmierung zu verlieren.
+
+**Warum die Idee oben bei 5-min-Takt kaum etwas bringt:** Der Server speichert eine Meldung erst, wenn ihr Zeitstempel mindestens 4 min nach dem letzten gespeicherten liegt (Zeitstempel auf die Minute abgerundet, `beelogger_log.php` M40 Z. 295 und 761). Ein Zusatz-Uplink käme also frühestens rund 4 min nach dem regulären, das ist kaum früher als der nächste reguläre nach 5 min. Sinnvoll wird das Wiegen ohne Senden erst bei einem längeren Sendetakt.
+
+Ablauf:
+
+1. Der Logger wacht wie heute alle 5 min auf und wiegt.
+2. Jede zweite Wiegung geht als Uplink raus (10 min, laut beelogger-Team der übliche LoRa-Takt, Antwort 07.11.).
+3. Ist bei einer Wiegung dazwischen eine Waage um mehr als die **Sendeschwelle** leichter als beim **zuletzt gesendeten** Gewicht, sendet der Logger sofort. Der Vergleich geht gegen das gesendete Gewicht, nicht gegen die letzte Wiegung, weil auch der Server gegen sein zuletzt gespeichertes Gewicht vergleicht. Sonst würde ein Verlust übersehen, der sich über zwei Wiegungen verteilt.
+
+Passt zum Server ohne Änderung:
+
+- Der Zusatz-Uplink kommt 5 min nach dem letzten, also über der 4-min-Speicherregel.
+- Der Schwarmalarm des Servers schlägt an, wenn eine Waage mehr als `DifferenzGewicht` verloren hat und seit der letzten Speicherung `ReferenzZeit` vergangen ist (`beelogger_log.php` M40 Z. 927–941). Mit `ReferenzZeit` 5 min kommt der Alarm also mit dem Zusatz-Uplink, wie heute bei 5-min-Takt.
+- Randfall, ungeprüft: Beide Zeitstempel sind auf die Minute abgerundet. Kommt der Zusatz-Uplink knapp unter 300 s nach dem letzten an (kürzere Wachzeit als beim vorigen), kann der Server 4 min sehen. Dann merkt er sich den Verlust und meldet ihn erst beim nächsten Uplink, wenn er noch anhält (Z. 955), also bis zu 5 min später. Im Test prüfen.
+- Die Sendeschwelle im Logger muss unter `DifferenzGewicht` am Server liegen (Server-Vorgabe etwa 1 kg je Waage).
+
+Ersparnis, gerechnet mit 72 ms je Uplink (Abschnitt „Wie oft geht es?“): 288 → 144 Uplinks am Tag, Sendezeit 20,7 → 10,4 s, halb so viele Datenzeilen am Server. Gewogen wird gleich oft wie heute, beim Akku spart nur der Funkteil (Senden, Empfangsfenster). Wie viel das ausmacht: **ungeprüft, messen.**
+
+Firmware: Heute ist jede Wiegung ein Uplink. Messen und Senden müssen getrennt werden. `LetztesGewicht[4]` liegt schon im RTC-Backup-RAM (`STM32_LORA_260705.ino` Z. 128), es müsste das zuletzt *gesendete* Gewicht werden. Das ändert das Verhalten des Loggers, deshalb eigener Branch und Testlogger, nicht im Feld-Flash ABP → OTAA (Entscheidung 19.11.: dabei ändert sich nur die Anmeldung).
+
+### Offene Frage: Reicht im Sommer der Strom für minütliches Wiegen?
+
+Gestellt vom Nutzer am 19.11.2026, **noch nicht geklärt**. Tagsüber liefert die Solarzelle laut Nutzer genug, belegt ist das nicht. Klären:
+
+- am Testlogger mit Solarzelle und Akku messen: Wachzeit und Strom je Wiegung, Tagesbilanz bei 1-, 5- und 10-min-Takt, auch über mehrere trübe Tage,
+- das beelogger-Team nach seiner Erfahrung fragen (mit den übrigen Fragen, wenn die Tests Ergebnisse haben).
+
+Ergebnis hier eintragen.
+
 ## Ohne Server-Änderung: Rückmeldung, was gilt
 
 Wer per Downlink etwas umstellt, will sehen, ob es angekommen ist. Ohne neues Payload-Feld gibt es zwei Wege.
@@ -143,6 +175,7 @@ Gemeinsame Voraussetzungen:
 4. **Plan ohne Uhr:** Sind `SOLAR_ZYKLUS` und `TEMP_ZYKLUS` bei LoRa-Loggern erprobt? Bewährte Schwellen (Solarspannung Tag/Nacht, Temperatur Winter)?
 5. Ist ein Zusatz-Uplink bei Gewichtsverlust (gleiches Format, ohne Kennzeichnung) für den Server in Ordnung, oder stört das Anzeige, Tageswerte oder Statistik? Die Firmware erkennt 1 kg Verlust schon (`Sensor_Gewicht()`), nutzt es aber nicht; andere beelogger senden dann 5 Messungen sofort. Ist das für LoRa so gewollt oder vergessen?
 6. **Sendeplan des Servers für LoRa:** Die Intervall-Steuerung in der Web-Konfiguration erreicht LoRa-Logger nicht. Wäre es denkbar, dass der Server sie später per TTN-Downlink (FPort 10) schickt? Bis dahin würden wir den Plan im Logger lassen (Solar/Temperatur).
+7. **Strom für häufigeres Wiegen (19.11.):** Reicht im Sommer die Solarzelle, um alle 1 bis 5 min zu wiegen und nur alle 10 min zu senden (Abschnitt „Variante 19.11.“)? Gibt es dazu Erfahrungen oder Messwerte (Wachzeit und Strom je Wiegung)?
 
 ## Offene Fragen (für uns)
 
