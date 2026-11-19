@@ -2,14 +2,15 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
+Stand: 19.11.2026 · gilt für: STM32 261107, Sendeplan-Teile nur Branch `s6-sendeplan` (261119, Commit 03b4724) · geprüft gegen Code: Commit 80673f1 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 
 Der STM32-Logger schläft zwischen zwei Messungen im **Shutdown** (Standby, `LowPower.shutdown()` in
 `src/STM32_LORA_utility.ino`). Beim Aufwachen startet er wie nach einem Reset, das RAM ist dann leer.
 Alles, was er sich über den Schlaf hinweg merken muss, liegt deshalb an zwei Stellen:
 
 - in den **RTC-Backup-Registern** (laufen mit der Uhr weiter, solange Strom da ist),
-- beim BluePill zusätzlich in **einer Flash-Seite** (übersteht auch einen Stromausfall).
+- beim BluePill zusätzlich in **einer Flash-Seite** (übersteht auch einen Stromausfall),
+- beim BlackPill mit Sendeplan (nur Branch `s6-sendeplan`) im **letzten Flash-Sektor** (Plan-Werte aus FPort 12, siehe [fern_einstellungen.md](fern_einstellungen.md)).
 
 ## Wo was liegt
 
@@ -39,6 +40,7 @@ flowchart LR
 | 10 | Watchdog-Merker | OTAA-Session, Teil 1 |
 | 11–13 | – (gibt es beim F103 nicht) | OTAA-Session, Teil 2–4 |
 | 14 | – | Watchdog-Merker |
+| 15–18 | – | nur Branch `s6-sendeplan`: Sendeplan (letzte Sendung, Ende Kommando 10, Kommando-10-Werte, Merker, zuletzt gesendete Gewichte), `src/STM32_sendeplan.ino:15-19` |
 
 Quelle: `save_data_to_ram()` / `get_data_from_ram()` in `src/STM32_LORA_utility.ino`, Watchdog `WDT_REG`
 ebenda, OTAA-Session `otaa_rd()`/`otaa_wr()` in `src/STM32_LORA.ino`.
@@ -87,7 +89,29 @@ wird die Seite aus der Chipgröße berechnet und gegen das Programmende geprüft
 | Reset, Watchdog-Neustart | bleiben | bleibt | wie Tiefschlaf |
 | **Stromausfall** (Akku ab, Strom-Jumper gezogen) | **gelöscht** | bleibt | Uhr auf 01.01.2022, Zähler 0, Gewichte leer, Fern-Intervall weg. Bei OTAA löscht der Sketch auch die gespeicherte Session und joint neu |
 | Flashen ohne Löschen (Strom bleibt an) | bleiben | bleibt | neue Firmware liest die alten Werte |
-| Flashen mit Löschen (`stm32loader -e`) | bleiben | **gelöscht** | BluePill: neuer Join; BlackPill: Session bleibt |
+| Flashen mit Löschen (`stm32loader -e`) | bleiben | **gelöscht** | BluePill: neuer Join; BlackPill: Session bleibt, aber ein Sendeplan im Flash ist weg (nur Branch `s6-sendeplan`) |
+
+## Sendeplan im Flash beim BlackPill (nur Branch `s6-sendeplan`)
+
+- **Ort:** letzter 128-KB-Sektor, beim F411 (512 KB) Sektor 7 ab `0x08060000`. Nur bei mindestens 256 KB Flash
+  und nur, wenn das Programm nicht hineinreicht, sonst gibt es keinen Flash-Plan (`src/STM32_sendeplan.ino:80-88`).
+- **Inhalt:** 16 Byte: Format-Version `B1`, 11 Plan-Werte, Prüfsumme (`src/STM32_sendeplan.ino:92-104`). Ist der
+  Eintrag ungültig oder fehlt er, gilt `Config_LORA.h` und der alte Code-Pfad.
+- **Geschrieben** wird nur bei einer Plan-Änderung per FPort 12, danach zurückgelesen
+  (`src/STM32_sendeplan.ino:276-283`). Ein 128-KB-Sektor braucht zum Löschen laut F411-Datenblatt typisch 1–2 s (ungeprüft);
+  Strom dabei ungemessen.
+- **Übersteht** Schlaf, Reset und Stromausfall (gemessen 19.11.2026 auf beelogger08: Plan nach Reset ohne neuen
+  Downlink wieder aktiv).
+
+### Falle beim Flashen: ganzer Chip gelöscht
+
+`stm32loader -e` löscht den ganzen Chip und damit auch den Plan. Auch `stm32loader -e -a 0x08000000 -l 0x20000`
+reicht nicht als Schutz: stm32loader rechnet in 1-KB-Seiten (0–127) und schickt diese Nummern an den
+Bootloader, der F4-Bootloader liest sie aber als Sektoren (0–7) und löscht so auch Sektor 7 (gemessen
+19.11.2026 auf beelogger08). Wer den Plan behalten will, löscht nur die Sektoren 0–3 (bis 64 KB Firmware)
+und schreibt dann: mit der stm32loader-Bibliothek `erase_memory([0, 1, 2, 3])`, danach schreiben und prüfen
+(gemessen 19.11.2026: Sektor 7 vorher und nachher gleich). Sonst den Plan nach dem Flashen per FPort 12 neu
+schicken.
 
 ### Wie der Logger falsche Werte erkennt
 
