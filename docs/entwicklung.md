@@ -54,7 +54,7 @@ Die Kennung `l_ID` hat die Form JJMMTT. Grundlage dieses Repos ist **260705** (`
 
 9. **Serverquittung per Downlink FPort 11** (seit 19.11.2026 in `main`, PR #1): `onEvent()` wertet 7 Byte aus (FCnt-Bezug, Zeit, Abstand, Intervall), stellt die RTC (`rtc_stm.setEpoch()`) und das Fern-Intervall (5–60 min). Gegenstück auf dem Server: `server/lora_downlink.php`. Damit bekommen LoRa-Logger wie WLAN-Logger Uhrzeit und Intervall vom Server; Nacht- und Winterlogik arbeiten mit der richtigen Uhrzeit. Format: [payload.md](payload.md#downlink-fport-11-serverquittung-uhr--intervall), Einbau: [server.md](server.md#rückkanal-für-lora-lora_downlinkphp-eigene-erweiterung). Getestet am 08.11.2026 mit BlackPill F411 (OTAA) und BluePill F103 (OTAA) über TTN und einen eigenen Server.
 
-**ATmega-LoRa-Sketch 250326:** Die Stellen zu Sketch-ID und ADR sowie Rx2 SF9 sehen dort gleich aus. Die TTN-Einstellungen dürften deshalb auch für ATmega-Logger passen. Vorschlag mit den zwei Änderungen, dazu eine OTAA-Variante (261108): [`atmega_lora/`](../atmega_lora/). Seit 08.11.2026 im Dauerlauf auf einem Arduino Uno (OTAA); Pro Mini 8 MHz ungetestet.
+**ATmega-LoRa-Sketch 250326:** Die Stellen zu Sketch-ID und ADR sowie Rx2 SF9 sehen dort gleich aus. Die TTN-Einstellungen dürften deshalb auch für ATmega-Logger passen. Vorschlag mit den zwei Änderungen, dazu eine OTAA-Variante (261108): [`atmega_lora/`](../atmega_lora/). Getestet auf einem Arduino Uno (OTAA, Steckbrett, ab 08.11.2026) und von einem Nutzer auf einem beeloggerSMD mit Pro Mini 8 MHz (OTAA, 15.11.2026: Join und Daten auf Anhieb).
 
 ## Stand
 

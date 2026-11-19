@@ -84,6 +84,8 @@ Winter auf dem Community-Server etwa jede zweite Meldung. Das ist so gewollt. We
 im Winter alle 10 min (siehe [intervalle.md](intervalle.md)).
 
 `99.9` als Kalibriertemperatur ist nur für Tests und die Kalibrierung gedacht, nicht für den Dauerbetrieb.
+Der Wert geht auch in die Temperaturkompensation ein. Wer die Kalibrierung eines laufenden Loggers ändert
+(auch auf `99.9` und zurück), bekommt Sprünge im Gewichtsverlauf (Auskunft beelogger-Team, 18.11.2026).
 
 ## Service-Wert
 
@@ -193,6 +195,8 @@ Antwort. Mit `lora_downlink.php` erreicht es auch LoRa-Logger.
 | `$WinterBeginn`, `$SommerBeginn`, `$WinterSendeIntervall` | außerhalb Sommer: Winterintervall. `deaktiviert` = aus. |
 
 Das Ergebnis ist höchstens 60 min. Ohne Einstellung gilt 15 min.
+Eine Steuerung nach Temperatur gibt es am Server nicht, nur in der Firmware (`TEMP_ZYKLUS_aktiv`, siehe
+[intervalle.md](intervalle.md)).
 
 ## Rückkanal für LoRa: `lora_downlink.php` (eigene Erweiterung)
 

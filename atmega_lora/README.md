@@ -4,7 +4,7 @@ Der ATmega-LoRa-Sketch **beelogger_LORA_250326** von [beelogger.de](https://beel
 
 Dazu als zweiter Ordner eine Fassung mit **OTAA**: [beelogger_LORA_OTAA_261108](#otaa--vorschlag-261108).
 
-**Stand 08.11.2026:** baut für alle drei Boards. Getestet auf einem Steckbrett mit Uno (16 MHz), RFM95 und einem Nano als Uhr ([testaufbau_uno.md](testaufbau_uno.md)). **Auf einem echten beelogger und mit Pro Mini 8 MHz noch nicht getestet**, weil mir kein ATmega-beelogger zur Verfügung steht. Bitte als Vorschlag verstehen. Falls ich etwas übersehen habe, freue ich mich über einen Hinweis.
+**Stand 19.11.2026:** baut für alle drei Boards. Getestet auf einem Steckbrett mit Uno (16 MHz), RFM95 und einem Nano als Uhr ([testaufbau_uno.md](testaufbau_uno.md)). Die **OTAA-Fassung 261108** hat ein Nutzer am 15.11.2026 auf einem echten beeloggerSMD (Pro Mini 8 MHz / 3,3 V) getestet: Join und Daten auf Anhieb ([Ergebnis](#otaa--vorschlag-261108)). Die **ABP-Fassung 261107** ist auf einem echten beelogger noch nicht getestet. Bitte als Vorschlag verstehen. Falls ich etwas übersehen habe, freue ich mich über einen Hinweis.
 
 ```mermaid
 flowchart LR
@@ -83,7 +83,7 @@ RAM: 1 370–1 500 B von 2 048 B, je nach Ablageort (die LMIC legt die Dateipfad
 - I2C gestört (SDA an GND bzw. offen): Ohne I2C-Timeout hängt der Sketch dauerhaft, auch nach Lösen. Seit 08.11.2026 setzen beide Fassungen (ABP und OTAA) `Wire.setWireTimeout(25000, true)` vor `rtc.begin()` (+34 B bzw. +22 B Flash): Logger sendet weiter, nach Wiederverbinden sofort normal. Bei totem Bus bleibt /INT der Uhr LOW, der Sketch wertet das wie den Service-Schalter (Wecken alle 5 min, Service-Wert 99 bzw. 1).
 - Dauerlauf seit 08.11.2026 (10-min-Takt): nach einem Neustart um 11:34 bis 13:03 FCnt 22–31 lückenlos in TTN, kein neuer Join, kein Timeout. Läuft weiter.
 
-**Nicht getestet:** Pro Mini mit 8 MHz. Der Join braucht die Empfangsfenster (Join-Accept nach 5 s). Wenn der Join dort nicht klappt, liegt es vermutlich am RX-Timing. Bitte melden, dann sehe ich es mir an.
+**Getestet von einem Nutzer** (15.11.2026, Rückmeldung per Mail) auf einem beeloggerSMD, Pro Mini 8 MHz / 3,3 V: OTAA-Ordner in der Arduino IDE geöffnet, Gerät in TTN mit OTAA angelegt, Schlüssel eingetragen, aufgespielt. Join auf Anhieb, Daten kommen in TTN an. Speicher laut Arduino IDE: 4 Waagen + 1 DS18B20 = 96 %, zusätzlich ein Si7021 = 99 %. Wie lange der Logger seitdem läuft, ist nicht bekannt.
 
 Diff gegen das Original 250326 (Sketch und LMIC-Kopie gegen die Bibliothek 2026_04): [`otaa_aenderungen_gegen_250326.diff`](otaa_aenderungen_gegen_250326.diff).
 
