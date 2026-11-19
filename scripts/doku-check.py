@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""doku-check.py – prüft, ob Zahlen in README.md und docs/*.md zum Code passen.
+"""doku-check.py – prüft, ob Zahlen in README.md, docs/*.md und atmega_lora/*.md zum Code passen.
 
 Liest Schlüsselwerte aus dem Code (src/, server/) und sucht in der Doku nach Stellen,
 an denen derselbe Begriff mit einer anderen Zahl steht. Siehe docs/doku_pflege.md.
@@ -7,6 +7,8 @@ an denen derselbe Begriff mit einer anderen Zahl steht. Siehe docs/doku_pflege.m
 Aufruf:  python3 scripts/doku-check.py        (im Repo-Wurzelordner)
 Rückgabe: 0 = keine Abweichung, 1 = Abweichungen gefunden, 2 = Wert im Code nicht gefunden.
 Planungsdateien (docs/planung/) werden nicht geprüft: sie beschreiben ältere Stände.
+Achtung: Die Sollwerte kommen aus dem STM32-Code. Nennt eine ATmega-Seite einen eigenen Wert mit
+demselben Begriff, braucht er einen eigenen Eintrag mit Code-Datei unter atmega_lora/.
 """
 import glob
 import re
@@ -47,7 +49,7 @@ def norm(z):
     return z.replace(",", ".").rstrip("0").rstrip(".") if "." in z.replace(",", ".") else z
 
 def main():
-    dateien = ["README.md"] + sorted(glob.glob("docs/*.md"))
+    dateien = ["README.md"] + sorted(glob.glob("docs/*.md")) + sorted(glob.glob("atmega_lora/*.md"))
     fehler = 0
     fehlt = 0
     for name, datei, rx_code, rx_doku in PRUEFUNGEN:

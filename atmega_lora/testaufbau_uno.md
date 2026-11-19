@@ -1,7 +1,9 @@
 # Testaufbau: Arduino Uno + RFM95, Nano als Uhr
 
 Steckbrett-Aufbau zum Testen des Sketches `beelogger_LORA_261107` ohne beelogger-Platine.
-Stand 08.11.2026, ABP-Senden an TTN damit getestet.
+ABP-Senden an TTN damit am 08.11.2026 getestet.
+
+Stand: 19.11.2026 · gilt für: ATmega 261107 · geprüft gegen Code: Commit a0e1614 (Pins, 1-Wire, Intervalle, Service-Schalter)
 
 ```mermaid
 flowchart LR
