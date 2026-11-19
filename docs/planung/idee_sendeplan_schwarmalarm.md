@@ -62,6 +62,7 @@ Der Nutzer hat jeden Punkt einzeln entschieden. Das ist die Vorgabe für S6, noc
 | Für eine Weile anders: Wiege- und Sendeabstand für 1–72 h, danach zurück zum Plan | ja; ersetzt auch „Pause/langsamer bei schwachem Akku“ | Backup-Register, ein Neustart beendet es (gewollt) |
 | Neustart, wahlweise mit Verwerfen der OTAA-Session und neuem Join | ja; wird nur ausgeführt, wenn ein Prüfwert passt (z. B. die letzten 2 Byte der DevEUI) | – |
 | Rückmeldung | Service-Wert 90 im ersten Uplink nach einem angenommenen Downlink (Wert mit den Entwicklern abstimmen, siehe „Fragen an die Entwickler“ Nr. 1), dazu der Zeitabstand der Uplinks. Kommando „Status senden“ auf eigenem FPort ist im Format vorgesehen, wird aber erst freigeschaltet, wenn Decoder und Webhook auf Testloggern geprüft sind: Der TTN-Decoder wertet heute jeden FPort als Messwert aus (`docs/ttn/payload_decoder_ttn.js:120`). | – |
+| Akkusparmodus: Schwelle (heute `VAlternativ` 3,8 V) und Sendeabstand darunter (heute `AlternativIntervallMinuten` 120 min) | per Downlink verstellbar (Nutzer 19.11., Review-Fund 12), damit ein späteres Nachrüsten keinen zweiten Feld-Flash braucht | **Flash**, wie die Plan-Werte |
 | Uhr stellen, festes Intervall | unverändert über FPort 11 und FPort 10, weil `lora_downlink.php` auf dem Server darauf aufbaut | wie heute |
 | Waagenkonfiguration (Tara, Kalibrierfaktor) | **nicht** per Downlink, bleibt vor Ort (Prüfgewicht, Flashen bzw. seriell). Grund: Kalibrieren braucht ein Prüfgewicht am Stand, ein Wechsel am laufenden Logger macht Sprünge in der Gewichtskurve | – |
 
@@ -74,10 +75,10 @@ Grundlage im Code: FPort 10 (1 Byte Intervall) und FPort 11 (7 Byte Serverquittu
 **Regeln:**
 - Erst alles prüfen, dann ausführen. Passt eine Länge nicht oder liegt ein Wert außerhalb seines Bereichs, verwirft der Logger den **ganzen** Downlink und sendet keine Quittung. Es gibt also nie einen halb übernommenen Plan.
 - Angenommen → im nächsten Uplink Service = 90 (Wert noch mit den Entwicklern abstimmen).
-- Plan-Werte (`01`–`08`) werden gesammelt und nur einmal am Ende in den Flash geschrieben, und nur, wenn sich etwas geändert hat. Verglichen wird mit dem gültigen Flash-Eintrag, sonst mit `Config_LORA.h`. Einzelwerte gehen, z. B. nur Sendeabstand Tag 10 min: `01 03 01 0A`. Die neuen Werte gelten ab dem nächsten Aufwachen.
+- Plan-Werte (`01`–`0A`) werden gesammelt und nur einmal am Ende in den Flash geschrieben, und nur, wenn sich etwas geändert hat. Verglichen wird mit dem gültigen Flash-Eintrag, sonst mit `Config_LORA.h`. Einzelwerte gehen, z. B. nur Sendeabstand Tag 10 min: `01 03 01 0A`. Die neuen Werte gelten ab dem nächsten Aufwachen.
 - Ein angenommener Plan-Wert setzt das feste Intervall aus FPort 10/11 (`FernIntervall`, Backup-Register 5, `src/STM32_LORA_utility.ino:477`) auf 0 zurück. Sonst würde ein alter FPort-10-Wert den neuen Plan weiter verdecken.
 - Geschrieben wird nur, wenn der Akku nicht im Sparmodus ist. Danach liest der Logger den Eintrag zurück und prüft die Prüfsumme. Schlägt das fehl, gilt `Config_LORA.h` und es gibt keine Quittung.
-- Größe: Ein kompletter Plan (`01`–`08`) hat 26 Byte. Das passt auch bei SF12 (höchstens 51 Byte Nutzdaten in EU868).
+- Größe: Ein kompletter Plan (`01`–`0A`) hat 32 Byte. Das passt auch bei SF12 (höchstens 51 Byte Nutzdaten in EU868).
 
 | Kom. | Länge | Inhalt | Bereich | Speicher |
 |---|---|---|---|---|
@@ -89,6 +90,8 @@ Grundlage im Code: FPort 10 (1 Byte Intervall) und FPort 11 (7 Byte Serverquittu
 | `06` | 1 | Winter-Temperatur [0,5 °C, mit Vorzeichen] | −64…+63,5 °C, `80` = aus | Flash |
 | `07` | 1 | Sendeabstand Winter [min] | 5–180, Raster 5 | Flash |
 | `08` | 2 | Schwelle Sofort-Senden [g], big endian | 0 = aus, 50–65 535 | Flash |
+| `09` | 1 | Akkuspar-Schwelle [0,05 V] (heute `VAlternativ`) | muss über `VMinimum` + 0,05 V liegen und höchstens 12,75 V sein; zurück in den Normalbetrieb wie heute bei Schwelle + 0,1 V (`src/STM32_beelogger.h:20`) | Flash |
+| `0A` | 1 | Sendeabstand im Akkusparmodus [min] (heute `AlternativIntervallMinuten`) | 30–240, Raster 5 | Flash |
 | `0F` | 0 | Plan auf Vorgabe der Firmware zurücksetzen (Flash-Eintrag löschen); ein laufendes `10` bleibt | – | Flash |
 | `10` | 3 | Für eine Weile anders: Wiegen [min], Senden [min], Dauer [h] | 1–60, 5–180, 0–72 (0 = sofort beenden) | Backup-Register; Neustart oder Akku ab beenden es, dann gilt wieder der Plan (gewollt) |
 | `20` | 3 | Neustart: Art (`01` = Neustart, `02` = Neustart + Session verwerfen und neu joinen), Prüfwert = letzte 2 Byte der DevAddr | Prüfwert muss passen; bei ABP wirkt `02` wie `01` | – |
