@@ -45,7 +45,9 @@ ebenda, OTAA-Session `otaa_rd()`/`otaa_wr()` in `src/STM32_LORA.ino`.
 
 Die Register 1–9 sind die gewachsene Belegung des LoRa-Sketches (Original 260705). Neu (261107) sind nur
 Bit 9–14 in Register 5 und die Register ab 10. Die WLAN/LTE-Sketche belegen die Register anders. Eine
-Angleichung wurde erwogen und am 09.11.2026 bewusst verschoben (siehe unten, „Update mit anderer Belegung“).
+Angleichung war für einen OTAA-Sketch auf WLAN-/LTE-Basis erwogen; den wird es nach Auskunft des beelogger-Teams
+vom 18.11.2026 nicht geben, die Angleichung entfällt. Was eine Firmware mit anderer Belegung beim ersten Start
+macht: unten, „Update mit anderer Belegung“.
 
 ### OTAA-Session
 

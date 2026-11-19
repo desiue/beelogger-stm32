@@ -4,7 +4,7 @@
 
 Stand 07.11.2026, **zur Diskussion**, nichts davon ist umgesetzt.
 
-**Antwort beelogger-Team (07.11.):** LoRa sendet ohnehin mindestens alle 10 min, forciertes Senden braucht es nicht. Öfter bringt nichts: Der Server ignoriert kurze Abstände (Okt–März 400 s), und die Schwarmlogik ist auf den 10-min-Takt ausgelegt (Windböen). Dabei bleibt es. **Status: nicht für `main`**, höchstens als Experiment im eigenen Branch mit eigenem Server.
+**Antwort beelogger-Team (07.11.):** LoRa sendet ohnehin mindestens alle 10 min, forciertes Senden braucht es nicht. Öfter bringt nichts: Der Server ignoriert kurze Abstände (Okt–März 400 s; *Stand Code M41: 220 s, auf community.beelogger.de Okt–Feb 520 s, `beelogger_log.php` Z. 573–574, vom Team am 18.11. bestätigt*), und die Schwarmlogik ist auf den 10-min-Takt ausgelegt (Windböen). Dabei bleibt es. **Status: nicht für `main`**, höchstens als Experiment im eigenen Branch mit eigenem Server.
 
 **Einordnung (07.11.):** `main` bleibt maximal kompatibel zum Original-beelogger und zum Community-Server. Was hier beschrieben ist und Daten oder Verhalten am Server berührt (Zusatz-Uplinks, Service-Quittung, eigener Sendeplan), wird zuerst in einem **eigenen Branch** gebaut und auf einem eigenen beelogger-Server getestet. In `main` kommt es nur, wenn die Entwickler es ausdrücklich wollen.
 
