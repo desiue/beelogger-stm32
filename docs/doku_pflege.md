@@ -45,7 +45,7 @@ brauchen im selben Absatz bzw. in derselben Tabellenzeile einen Beleg: Code-Stel
 Commit, Datum der Messung, Bau-Bytes, Mail mit Datum, oder ausdrücklich „ungeprüft“. „Läuft“ oder „online“
 schreibt nur, wer es am selben Tag gemessen hat (`scripts/stand-pruefen.sh`: Server-Pakete auf beelogger.de,
 letzte Werte je Logger, TTN-Uplinks); sonst „zuletzt gemessen am …“. `scripts/doku-check.py` meldet unbelegte
-Zustandsaussagen als „?“-Zeilen; mit `--streng` zählen sie als Fehler.
+Zustandsaussagen als „?“-Zeilen; zählen sie seit 19.11.2026 als Fehler (Vorgabe; `--locker` meldet nur).
 
 ## Ablauf bei Änderungen
 

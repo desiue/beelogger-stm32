@@ -9,8 +9,8 @@ Zweiter Teil (Belegpflicht, Projekt-Regel 19.11.2026): Absätze/Tabellenzeilen m
 Beleg: Code-Stelle (Datei:Zeile, „Z. 12“), Commit, Datum, „gemessen“, Bytes, Mail, oder „ungeprüft“.
 Fehltreffer (keine Zustandsaussage) stehen in KEIN_ZUSTAND.
 
-Aufruf:  python3 scripts/doku-check.py [--streng]   (im Repo-Wurzelordner)
-Rückgabe: 0 = keine Abweichung, 1 = Abweichungen gefunden (mit --streng auch: unbelegte Aussagen),
+Aufruf:  python3 scripts/doku-check.py [--locker]   (im Repo-Wurzelordner)
+Rückgabe: 0 = keine Abweichung, 1 = Abweichungen gefunden (Vorgabe streng: auch unbelegte Aussagen; mit --locker nur melden),
 2 = Wert im Code nicht gefunden.
 Planungsdateien (docs/planung/) werden nicht geprüft: sie beschreiben ältere Stände.
 Achtung: Die Sollwerte kommen aus dem STM32-Code. Nennt eine ATmega-Seite einen eigenen Wert mit
@@ -125,7 +125,7 @@ def main():
     print()
     unbelegt = belege(dateien)
     print(f"\n{fehler} Abweichung(en), {fehlt} nicht gefunden, {unbelegt} unbelegte Zustandsaussage(n)")
-    streng = "--streng" in sys.argv
+    streng = "--locker" not in sys.argv  # Vorgabe seit 19.11.2026: unbelegte Aussagen = Fehler
     sys.exit(1 if fehler or (streng and unbelegt) else (2 if fehlt else 0))
 
 if __name__ == "__main__":
