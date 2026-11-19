@@ -49,8 +49,23 @@ Bei B–D kann ein Sofort-Uplink kurz nach dem regulären kommen. Der Server ign
 | S5 | **Server:** Verwirft beelogger.de die Sofort-Uplinks? Wenn ja, nimmt der eigene Server sie an (Sperre dort für diese Quads anpassen), der Community-Server bleibt unverändert | eigener Server | B–D | offen |
 | S6 | **Firmware:** Wiegen und Senden trennen, alles per Downlink verstellbar: Wiegeabstand (ab 1 min), Sendeabstand Tag/Nacht, Grenze Tag/Nacht, Schwelle für Sofort-Senden. Vorgabe = heutiges Verhalten (A). | Repo, Testlogger | Feld-Flash | offen |
 | S7 | **Feld-Flash erst nach S6** (auf Testloggern geprüft), damit die Feld-Logger nur einmal geflasht werden | Nutzer | Feld-Flash | entschieden 19.11. (Nutzer): erst nach S6, bis dahin laufen die Feld-Logger unverändert |
-| S9 | **Weitere Fern-Einstellungen per eigenem Downlink-Kommando:** Was soll außer Wiegen/Senden noch verstellbar sein? Kandidaten: Tabelle im Abschnitt „Was soll dann noch aus der Ferne verstellbar sein?“, Waagenkonfiguration (Nutzer 06.11.). Muss vor S6 feststehen: Das Kommando-Format kommt mit dem einen Feld-Flash ins Feld und muss erweiterbar sein. | Gespräch mit Nutzer | S6, Feld-Flash | offen |
+| S9 | **Weitere Fern-Einstellungen per eigenem Downlink-Kommando:** Was soll außer Wiegen/Senden noch verstellbar sein? Kandidaten: Tabelle im Abschnitt „Was soll dann noch aus der Ferne verstellbar sein?“, Waagenkonfiguration (Nutzer 06.11.). Muss vor S6 feststehen: Das Kommando-Format kommt mit dem einen Feld-Flash ins Feld und muss erweiterbar sein. | Gespräch mit Nutzer | S6, Feld-Flash | entschieden 19.11. (Nutzer), siehe „Ergebnis S9“ unten |
 | S8 | **Branch:** Parameteränderungen (Intervalle) brauchen keinen eigenen Branch (Nutzer 19.11.), Absatz „Einordnung“ oben ergänzt | – | – | erledigt 19.11. |
+
+### Ergebnis S9: Fern-Kommandos der neuen Firmware (entschieden 19.11.2026)
+
+Der Nutzer hat jeden Punkt einzeln entschieden. Das ist die Vorgabe für S6, noch nicht gebaut.
+
+| Punkt | Entscheidung | Speicher |
+|---|---|---|
+| Plan-Werte: Wiegeabstand, Sendeabstand Tag/Nacht, Solargrenze Tag/Nacht, Winter-Temperatur, Schwelle Sofort-Senden | per Downlink verstellbar, dazu ein Kommando „auf Vorgabe zurücksetzen“ | **Flash**, eigener Sektor, nur bei Änderung schreiben, mit Prüfsumme; bei ungültigem Inhalt gilt die Vorgabe der Firmware (heute 5/5) |
+| Für eine Weile anders: Wiege- und Sendeabstand für 1–72 h, danach zurück zum Plan | ja; ersetzt auch „Pause/langsamer bei schwachem Akku“ | Backup-Register, ein Neustart beendet es (gewollt) |
+| Neustart, wahlweise mit Verwerfen der OTAA-Session und neuem Join | ja; wird nur ausgeführt, wenn ein Prüfwert passt (z. B. die letzten 2 Byte der DevEUI) | – |
+| Rückmeldung | Service-Wert 90 im ersten Uplink nach einem angenommenen Downlink (Wert mit den Entwicklern abstimmen, siehe „Fragen an die Entwickler“ Nr. 1), dazu der Zeitabstand der Uplinks. Kommando „Status senden“ auf eigenem FPort ist im Format vorgesehen, wird aber erst freigeschaltet, wenn Decoder und Webhook auf Testloggern geprüft sind: Der TTN-Decoder wertet heute jeden FPort als Messwert aus (`docs/ttn/payload_decoder_ttn.js:120`). | – |
+| Uhr stellen, festes Intervall | unverändert über FPort 11 und FPort 10, weil `lora_downlink.php` auf dem Server darauf aufbaut | wie heute |
+| Waagenkonfiguration (Tara, Kalibrierfaktor) | **nicht** per Downlink, bleibt vor Ort (Prüfgewicht, Flashen bzw. seriell). Grund: Kalibrieren braucht ein Prüfgewicht am Stand, ein Wechsel am laufenden Logger macht Sprünge in der Gewichtskurve | – |
+
+Vorschlag für das Format (nächster Schritt, noch zu entwerfen): eigener FPort, darin Kommando-Nummer und Wert, mehrere Kommandos in einem Downlink, unbekannte Nummern werden übersprungen. So bleibt das Format erweiterbar. Nachrüsten neuer Kommandos braucht trotzdem einen neuen Flash.
 
 ### Auswirkung auf die beelogger-App (Code gelesen 19.11., Repo `beelogger_app`)
 
