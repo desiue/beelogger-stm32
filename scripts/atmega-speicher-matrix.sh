@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Baut die ATmega-LoRa-Sketche (ABP 261107, OTAA 261108) mit verschiedenen Sensorkombinationen
+# Baut die ATmega-LoRa-Sketche (ABP 261107, OTAA 261119) mit verschiedenen Sensorkombinationen
 # und gibt eine Markdown-Tabelle mit Flash- und RAM-Bedarf aus (Pro Mini 8 MHz, ATmega328P).
 #   scripts/atmega-speicher-matrix.sh                 alle Kombinationen
 #   scripts/atmega-speicher-matrix.sh "DS18B20=1 Gewicht=4 Si7021=1"   nur diese eine
@@ -78,13 +78,13 @@ b,g=$1,$2
 print(f'{b:,} B ({b*100//g} %) '.replace(',', ' ')+('passt' if b<=g else '**passt nicht**'))"
 }
 
-echo "| Sensoren | ABP 261107 Flash | OTAA 261108 Flash | RAM ABP / OTAA |"
+echo "| Sensoren | ABP 261107 Flash | OTAA 261119 Flash | RAM ABP / OTAA |"
 echo "|---|---|---|---|"
 for k in "${KOMBIS[@]}"; do
   read -r fa ra < <(bau beelogger_LORA_261107 "$k")
-  read -r fo ro < <(bau beelogger_LORA_OTAA_261108 "$k")
+  read -r fo ro < <(bau beelogger_LORA_OTAA_261119 "$k")
   echo "| $k | $(zelle "$fa" 30720) | $(zelle "$fo" 30720) | $ra / $ro B |"
 done
 echo
-echo "OTAA-Sketchpfad beim Bauen: $ARBEIT/src/beelogger_LORA_OTAA_261108 ($(printf %s "$ARBEIT/src/beelogger_LORA_OTAA_261108" | wc -c) Zeichen)"
+echo "OTAA-Sketchpfad beim Bauen: $ARBEIT/src/beelogger_LORA_OTAA_261119 ($(printf %s "$ARBEIT/src/beelogger_LORA_OTAA_261119" | wc -c) Zeichen)"
 echo "Gebaut $(date +%F) mit arduino-cli $(arduino-cli version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1), $(arduino-cli core list | awk '/arduino:avr/{print $1, $2}'), FQBN $FQBN"

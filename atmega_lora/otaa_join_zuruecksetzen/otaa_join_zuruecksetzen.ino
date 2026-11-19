@@ -1,4 +1,4 @@
-// OTAA-Join zurücksetzen (ATmega328, Sketch beelogger_LORA_OTAA_261108)
+// OTAA-Join zurücksetzen (ATmega328, Sketch beelogger_LORA_OTAA_261119, gleiche EEPROM-Belegung wie 261108)
 //
 // Einmal hochladen, kurz laufen lassen, danach wieder den OTAA-Sketch aufspielen.
 // Der Logger joint dann beim nächsten Senden neu. Der Frame-Zähler (EEPROM 0x20-0x52) bleibt unverändert.

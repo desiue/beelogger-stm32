@@ -17,6 +17,7 @@
 
 // beelogger.de - Arduino LoRaWAN Datenlogger für Imker
 // Version 2025
+// 19.11.2026 LMIC-Kopie: ASSERT ohne Dateipfad (oslmic.h), Flash/RAM unabhaengig vom Ablageort, ca. 180 B weniger
 // 08.11.2026 OTAA per #define LORA_OTAA (Join, Session im EEPROM, Link-Check), LMIC-Kopie in src/lmic_otaa
 // 07.11.2026 ADR aus (LMIC_setAdrMode(0)), Sketch-ID nur in jedem 10. Uplink (LoRaSeqCounter % 10)
 // 26.03.2025 Messzyklussteuerung per Solarspannung / Temperatur
@@ -24,7 +25,7 @@
 // compile error fix oslmic.h line 230 static inline type table_get ## postfix
 
 char ID[] = "MULTI_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
-long l_ID = 261108;
+long l_ID = 261119;
 
 
 #define CFG_noassert 1             // supress error messages in library

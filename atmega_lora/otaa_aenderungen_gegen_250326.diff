@@ -1,9 +1,10 @@
 --- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/beelogger_LORA_250326.ino	2025-03-26 07:43:14.000000000 +0100
-+++ atmega_lora/beelogger_LORA_OTAA_261108/beelogger_LORA_OTAA_261108.ino	2026-11-08 09:03:01.918668668 +0100
-@@ -17,12 +17,14 @@
++++ atmega_lora/beelogger_LORA_OTAA_261119/beelogger_LORA_OTAA_261119.ino	2026-11-19 10:18:37.828933650 +0100
+@@ -17,12 +17,15 @@
  
  // beelogger.de - Arduino LoRaWAN Datenlogger für Imker
  // Version 2025
++// 19.11.2026 LMIC-Kopie: ASSERT ohne Dateipfad (oslmic.h), Flash/RAM unabhaengig vom Ablageort, ca. 180 B weniger
 +// 08.11.2026 OTAA per #define LORA_OTAA (Join, Session im EEPROM, Link-Check), LMIC-Kopie in src/lmic_otaa
 +// 07.11.2026 ADR aus (LMIC_setAdrMode(0)), Sketch-ID nur in jedem 10. Uplink (LoRaSeqCounter % 10)
  // 26.03.2025 Messzyklussteuerung per Solarspannung / Temperatur
@@ -12,12 +13,12 @@
  
  char ID[] = "MULTI_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
 -long l_ID = 250326;
-+long l_ID = 261108;
++long l_ID = 261119;
  
  
  #define CFG_noassert 1             // supress error messages in library
 --- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/Config_LORA.h	2025-03-26 08:10:04.000000000 +0100
-+++ atmega_lora/beelogger_LORA_OTAA_261108/Config_LORA.h	2026-11-08 09:03:01.918863954 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261119/Config_LORA.h	2026-11-08 13:13:02.736822840 +0100
 @@ -1,8 +1,8 @@
  /****************************************************************/
  // LORA Konfiguration
@@ -46,7 +47,7 @@
  static const uint16_t PREFIX =   0x13;     //   https://www.thethingsnetwork.org/docs/lorawan/prefix-assignments.html  
  // example: 0x13 = TTN
 --- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/Multi_LORA.ino	2025-03-26 07:38:16.000000000 +0100
-+++ atmega_lora/beelogger_LORA_OTAA_261108/Multi_LORA.ino	2026-11-08 09:03:32.324758470 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261119/Multi_LORA.ino	2026-11-08 13:13:02.737420127 +0100
 @@ -6,6 +6,7 @@
  //12.02.2021 Lora sequence number in EE-Prom
  //27.02.22 optimierte Payload, minimiert Ait-Time
@@ -232,9 +233,9 @@
      case EV_RXCOMPLETE:
        // data received in ping slot
        debugprintlnF("RX!");
-diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/config.h atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/config.h
+diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/config.h atmega_lora/beelogger_LORA_OTAA_261119/src/lmic_otaa/lmic/config.h
 --- orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/config.h	2023-05-15 07:46:56.000000000 +0200
-+++ atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/config.h	2026-11-08 09:01:45.675728258 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261119/src/lmic_otaa/lmic/config.h	2026-11-08 13:13:02.740496590 +0100
 @@ -38,7 +38,7 @@
  #define LMIC_FAILURE_TO Serial
  
@@ -244,9 +245,9 @@ diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/be
  // Uncomment this to disable all code related to ping
  #define DISABLE_PING  //mod
  // Uncomment this to disable all code related to beacon tracking.
-diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.c atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/lmic.c
+diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.c atmega_lora/beelogger_LORA_OTAA_261119/src/lmic_otaa/lmic/lmic.c
 --- orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.c	2023-05-15 07:46:56.000000000 +0200
-+++ atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/lmic.c	2026-11-08 09:01:45.675728258 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261119/src/lmic_otaa/lmic/lmic.c	2026-11-08 13:13:02.741615865 +0100
 @@ -1144,6 +1144,7 @@
          case MCMD_LCHK_ANS: {
              //int gwmargin = opts[oidx+1];
@@ -283,9 +284,9 @@ diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/be
  // Enable/disable link check validation.
  // LMIC sets the ADRACKREQ bit in UP frames if there were no DN frames
  // for a while. It expects the network to provide a DN message to prove
-diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.h atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/lmic.h
+diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.h atmega_lora/beelogger_LORA_OTAA_261119/src/lmic_otaa/lmic/lmic.h
 --- orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/lmic.h	2023-05-15 07:46:56.000000000 +0200
-+++ atmega_lora/beelogger_LORA_OTAA_261108/src/lmic_otaa/lmic/lmic.h	2026-11-08 09:01:45.675806222 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261119/src/lmic_otaa/lmic/lmic.h	2026-11-08 13:13:02.742335072 +0100
 @@ -215,6 +215,7 @@
      u1_t        margin;
      bit_t       ladrAns;      // link adr adapt answer pending
@@ -302,8 +303,21 @@ diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/be
  void LMIC_setClockError(u2_t error);
  
  // Declare onEvent() function, to make sure any definition will have the
+diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/oslmic.h atmega_lora/beelogger_LORA_OTAA_261119/src/lmic_otaa/lmic/oslmic.h
+--- orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/beelogger_arduino-lmic-master/src/lmic/oslmic.h	2023-05-15 07:46:56.000000000 +0200
++++ atmega_lora/beelogger_LORA_OTAA_261119/src/lmic_otaa/lmic/oslmic.h	2026-11-19 10:12:43.942519773 +0100
+@@ -43,7 +43,8 @@
+ #define EV(a,b,c) /**/
+ #define DO_DEVDB(field1,field2) /**/
+ #if !defined(CFG_noassert)
+-#define ASSERT(cond) if(!(cond)) hal_failed(__FILE__, __LINE__)
++// beelogger 19.11.2026: "" statt __FILE__ - der Pfad kostete je Zeichen 2 B Flash und RAM
++#define ASSERT(cond) if(!(cond)) hal_failed("", __LINE__)
+ #else
+ #define ASSERT(cond) /**/
+ #endif
 --- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/beelogger_config.h	2025-03-26 07:38:16.000000000 +0100
-+++ atmega_lora/beelogger_LORA_OTAA_261108/beelogger_config.h	2026-11-08 10:11:09.203635824 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261119/beelogger_config.h	2026-11-08 13:13:02.739381246 +0100
 @@ -47,6 +47,7 @@
    Global Libraries
  ****************************************************************/
@@ -313,7 +327,7 @@ diff --color -ru orginal_firmware_bibliotheken/beelogger_arduino_libs_2026_04/be
  
  
 --- orginal_firmware_bibliotheken/beelogger_LORA_250326/beelogger_LORA_250326/beelogger_utility_lora.ino	2025-03-26 08:10:56.000000000 +0100
-+++ atmega_lora/beelogger_LORA_OTAA_261108/beelogger_utility_lora.ino	2026-11-08 11:11:01.642052920 +0100
++++ atmega_lora/beelogger_LORA_OTAA_261119/beelogger_utility_lora.ino	2026-11-08 13:13:02.739503076 +0100
 @@ -243,6 +243,7 @@
    digitalWrite(Power_Pin, HIGH);
    calldelay(10);             // vcc stable

@@ -43,7 +43,8 @@ typedef const char* str_t;
 #define EV(a,b,c) /**/
 #define DO_DEVDB(field1,field2) /**/
 #if !defined(CFG_noassert)
-#define ASSERT(cond) if(!(cond)) hal_failed(__FILE__, __LINE__)
+// beelogger 19.11.2026: "" statt __FILE__ - der Pfad kostete je Zeichen 2 B Flash und RAM
+#define ASSERT(cond) if(!(cond)) hal_failed("", __LINE__)
 #else
 #define ASSERT(cond) /**/
 #endif

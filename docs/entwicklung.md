@@ -64,7 +64,7 @@ Die Kennung `l_ID` hat die Form JJMMTT. Grundlage dieses Repos ist **260705** (`
 | 2 | Sendeintervall per Downlink FPort 10 (ABP), Sketch-ID-Fehler | fertig, auf Blue und Black getestet |
 | 3 | OTAA | fertig, auf Blue (F103) und Black (F411) getestet: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Wiederanlauf aus dem Flash |
 | – | ADR aus, Software-Watchdog (Kennung 261107) | fertig, im Dauerlauf |
-| – | ATmega-LoRa 250326 → 261107 (ABP) und 261108 (OTAA) | baut für Pro Mini 8/16 MHz und Nano; OTAA seit 08.11.2026 im Dauerlauf auf Uno |
+| – | ATmega-LoRa 250326 → 261107 (ABP) und 261108, seit 19.11.2026 261119 (OTAA) | baut für Pro Mini 8/16 MHz und Nano; OTAA seit 08.11.2026 im Dauerlauf auf Uno |
 | 7/8 | Serverquittung FPort 11: Uhr und Intervall vom Server | in `main` (PR #1, 19.11.2026), auf Blue und Black getestet, Dauerlauf-Ergebnis in [fragen.md](fragen.md) |
 | 4 | Doku: Architektur, Payload, Intervalle, Server, TTN | Text fertig (08.11.2026); Bildschirmfotos folgen |
 | 5 | Weitergehende Ideen (Sendeplan, Zusatz-Uplinks, Waage 5–8, Payload) | nicht in `main` ([Idee](planung/idee_sendeplan_schwarmalarm.md), [Payload](planung/vorschlag_payload_erweiterung.md)) |

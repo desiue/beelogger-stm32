@@ -21,7 +21,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 | [OTAA-Einrichtung (PDF)](ttn/STM32_LORA_OTAA_Einrichtung_261107.pdf) | Kurzanleitung nur TTN-Konsole, OTAA, mit Bildern |
 | [Server](server.md) | `beelogger_log.php`: Speicherregeln (220/520 s), Service-Werte, `ServerZeitSteuerung()`, `lora_downlink.php` einbinden |
 | [Server-Alarme](server_alarme.md) | Schwarmalarm, Triggeralarme, Tageswächter, Weitergabe an BEEP/ThingSpeak |
-| [ATmega-Logger](../atmega_lora/README.md) | Universal 1.x und beeloggerSMD: Vorschlag 261107 (ABP) und 261108 (OTAA), [Testaufbau Uno](../atmega_lora/testaufbau_uno.md) |
+| [ATmega-Logger](../atmega_lora/README.md) | Universal 1.x und beeloggerSMD: Vorschlag 261107 (ABP) und 261119 (OTAA), [Testaufbau Uno](../atmega_lora/testaufbau_uno.md) |
 
 ## Wie es funktioniert
 
@@ -58,7 +58,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 - **OTAA** für neue Geräte, ABP für vorhandene Feldgeräte – eine Codebasis, umschaltbar per `#define LORA_OTAA`.
 - **BluePill (F103) und BlackPill (F411/F401)**, alle vier Kombinationen auf Testgeräten abgenommen.
 - **Fehler behoben:** Sketch-ID in jedem Uplink, TTN-Downlink-Schleife (Einstellungen dokumentiert), ADR-Bit.
-- **ATmega-Logger (Universal 1.x, beeloggerSMD):** Vorschlag mit denselben zwei kleinen Änderungen (Sketch-ID, ADR) für den Original-Sketch 250326, sonst unverändert (ABP). Dazu eine OTAA-Variante (261108), seit 08.11.2026 im Dauerlauf auf einem Uno → [`atmega_lora/`](../atmega_lora/).
+- **ATmega-Logger (Universal 1.x, beeloggerSMD):** Vorschlag mit denselben zwei kleinen Änderungen (Sketch-ID, ADR) und einem I2C-Timeout für den Original-Sketch 250326, sonst unverändert (ABP). Dazu eine OTAA-Variante (261119, bis 18.11.2026 261108), im Dauerlauf auf einem Uno seit 08.11.2026 (zuletzt gemessen 19.11.2026: dieselbe Session, FCnt 1322) → [`atmega_lora/`](../atmega_lora/).
 - **Startzeile** mit Firmware-Kennung, Name, Chip-UID und DevAddr – man sieht sofort, welches Gerät am Kabel hängt.
 - **Keine Schlüssel oder Passwörter im Repo** (siehe [Schlüssel](#schlüssel)).
 
@@ -68,7 +68,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 |---|---|
 | [`src/`](../src/) | Sketch 260705 mit Änderungen, Vorlagen `Config_*.h.example`, LMIC-Kopie `src/lmic_otaa/` |
 | [`lib/`](../lib/) | beelogger-Bibliotheken 2026_04, unverändert |
-| [`atmega_lora/`](../atmega_lora/) | ATmega328-LoRa-Sketch (ABP 261107, OTAA 261108) mit eigener Anleitung |
+| [`atmega_lora/`](../atmega_lora/) | ATmega328-LoRa-Sketch (ABP 261107, OTAA 261119) mit eigener Anleitung |
 | [`server/`](../server/) | `lora_downlink.php`: Serverquittung für LoRa (Erweiterung für `beelogger_log.php`); `M40_261109/`: unveränderte Kopie der Server-Skripte von beelogger.de (GPLv3) |
 | [`scripts/`](../scripts/) | `seriell-log.sh`, `ttn-status.sh`, TTN-Anlege-Skripte, `lieferpaket*.sh` |
 | [`orginal_firmware_bibliotheken/`](../orginal_firmware_bibliotheken/) | Originale von beelogger.de zum Vergleich |
