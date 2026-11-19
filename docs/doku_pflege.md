@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 08.11.2026 · gilt für: alle Firmware-Varianten in diesem Repo
+Stand: 19.11.2026 · gilt für: alle Firmware-Varianten in diesem Repo
 
 Rund um den beelogger gibt es Informationen an mehreren Stellen: Code, diese GitHub-Doku, Wikis, Notizen,
 Mailverläufe. Sie stammen aus verschiedenen Zeiten und Firmware-Ständen (z. B. 230711, 260705, 261107).
@@ -37,6 +37,15 @@ Stand: 08.11.2026 · gilt für: STM32 261107, ATmega 261108 · geprüft gegen Co
   „bis 260705: …“.
 - Was nur auf einem Branch existiert, heißt „(Branch `<name>`, noch nicht in `main`)“. Stand 19.11.2026: alles in `main`, kein offener Branch-Stand.
 - Fehlt der Prüfstempel oder ist er älter als die letzte Code-Änderung am Thema, gilt die Seite als ungeprüft.
+
+## Belege für Zustandsaussagen
+
+Aussagen wie „getestet“, „fertig“, „läuft weiter“, „seit 08.11.“ oder „Langzeittest“ veralten schnell. Sie
+brauchen im selben Absatz bzw. in derselben Tabellenzeile einen Beleg: Code-Stelle (`Datei:Zeile`, „Z. 12“),
+Commit, Datum der Messung, Bau-Bytes, Mail mit Datum, oder ausdrücklich „ungeprüft“. „Läuft“ oder „online“
+schreibt nur, wer es am selben Tag gemessen hat (`scripts/stand-pruefen.sh`: Server-Pakete auf beelogger.de,
+letzte Werte je Logger, TTN-Uplinks); sonst „zuletzt gemessen am …“. `scripts/doku-check.py` meldet unbelegte
+Zustandsaussagen als „?“-Zeilen; mit `--streng` zählen sie als Fehler.
 
 ## Ablauf bei Änderungen
 

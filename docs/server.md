@@ -11,6 +11,13 @@ Die Server-Skripte stammen von beelogger.de (GPLv3). Eine unveränderte Kopie de
 Das Paket M41 (M41_261110a) unterscheidet sich davon nur in den Versionszeilen und bringt zusätzlich
 `beelogger_show.php` mit; die Zeilennummern in `beelogger_log.php` sind in beiden Paketen gleich. Überblick über den Datenweg: [architektur.md](architektur.md).
 
+**Was öffentlich zu haben ist** (gemessen 19.11.2026 mit `scripts/stand-pruefen.sh server`): Die
+[Release-Seite](https://beelogger.de/webserver/webserver-skripte/webserver-skripte-release/) bietet
+`M40_261004_ServerSkripte.zip` an, die Downloads-Seite `M35_260909_ServerSkripte.zip`. M.41 ist dort
+angekündigt („Dezember 2026“), aber noch nicht zum Download. Die Pakete M40_261109 und M41_261110a hat das
+beelogger-Team für die Tests vorab geschickt; M41 läuft laut beelogger-Team (Mail 17.11.2026) bereits auf
+`community.beelogger.de`. Die Version dort ist von außen nicht ablesbar (`$show_version=0` in `beelogger_show.php`).
+
 ## Ordner und Dateien
 
 Jeder Logger hat auf dem Server einen eigenen Ordner. Der **Name** bestimmt, wie viele Waagen erwartet werden:

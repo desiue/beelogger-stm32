@@ -4,8 +4,14 @@
 Liest Schlüsselwerte aus dem Code (src/, server/) und sucht in der Doku nach Stellen,
 an denen derselbe Begriff mit einer anderen Zahl steht. Siehe docs/doku_pflege.md.
 
-Aufruf:  python3 scripts/doku-check.py        (im Repo-Wurzelordner)
-Rückgabe: 0 = keine Abweichung, 1 = Abweichungen gefunden, 2 = Wert im Code nicht gefunden.
+Zweiter Teil (Belegpflicht, Projekt-Regel 19.11.2026): Absätze/Tabellenzeilen mit Zustandsaussagen
+(„getestet“, „fertig“, „läuft weiter“, „seit 08.11.“, „Langzeittest“ …) brauchen im selben Absatz einen
+Beleg: Code-Stelle (Datei:Zeile, „Z. 12“), Commit, Datum, „gemessen“, Bytes, Mail, oder „ungeprüft“.
+Fehltreffer (keine Zustandsaussage) stehen in KEIN_ZUSTAND.
+
+Aufruf:  python3 scripts/doku-check.py [--streng]   (im Repo-Wurzelordner)
+Rückgabe: 0 = keine Abweichung, 1 = Abweichungen gefunden (mit --streng auch: unbelegte Aussagen),
+2 = Wert im Code nicht gefunden.
 Planungsdateien (docs/planung/) werden nicht geprüft: sie beschreiben ältere Stände.
 Achtung: Die Sollwerte kommen aus dem STM32-Code. Nennt eine ATmega-Seite einen eigenen Wert mit
 demselben Begriff, braucht er einen eigenen Eintrag mit Code-Datei unter atmega_lora/.
@@ -45,6 +51,52 @@ PRUEFUNGEN = [
      r"Messintervall in Minuten \(5\s*[–-]\s*(\d+)\)"),
 ]
 
+# Zustandsaussage: behauptet einen Test-, Lauf- oder Planungsstand
+ZUSTAND = re.compile(r"\b(getestet|erprobt|bestätigt|fertig|online|noch offen|wird (?:getestet|geprüft)|geplant"
+                     r"|in Arbeit|seit \d\d?\.\d\d?\.|läuft (?:weiter|noch|seit|stabil)|läuft \(|laufen (?:weiter|noch|seit)"
+                     r"|funktioniert (?:auf|mit|bei)|Langzeittest|Dauerlauf|ungetestet|neueste?"
+                     r"|aktuelle[nrs]? (?:Stand|Version|Firmware|Paket))", re.I)
+BELEG = re.compile(r"(nicht (?:selbst )?getestet|ungetestet|ungeprüft|\w\.\w{1,4}:\d+|\bZ\.\s?\d+|\bZeile\s\d+"
+                   r"|\b[0-9a-f]{7,40}\b|gemessen|Messung|Bytes?\b|\bB\)|Mail|Stand:?\s\d|Commit|Quelle|laut "
+                   r"|\(\d\d\.\d\d\.(?:\d{4})?\)|\d\d\.\d\d\.\d{4})", re.I)
+# (Datei, Textstück) – Treffer, die keine Zustandsaussage sind
+KEIN_ZUSTAND = [
+    ("docs/architektur.md", "Uhrenquarz läuft (LSE)"),
+    ("docs/fehlersuche.md", "Senden nicht innerhalb der Wartezeit fertig"),
+    ("docs/fehlersuche.md", "Downlink geplant, kommt nie an"),
+    ("docs/hardware.md", "Fertigungsdaten"),
+    ("docs/ttn_downlink_schleife.md", "ältere Sketches ohne Überlauf | läuft weiter"),
+]
+
+def absaetze(txt):
+    """liefert (Zeilennr, Text) je Absatz bzw. Tabellenzeile, Codeblöcke ausgenommen"""
+    txt = re.sub(r"```.*?```", lambda m: "\n" * m.group(0).count("\n"), txt, flags=re.S)
+    blk, start = [], 1
+    for i, z in enumerate(txt.split("\n"), 1):
+        if z.strip() == "" or z.startswith("#") or z.startswith("|"):
+            if blk:
+                yield start, " ".join(blk)
+                blk = []
+            if z.startswith("|"):
+                yield i, z
+        else:
+            if not blk:
+                start = i
+            blk.append(z)
+    if blk:
+        yield start, " ".join(blk)
+
+def belege(dateien):
+    n = 0
+    for d in dateien:
+        for nr, a in absaetze(open(d, encoding="utf-8").read()):
+            m = ZUSTAND.search(a)
+            if not m or BELEG.search(a) or any(d == f and t in a for f, t in KEIN_ZUSTAND):
+                continue
+            print(f"?  {d}:{nr}: unbelegt „{m.group(0)}“: {a.strip()[:100]}")
+            n += 1
+    return n
+
 def norm(z):
     return z.replace(",", ".").rstrip("0").rstrip(".") if "." in z.replace(",", ".") else z
 
@@ -69,8 +121,11 @@ def main():
                         print(f"✗  {d}:{nr}: {name} = {ist}, Code ({datei}) = {soll}")
                         fehler += 1
         print(f"ok {name} = {soll}")
-    print(f"\n{fehler} Abweichung(en), {fehlt} nicht gefunden")
-    sys.exit(1 if fehler else (2 if fehlt else 0))
+    print()
+    unbelegt = belege(dateien)
+    print(f"\n{fehler} Abweichung(en), {fehlt} nicht gefunden, {unbelegt} unbelegte Zustandsaussage(n)")
+    streng = "--streng" in sys.argv
+    sys.exit(1 if fehler or (streng and unbelegt) else (2 if fehlt else 0))
 
 if __name__ == "__main__":
     main()
