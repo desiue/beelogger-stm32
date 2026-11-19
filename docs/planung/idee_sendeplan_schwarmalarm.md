@@ -74,7 +74,9 @@ Grundlage im Code: FPort 10 (1 Byte Intervall) und FPort 11 (7 Byte Serverquittu
 **Regeln:**
 - Erst alles prüfen, dann ausführen. Passt eine Länge nicht oder liegt ein Wert außerhalb seines Bereichs, verwirft der Logger den **ganzen** Downlink und sendet keine Quittung. Es gibt also nie einen halb übernommenen Plan.
 - Angenommen → im nächsten Uplink Service = 90 (Wert noch mit den Entwicklern abstimmen).
-- Plan-Werte (`01`–`08`) werden gesammelt und nur einmal am Ende in den Flash geschrieben, und nur, wenn sich etwas geändert hat.
+- Plan-Werte (`01`–`08`) werden gesammelt und nur einmal am Ende in den Flash geschrieben, und nur, wenn sich etwas geändert hat. Verglichen wird mit dem gültigen Flash-Eintrag, sonst mit `Config_LORA.h`. Einzelwerte gehen, z. B. nur Sendeabstand Tag 10 min: `01 03 01 0A`. Die neuen Werte gelten ab dem nächsten Aufwachen.
+- Ein angenommener Plan-Wert setzt das feste Intervall aus FPort 10/11 (`FernIntervall`, Backup-Register 5, `src/STM32_LORA_utility.ino:477`) auf 0 zurück. Sonst würde ein alter FPort-10-Wert den neuen Plan weiter verdecken.
+- Geschrieben wird nur, wenn der Akku nicht im Sparmodus ist. Danach liest der Logger den Eintrag zurück und prüft die Prüfsumme. Schlägt das fehl, gilt `Config_LORA.h` und es gibt keine Quittung.
 - Größe: Ein kompletter Plan (`01`–`08`) hat 26 Byte. Das passt auch bei SF12 (höchstens 51 Byte Nutzdaten in EU868).
 
 | Kom. | Länge | Inhalt | Bereich | Speicher |
@@ -87,25 +89,25 @@ Grundlage im Code: FPort 10 (1 Byte Intervall) und FPort 11 (7 Byte Serverquittu
 | `06` | 1 | Winter-Temperatur [0,5 °C, mit Vorzeichen] | −64…+63,5 °C, `80` = aus | Flash |
 | `07` | 1 | Sendeabstand Winter [min] | 5–180, Raster 5 | Flash |
 | `08` | 2 | Schwelle Sofort-Senden [g], big endian | 0 = aus, 50–65 535 | Flash |
-| `0F` | 0 | Plan auf Vorgabe der Firmware zurücksetzen (Flash-Eintrag löschen) | – | Flash |
-| `10` | 3 | Für eine Weile anders: Wiegen [min], Senden [min], Dauer [h] | 1–60, 5–180, 0–72 (0 = sofort beenden) | Backup-Register |
+| `0F` | 0 | Plan auf Vorgabe der Firmware zurücksetzen (Flash-Eintrag löschen); ein laufendes `10` bleibt | – | Flash |
+| `10` | 3 | Für eine Weile anders: Wiegen [min], Senden [min], Dauer [h] | 1–60, 5–180, 0–72 (0 = sofort beenden) | Backup-Register; Neustart oder Akku ab beenden es, dann gilt wieder der Plan (gewollt) |
 | `20` | 3 | Neustart: Art (`01` = Neustart, `02` = Neustart + Session verwerfen und neu joinen), Prüfwert = letzte 2 Byte der DevAddr | Prüfwert muss passen; bei ABP wirkt `02` wie `01` | – |
 | `30` | 0 | Status senden | reserviert, ohne Wirkung, bis Decoder und Webhook geprüft sind | – |
 
-Der Neustart läuft erst nach dem Uplink-Ende (nicht im RX-Fenster), damit die Quittung nicht verloren geht: Die Quittung 90 kommt nach dem Neustart im ersten Uplink. Den Prüfwert zeigt die TTN-Konsole unter *Device address*, und die Firmware kennt ihn bei ABP und OTAA (`LMIC.devaddr`).
+Der Neustart läuft erst nach dem Uplink-Ende (nicht im RX-Fenster). Er bekommt keine Quittung 90: Der erste Uplink danach meldet ohnehin Service 0 (= nach einem Reset, Tabelle oben), bei `02` sieht man zusätzlich den Join in TTN. Prüfwert ist die DevAddr, nicht die DevEUI: Die DevEUI kennt eine ABP-Firmware nicht. Die DevAddr kennt die Firmware bei ABP und OTAA (`LMIC.devaddr`), und die TTN-Konsole zeigt sie unter *Device address*. Bei OTAA ändert sie sich mit jedem Join. Ein Downlink erreicht den Logger aber nur in seiner laufenden Session, deren DevAddr also immer gerade in der Konsole steht.
 
 **Beispiele**
 - Variante B (wiegen 5, senden Tag 10 / Nacht 10, Sofort ab 500 g): `01 01 01 05 02 01 05 03 01 0A 04 01 0A 08 02 01 F4`
 - Kontrolle nach Eingriff, 6 h lang jede Minute wiegen und alle 5 min senden: `01 10 03 01 05 06`
 - Neustart mit neuem Join, DevAddr endet auf `…3F A1`: `01 20 03 02 3F A1`
 
-**Rangfolge im Logger** (höchste zuerst): Arbeitsschalter (Service-Modus) → Akkusparmodus (`AlternativIntervallMinuten`) → „für eine Weile anders“ → FPort 10/11 (festes Intervall, wie heute) → Plan aus dem Flash → Vorgabe aus `Config_LORA.h`. Heute ersetzt FPort 10 den Plan, der Akkusparmodus bleibt vorrangig (`src/STM32_LORA_utility.ino:381`, `:383`).
+**Rangfolge im Logger** (höchste zuerst): Arbeitsschalter (Service-Modus) → Akkusparmodus (`AlternativIntervallMinuten`) → „für eine Weile anders“ → FPort 10/11 (festes Intervall, wie heute) → Plan aus dem Flash → Vorgabe aus `Config_LORA.h`. Heute ersetzt FPort 10 den Plan, der Akkusparmodus bleibt vorrangig (`src/STM32_LORA_utility.ino:381`, `:383`). Sofort-Senden prüft der Logger nur beim Wiegen. Im Akkusparmodus und im Service-Modus gibt es also keins.
 
 **Speicher:** EEPROM-Emulation des STM32-Cores (letzter Flash-Sektor, auf dem F411 sind das 128 KB), mit Format-Version und Prüfsumme. Ist der Eintrag ungültig oder fehlt er, gilt `Config_LORA.h`. Ungeprüft, auf dem Testlogger messen: Löschzeit und Strom beim Schreiben, und ob der Eintrag ein Firmware-Update per DFU übersteht (gewollt, die Version im Eintrag fängt Formatwechsel ab).
 
 ### Plan S6: was in der Firmware zu bauen ist
 
-1. **Weckraster 1 min:** Heute rastet die Weckzeit auf 5 min (`tt - tt % 300`, `src/STM32_LORA_utility.ino:389`) und ist mindestens 5 min (`:387`). Neu: Weckraster = Wiegeabstand (60-s-Raster). Die 5-min-Grenze gilt nur noch für den Sendeabstand.
+1. **Weckraster 1 min:** Heute rastet die Weckzeit auf 5 min (`tt - tt % 300`, `src/STM32_LORA_utility.ino:389`) und ist mindestens 5 min (`:387`). Neu, nur mit gültigem Flash-Plan: Weckraster = Wiegeabstand (60-s-Raster), die 5-min-Grenze gilt nur noch für den Sendeabstand. **Ohne Flash-Plan läuft der heutige Code-Pfad unverändert** (300-s-Raster, Wiegen = Senden), damit die Feld-Logger nach dem Flash weder öfter aufwachen noch ihre Sendezeiten verschieben.
 2. **Wiegen ohne Senden:** Aufwachen, messen, Werte merken, nur bei fälligem Sendeabstand oder Sofort-Schwelle senden. Bei Sofort-Senden höchstens alle 250 s (Server-Sperre, siehe „Fragen an die Entwickler“ Nr. 3 und S5).
 3. **Sofort-Schwelle:** Gewichtsänderung gegenüber dem zuletzt **gesendeten** Wert, je Waage, ab Schwelle (`08`). An `Sensor_Gewicht()` (`src/beelogger_HX711_STM.ino:16`) anbinden.
 4. **Tag/Nacht/Winter aus dem Flash-Plan**, unabhängig von `WeckIntervall_aktiv`/`SOLAR_ZYKLUS_aktiv`. Die Feld-Konfigurationen haben beide auf 0 (geprüft 19.11., `lokal/feld-kit/cfg/q*/Config_LORA.h`), ohne Flash-Eintrag bleibt ihr Verhalten also wie heute 5/5.
