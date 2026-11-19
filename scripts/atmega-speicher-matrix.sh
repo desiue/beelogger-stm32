@@ -4,7 +4,8 @@
 #   scripts/atmega-speicher-matrix.sh                 alle Kombinationen
 #   scripts/atmega-speicher-matrix.sh "DS18B20=1 Gewicht=4 Si7021=1"   nur diese eine
 # Kürzel = Teil hinter Anzahl_Sensoren_ / Anzahl_Sensor_ in Config_MULTI.h (DHT, Si7021, SHT31, BME280,
-# DS18B20, Licht, Regen, Gewicht; Regen wirkt nicht: Aufruf im Sketch auskommentiert). Nicht genannte Werte bleiben wie im Sketch (DS18B20=1, Gewicht=1, Rest 0).
+# DS18B20, Licht, Regen, Gewicht; Regen wirkt nicht: Aufruf im Sketch auskommentiert), dazu myDEBUG=0
+# (serielle Debug-Ausgaben aus, beelogger_config.h). Nicht genannte Werte bleiben wie im Sketch (DS18B20=1, Gewicht=1, Rest 0).
 # Grenzen laut Board-Definition: Flash 30 720 B (32 KB minus Bootloader), RAM 2 048 B.
 # OTAA: Die LMIC-Kopie legt für ihre Fehlermeldungen den Dateipfad ab (src/lmic_otaa/lmic/oslmic.h:46).
 # Flash und RAM steigen um ca. 2 B je Zeichen im Pfad des Sketch-Ordners → kurzer ARBEIT-Ordner, Länge in der Fußzeile.
@@ -50,6 +51,9 @@ bau() {
   cfg=$d/Config_MULTI.h
   for kv in $kombi; do
     k=${kv%%=*}; v=${kv#*=}
+    if [ "$k" = myDEBUG ]; then  # Debug-Ausgaben (beelogger_config.h), Vorgabe 1
+      sed -i -E "s/^(#define myDEBUG +)[0-9]+/\1$v/" "$d/beelogger_config.h"; continue
+    fi
     if grep -qE "^#define Anzahl_Sensor(en)?_$k " "$cfg"; then
       sed -i -E "s/^(#define Anzahl_Sensor(en)?_$k +)[0-9]+/\1$v/" "$cfg"
     else echo "Kürzel $k nicht in Config_MULTI.h" >&2; return 1; fi

@@ -91,8 +91,27 @@ Bibliotheken 2026_04, Pro Mini 8 MHz = beeloggerSMD). „DS18B20“ und „Waage
 
 ✓ passt, ✗ passt nicht (Arduino IDE meldet „Sketch zu groß“). Prozent abgerundet wie in der Arduino IDE.
 
+**Mit `myDEBUG 0` passt mehr.** In `beelogger_config.h` steht wie im Original 250326 `#define myDEBUG 1`
+(Debug-Ausgaben im Seriellen Monitor). Mit `0` entfallen nur diese Ausgaben (`beelogger_config.h`, Abschnitt
+„Debug Print Functions“), das spart rund 1,9 KB. Den Join sieht man dann im Seriellen Monitor nicht mehr, nur in TTN.
+Gemessen 19.11.2026 wie oben:
+
+| Sensoren, `myDEBUG 0` | ABP 261107 | OTAA 261108 |
+|---|---|---|
+| 1 Waage, 1 DS18B20 | 24 530 B (79 %) ✓ | 26 762 B (87 %) ✓ |
+| 1 Waage, 1 DS18B20 + BME280 | 28 424 B (92 %) ✓ | 30 706 B (99 %) ✓ sehr knapp |
+| 1 Waage, 1 DS18B20 + 2 BME280 | 28 546 B (92 %) ✓ | 30 806 B (100 %) ✗ |
+| 1 Waage, 1 DS18B20 + BME280 + BH1750 | 29 228 B (95 %) ✓ | 31 510 B (102 %) ✗ |
+| 4 Waagen, 1 DS18B20 + DHT22 | 26 768 B (87 %) ✓ | 29 014 B (94 %) ✓ |
+| 4 Waagen, 1 DS18B20 + Si7021 + BH1750 | 26 914 B (87 %) ✓ | 29 138 B (94 %) ✓ |
+| 4 Waagen, 1 DS18B20 + SHT31 + BH1750 | 26 958 B (87 %) ✓ | 29 182 B (94 %) ✓ |
+| 4 Waagen, 1 DS18B20 + BME280 | 29 448 B (95 %) ✓ | 31 760 B (103 %) ✗ |
+| 4 Waagen, 1 DS18B20 + BME280 + BH1750 | 30 252 B (98 %) ✓ | 32 556 B (105 %) ✗ |
+
+BME280 mit OTAA bleibt damit 14 B unter der Grenze. Schon 7 Zeichen mehr im Ordnerpfad (siehe unten) reichen, dann passt es nicht mehr.
+
 Hinweise:
-- **Mit OTAA geht kein BME280.** Bei 4 Waagen passt neben dem DS18B20 genau ein weiterer kleiner Sensor
+- **Mit OTAA und `myDEBUG 1` geht kein BME280.** Bei 4 Waagen passt neben dem DS18B20 genau ein weiterer kleiner Sensor
   (Si7021, SHT31 oder BH1750), nicht zwei. Mit ABP passt der BME280 bei einer Waage, aber nicht zusammen
   mit dem Lichtsensor oder mit 4 Waagen.
 - **Der Speicherort zählt (nur OTAA):** Die LMIC-Kopie in `src/lmic_otaa` legt für ihre Fehlermeldungen den
@@ -102,10 +121,10 @@ Hinweise:
   (58 Zeichen) kommen gerechnet rund 16 B dazu. Wer knapp über der Grenze liegt, legt den Ordner kürzer ab.
 - 2 Waagen brauchen mehr als 3: Der Code hat für 1, 2, 3 und 4 Waagen eigene Zweige, z. B. sendet er
   Beutensensor-Werte nur bis zu zwei Waagen (`Multi_LORA.ino:428`, `beelogger_DS18B20.ino:220–289`).
-- RAM: ABP 1 431–1 499 B, OTAA 1 319–1 387 B von 2 048 B (bei 50 Zeichen Pfad).
+- RAM: ABP 1 431–1 499 B, OTAA 1 319–1 387 B von 2 048 B (bei 50 Zeichen Pfad, `myDEBUG 1`; mit `myDEBUG 0` rund 30 B weniger).
 - Pro Mini 16 MHz und Nano (Universal 1.x) brauchen im Grundausbau 14 B mehr (ABP 26 314 B, OTAA 28 666 B).
 - Regenmesser: im LoRa-Sketch schon im Original 250326 auskommentiert (`Sensor_Regen()`), deshalb nicht in der Tabelle.
-- Eigene Kombination prüfen: `scripts/atmega-speicher-matrix.sh "DS18B20=1 Gewicht=4 Si7021=1"`.
+- Eigene Kombination prüfen: `scripts/atmega-speicher-matrix.sh "DS18B20=1 Gewicht=4 Si7021=1"` (mit `myDEBUG=0` am Anfang ohne Debug-Ausgaben).
 
 **Getestet** auf dem Steckbrett ([testaufbau_uno.md](testaufbau_uno.md)), Uno 16 MHz mit RFM95, TTN, Gerät mit den Einstellungen oben:
 - Join beim ersten Senden nach etwa 12 s, Uplink mit FCnt 0 kommt an, RX1-Delay 1 s aus dem Join-Accept.
