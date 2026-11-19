@@ -118,7 +118,7 @@ Der Server behandelt 99 besonders: Er speichert sofort und unterdrückt den Schw
 
 Kleinste Nachricht: Akku, Solar, Gewicht, Service, Header = 9 Byte. Ein Quad mit Außensensor hat
 18 Byte, mit Sketch-ID 22 Byte. Am längsten wird ein Duo mit allen Sensoren und Sketch-ID: 28 Byte. LoRaWAN legt 13 Byte Rahmen dazu. Bei SF7/125 kHz dauert ein
-Uplink damit etwa 72–82 ms. Bei 5 min Intervall sind das 288 Uplinks und etwa 22 s Sendezeit pro Tag,
+Uplink damit etwa 72–82 ms. Bei 5 min Intervall sind das 288 Uplinks und etwa 21 s Sendezeit pro Tag (Quad mit Außensensor, [Rechnung](lorawan.md)),
 unter der TTN-Grenze von 30 s.
 
 ## Downlink FPort 10: Fern-Intervall
@@ -164,6 +164,6 @@ Abstand 10 min, Intervall 10 min:
 2A  6A F0 9A 28  0A  0A        Base64: KmrwmigKCg==
 ```
 
-Serieller Monitor: `DL Port 11: 42 1794149400 10 10`, danach `Uhr gestellt`.
+Serieller Monitor: `DL Port 11: 42 1794153000 10 10`, danach `Uhr gestellt`.
 
 Die ATmega-Version zeigt beide Downlinks nur an und wertet sie nicht aus.

@@ -78,8 +78,8 @@ das Winterintervall nach Temperatur (`TEMP_ZYKLUS_aktiv`).
 
 | | ABP (`LORA_OTAA 0`) | OTAA (`LORA_OTAA 1`) |
 |---|---|---|
-| **BluePill** F103 (`bluepill_f103c8`) | läuft (beeloggerblue05) | läuft (beelogger011) |
-| **BlackPill** F411/F401 (`blackpill_f411ce`, `blackpill_f401cc`) | läuft (beelogger09) | läuft (beelogger08) |
+| **BluePill** F103 (`bluepill_f103c8`) | Uplink beeloggerblue05 (gemessen 19.11.2026 09:10 UTC, TTN) | Uplink beelogger011 (gemessen 19.11.2026 09:15 UTC, TTN) |
+| **BlackPill** F411/F401 (`blackpill_f411ce`, `blackpill_f401cc`) | zuletzt Uplink beelogger09 am 10.11.2026 15:37 UTC (TTN, gemessen 19.11.) | Uplink beelogger08 (gemessen 19.11.2026 09:15 UTC, TTN) |
 
 Board = PlatformIO-Umgebung, ABP/OTAA = Schalter im Geräteblock von `Config_LORA.h`. Sonst ist der Code gleich, Korrekturen gelten für alle Varianten.
 
@@ -137,7 +137,7 @@ Hinweise:
   braucht es beide Richtungen.
 - Linux: Der Benutzer braucht Zugriff auf `/dev/ttyUSB*` (Gruppe `uucp` bei Arch, `dialout` bei Debian/Ubuntu).
 - Ausgaben auf der Konsole gibt es nur mit `#define myDEBUG 1` in `src/STM32_beelogger.h` (im Repo gesetzt).
-- Debug-Konsole: **9600 Baud** (`monitor_speed` in platformio.ini steht seit 06.11. richtig).
+- Debug-Konsole: **9600 Baud** (`monitor_speed` in platformio.ini steht seit dem ersten Commit 8209398 vom 06.11.2026 richtig).
 - Der Frame-Zähler (Backup-Register 3) überlebt das Flashen, solange der Akku dran bleibt (29.10.: 7958 → 7959). Akku ab = POR = Zähler 0.
 - Ausgabe direkt nach dem Flash kann fehlen: Der Logger sendet sofort und geht schlafen; die Startzeile kommt beim nächsten Aufwachen bzw. nach Reset.
 
@@ -158,7 +158,7 @@ stty -F /dev/ttyUSB0 9600 cs8 -parenb -cstopb raw -echo
 scripts/seriell-log.sh start                 # "start" kann auch entfallen
 ```
 
-Erwartet: stm32loader meldet die UID des Geräts (siehe Tabelle unten) und `Verification OK`. `-g` startet die Firmware sofort, die erste Startzeile ist meist schon vorbei, bevor das Log läuft. Die nächste kommt beim nächsten Aufwachen (bis zu ein Intervall später): `Name: beelogger08 …`, `Bat. [V]` plausibel. Die OTAA-Session übersteht das Flashen, solange der Akku dran bleibt (kein Neu-Join; bei TTN: FCnt 46 vor dem Flashen, 47 direkt nach dem Start durch `-g`, 48 beim nächsten Aufwachen, Session unverändert seit 06.11.).
+Erwartet: stm32loader meldet die UID des Geräts (siehe Tabelle unten) und `Verification OK`. `-g` startet die Firmware sofort, die erste Startzeile ist meist schon vorbei, bevor das Log läuft. Die nächste kommt beim nächsten Aufwachen (bis zu ein Intervall später): `Name: beelogger08 …`, `Bat. [V]` plausibel. Die OTAA-Session übersteht das Flashen, solange der Akku dran bleibt (kein Neu-Join; bei TTN: FCnt 46 vor dem Flashen, 47 direkt nach dem Start durch `-g`, 48 beim nächsten Aufwachen, Session unverändert; Datum der Messung ungeprüft).
 
 BluePill (F103): `-e bluepill_f103c8`, `-f F1`, `.pio/build/bluepill_f103c8/firmware.bin`.
 

@@ -23,7 +23,7 @@ Vollständig in [`aenderungen_gegen_260705.diff`](aenderungen_gegen_260705.diff)
    - Neu-Join: nach Power-On-Reset (Akku ab), bei ungültigem Datum, ab FCnt 16000 und nach 3 Tagen ohne Antwort auf den täglichen LinkCheckReq (1 Downlink/Tag).
    - Join-Versuch höchstens 60 s pro Zyklus; ohne Erfolg neuer Versuch im nächsten Zyklus.
    - LMIC: Join-Code eingeschaltet (`DISABLE_JOIN` aus), LinkCheckReq/-Ans ergänzt, als Kopie in `src/lmic_otaa/` (die Bibliothek in `lib/` bleibt original). ABP-Geräte joinen nie (DevAddr ist gesetzt), Build ca. 0,7 KB größer.
-7. **ADR aus** (`LMIC_setAdrMode(0)` in `setup_LORA()`): Die LMIC schaltet ADR in `LMIC_reset()` ein, die Firmware beantwortet aber keine LinkADRReq. Uplinks tragen kein ADR-Bit mehr. TTN-Einstellung „ADR Disabled“ bleibt empfohlen für Altgeräte. Noch nicht auf Gerät getestet.
+7. **ADR aus** (`LMIC_setAdrMode(0)` in `setup_LORA()`): Die LMIC schaltet ADR in `LMIC_reset()` ein, die Firmware beantwortet aber keine LinkADRReq. Uplinks tragen kein ADR-Bit mehr. TTN-Einstellung „ADR Disabled“ bleibt empfohlen für Altgeräte. Getestet: Uplinks tragen `"adr": false` (07.11.2026, beelogger08 OTAA und beeloggerblue05 ABP, [planung_otaa_downlink.md](planung/planung_otaa_downlink.md)).
 8. **Software-Watchdog und I2C-Bus freitakten** (`STM32_LORA_utility.ino`, Aufruf in `loop()`): Hängt ein Sensor oder das Funkmodul, blieb der Logger bisher bis zum Stromausfall stehen (auch im Original). Jetzt zählt TIM4 im Sekundentakt, nur in der Wachphase: Sensoren 60 s, LoRa 100 s, Schlaf vorbereiten 20 s. Läuft eine Phase über, merkt sich der Logger das im Backup-Register (F1: 10, F4: 14) und startet neu. Nach einem Sensor-Hänger misst er einmal ohne I2C-Sensoren und sendet; nach einem LoRa-Hänger oder zwei Neustarts in Folge schläft er bis zum nächsten Termin. Vor der Sensorabfrage wird ein hängender I2C-Bus (SDA low) mit bis zu 9 Takten freigegeben. Der Hardware-Watchdog (IWDG) passt nicht, weil er im Standby weiterläuft und den Logger alle ~26 s wecken würde. Bricht die LMIC mit `hal_failed()` ab (z. B. Funkmodul antwortet beim Start nicht), sperrte sie bisher alle Interrupts und blieb stehen, sodass auch der Watchdog nicht mehr griff; in der LMIC-Kopie ruft `hal_failed()` jetzt `lmic_fehler()` aus dem Sketch auf (Phase merken, Neustart). Build ca. 2 KB größer.
    - Getestet 07.11.2026 auf BluePill F103 mit simulierten Hängern: Sensor-Hänger → Neustart nach 60 s → ohne I2C gemessen und gesendet (in TTN angekommen); zweiter Neustart in Folge → Zyklus ausgelassen; LMIC-Fehler → sofort Neustart, Zyklus ausgelassen. Den LMIC-Totalhänger hat ein defektes RFM95 im Test tatsächlich ausgelöst. SDA fest an GND bzw. SDA mit SCL kurzgeschlossen (BME280, BH1750) führt dagegen zu keinem Hänger: Der STM32-Kern bricht die I2C-Zugriffe per Timeout ab, die Sensoren liefern -1, gesendet wird normal.
 
@@ -43,7 +43,7 @@ Die Kennung `l_ID` hat die Form JJMMTT. Grundlage dieses Repos ist **260705** (`
 | Fehler | Folge | Stand |
 |---|---|---|
 | `prep_payload()` prüft `LMIC.seqnoUp % 10`, bevor `seqnoUp` gesetzt ist | Sketch-ID (`TYPE_AUX2` bzw. Feld `Aux3`, 4 Byte) in **jedem** Uplink statt in jedem 10. → mehr Airtime | behoben: `LoRaSeqCounter % 10` |
-| Kein Watchdog: hängt ein I2C-Sensor (gestörter Bus) oder das Funkmodul, bleibt die Firmware stehen | Logger sendet nicht mehr bis zum Stromausfall (auch Original 260705) | Software-Watchdog + I2C freitakten (Änderung 8), getestet |
+| Kein Watchdog: hängt ein I2C-Sensor (gestörter Bus) oder das Funkmodul, bleibt die Firmware stehen | Logger sendet nicht mehr bis zum Stromausfall (auch Original 260705) | Software-Watchdog + I2C freitakten (Änderung 8), getestet (Commit 23656a4, 07.11.2026) |
 | LMIC `hal_failed()` (z. B. Funkmodul antwortet nicht) sperrt die Interrupts und hält an | Logger steht bis zum Stromausfall, auch ein Timer-Watchdog greift nicht (auch Original) | `hal_failed()` ruft `lmic_fehler()` → Neustart (Änderung 8) |
 | Backup-Register 4 `WeckIntervallMinuten` wird geschrieben, aber nirgends gelesen | toter Code, Register belegt | unverändert, nur dokumentiert |
 | TTN-Vorgabe RX2 = SF12 (DR0), Firmware hört auf SF9 (DR3) | TTN schickt Antworten ins Leere und wiederholt MAC-Befehle („Downlink-Schleife“), bis zu 288 Downlinks/Tag | TTN auf Rx2 DR 3 stellen (siehe [ttn_einrichten.md](ttn_einrichten.md#7-mac-einstellungen-im-detail-abp-lmic-dieser-firmware)) |
@@ -60,10 +60,10 @@ Die Kennung `l_ID` hat die Form JJMMTT. Grundlage dieses Repos ist **260705** (`
 
 | Paket | Inhalt | Stand |
 |---|---|---|
-| 1 | Grundlage: PlatformIO-Build für Blue und Black, Startzeile | fertig |
-| 2 | Sendeintervall per Downlink FPort 10 (ABP), Sketch-ID-Fehler | fertig, auf Blue und Black getestet |
-| 3 | OTAA | fertig, auf Blue (F103) und Black (F411) getestet: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Wiederanlauf aus dem Flash |
-| – | ADR aus, Software-Watchdog (Kennung 261107) | fertig, im Dauerlauf |
+| 1 | Grundlage: PlatformIO-Build für Blue und Black, Startzeile | fertig (Abnahme 06.11.2026, [Planung](planung/planung_otaa_downlink.md) Z. 209) |
+| 2 | Sendeintervall per Downlink FPort 10 (ABP), Sketch-ID-Fehler | fertig, auf Blue und Black getestet (06.11.2026, Planung Z. 246 und Z. 291) |
+| 3 | OTAA | fertig, auf Blue (F103) und Black (F411) getestet: Join, Neustart ohne Join, Neu-Join nach Stromausfall, Wiederanlauf aus dem Flash (06./07.11.2026, Planung Z. 264, 276, 283) |
+| – | ADR aus, Software-Watchdog (Kennung 261107) | fertig, Hardware-Test Commit 23656a4 (07.11.2026); Uplinks mit 261107 von beeloggerblue05 gemessen 19.11.2026 09:10 UTC (TTN) |
 | – | ATmega-LoRa 250326 → 261107 (ABP) und 261108, seit 19.11.2026 261119 (OTAA) | baut für Pro Mini 8/16 MHz und Nano; OTAA seit 08.11.2026 im Dauerlauf auf Uno |
 | 7/8 | Serverquittung FPort 11: Uhr und Intervall vom Server | in `main` (PR #1, 19.11.2026), auf Blue und Black getestet, Dauerlauf-Ergebnis in [fragen.md](fragen.md) |
 | 4 | Doku: Architektur, Payload, Intervalle, Server, TTN | Text fertig (08.11.2026); Bildschirmfotos folgen |

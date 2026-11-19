@@ -66,6 +66,7 @@ KEIN_ZUSTAND = [
     ("docs/fehlersuche.md", "Downlink geplant, kommt nie an"),
     ("docs/hardware.md", "Fertigungsdaten"),
     ("docs/ttn_downlink_schleife.md", "ältere Sketches ohne Überlauf | läuft weiter"),
+    ("docs/ttn_downlink_schleife.md", "noch offene MAC-Befehle"),
 ]
 
 def absaetze(txt):
