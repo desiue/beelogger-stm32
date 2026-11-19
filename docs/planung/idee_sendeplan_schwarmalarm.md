@@ -47,7 +47,7 @@ Bei B–D kann ein Sofort-Uplink kurz nach dem regulären kommen. Der Server ign
 | S3 | **Solarstrom im Sommer** für Wiegen jede Minute (Abschnitt „Offene Frage: Reicht im Sommer der Strom …“) | Testlogger | D | offen |
 | S4 | **Diebstahl-Test:** jede Minute wiegen, nur bei Änderung senden | Testlogger, eigener Server | D | offen |
 | S5 | **Server:** Verwirft beelogger.de die Sofort-Uplinks? Wenn ja, nimmt der eigene Server sie an (Sperre dort für diese Quads anpassen), der Community-Server bleibt unverändert | eigener Server | B–D | offen |
-| S6 | **Firmware:** Wiegen und Senden trennen, alles per Downlink verstellbar: Wiegeabstand (ab 1 min), Sendeabstand Tag/Nacht, Grenze Tag/Nacht, Schwelle für Sofort-Senden. Vorgabe = heutiges Verhalten (A). | Repo, Testlogger | Feld-Flash | offen |
+| S6 | **Firmware:** Wiegen und Senden trennen, alles per Downlink verstellbar: Wiegeabstand (ab 1 min), Sendeabstand Tag/Nacht, Grenze Tag/Nacht, Schwelle für Sofort-Senden. Vorgabe = heutiges Verhalten (A). Format und Bauschritte: „Entwurf Kommando-Format FPort 12“ und „Plan S6“ unten. | Repo, Testlogger | Feld-Flash | Entwurf 19.11., nicht gebaut |
 | S7 | **Feld-Flash erst nach S6** (auf Testloggern geprüft), damit die Feld-Logger nur einmal geflasht werden | Nutzer | Feld-Flash | entschieden 19.11. (Nutzer): erst nach S6, bis dahin laufen die Feld-Logger unverändert |
 | S9 | **Weitere Fern-Einstellungen per eigenem Downlink-Kommando:** Was soll außer Wiegen/Senden noch verstellbar sein? Kandidaten: Tabelle im Abschnitt „Was soll dann noch aus der Ferne verstellbar sein?“, Waagenkonfiguration (Nutzer 06.11.). Muss vor S6 feststehen: Das Kommando-Format kommt mit dem einen Feld-Flash ins Feld und muss erweiterbar sein. | Gespräch mit Nutzer | S6, Feld-Flash | entschieden 19.11. (Nutzer), siehe „Ergebnis S9“ unten |
 | S8 | **Branch:** Parameteränderungen (Intervalle) brauchen keinen eigenen Branch (Nutzer 19.11.), Absatz „Einordnung“ oben ergänzt | – | – | erledigt 19.11. |
@@ -65,7 +65,53 @@ Der Nutzer hat jeden Punkt einzeln entschieden. Das ist die Vorgabe für S6, noc
 | Uhr stellen, festes Intervall | unverändert über FPort 11 und FPort 10, weil `lora_downlink.php` auf dem Server darauf aufbaut | wie heute |
 | Waagenkonfiguration (Tara, Kalibrierfaktor) | **nicht** per Downlink, bleibt vor Ort (Prüfgewicht, Flashen bzw. seriell). Grund: Kalibrieren braucht ein Prüfgewicht am Stand, ein Wechsel am laufenden Logger macht Sprünge in der Gewichtskurve | – |
 
-Vorschlag für das Format (nächster Schritt, noch zu entwerfen): eigener FPort, darin Kommando-Nummer und Wert, mehrere Kommandos in einem Downlink, unbekannte Nummern werden übersprungen. So bleibt das Format erweiterbar. Nachrüsten neuer Kommandos braucht trotzdem einen neuen Flash.
+### Entwurf Kommando-Format FPort 12 (19.11.2026, noch nicht gebaut)
+
+Grundlage im Code: FPort 10 (1 Byte Intervall) und FPort 11 (7 Byte Serverquittung) werten nur genau ihre Länge aus (`src/STM32_LORA.ino:746`, `:754`). FPort 12 ist im Repo nicht belegt (grep 19.11.). FPort 10 und 11 bleiben unverändert.
+
+**Aufbau:** Byte 0 = Format-Version (`01`), danach beliebig viele Blöcke `Kommando (1 Byte) · Länge (1 Byte) · Daten`. Über die Länge springt der Logger über Kommandos, die er nicht kennt. So bleibt das Format für spätere Firmware erweiterbar, ohne dass eine alte Firmware stolpert.
+
+**Regeln:**
+- Erst alles prüfen, dann ausführen. Passt eine Länge nicht oder liegt ein Wert außerhalb seines Bereichs, verwirft der Logger den **ganzen** Downlink und sendet keine Quittung. Es gibt also nie einen halb übernommenen Plan.
+- Angenommen → im nächsten Uplink Service = 90 (Wert noch mit den Entwicklern abstimmen).
+- Plan-Werte (`01`–`08`) werden gesammelt und nur einmal am Ende in den Flash geschrieben, und nur, wenn sich etwas geändert hat.
+- Größe: Ein kompletter Plan (`01`–`08`) hat 26 Byte. Das passt auch bei SF12 (höchstens 51 Byte Nutzdaten in EU868).
+
+| Kom. | Länge | Inhalt | Bereich | Speicher |
+|---|---|---|---|---|
+| `01` | 1 | Wiegeabstand Tag [min] | 1–60 | Flash |
+| `02` | 1 | Wiegeabstand Nacht [min] | 1–60 | Flash |
+| `03` | 1 | Sendeabstand Tag [min] | 5–180, Raster 5 | Flash |
+| `04` | 1 | Sendeabstand Nacht [min] | 5–180, Raster 5 | Flash |
+| `05` | 1 | Solargrenze Tag/Nacht [0,05 V] | 0–255 (0 = immer Tag) | Flash |
+| `06` | 1 | Winter-Temperatur [0,5 °C, mit Vorzeichen] | −64…+63,5 °C, `80` = aus | Flash |
+| `07` | 1 | Sendeabstand Winter [min] | 5–180, Raster 5 | Flash |
+| `08` | 2 | Schwelle Sofort-Senden [g], big endian | 0 = aus, 50–65 535 | Flash |
+| `0F` | 0 | Plan auf Vorgabe der Firmware zurücksetzen (Flash-Eintrag löschen) | – | Flash |
+| `10` | 3 | Für eine Weile anders: Wiegen [min], Senden [min], Dauer [h] | 1–60, 5–180, 0–72 (0 = sofort beenden) | Backup-Register |
+| `20` | 3 | Neustart: Art (`01` = Neustart, `02` = Neustart + Session verwerfen und neu joinen), Prüfwert = letzte 2 Byte der DevAddr | Prüfwert muss passen; bei ABP wirkt `02` wie `01` | – |
+| `30` | 0 | Status senden | reserviert, ohne Wirkung, bis Decoder und Webhook geprüft sind | – |
+
+Der Neustart läuft erst nach dem Uplink-Ende (nicht im RX-Fenster), damit die Quittung nicht verloren geht: Die Quittung 90 kommt nach dem Neustart im ersten Uplink. Den Prüfwert zeigt die TTN-Konsole unter *Device address*, und die Firmware kennt ihn bei ABP und OTAA (`LMIC.devaddr`).
+
+**Beispiele**
+- Variante B (wiegen 5, senden Tag 10 / Nacht 10, Sofort ab 500 g): `01 01 01 05 02 01 05 03 01 0A 04 01 0A 08 02 01 F4`
+- Kontrolle nach Eingriff, 6 h lang jede Minute wiegen und alle 5 min senden: `01 10 03 01 05 06`
+- Neustart mit neuem Join, DevAddr endet auf `…3F A1`: `01 20 03 02 3F A1`
+
+**Rangfolge im Logger** (höchste zuerst): Arbeitsschalter (Service-Modus) → Akkusparmodus (`AlternativIntervallMinuten`) → „für eine Weile anders“ → FPort 10/11 (festes Intervall, wie heute) → Plan aus dem Flash → Vorgabe aus `Config_LORA.h`. Heute ersetzt FPort 10 den Plan, der Akkusparmodus bleibt vorrangig (`src/STM32_LORA_utility.ino:381`, `:383`).
+
+**Speicher:** EEPROM-Emulation des STM32-Cores (letzter Flash-Sektor, auf dem F411 sind das 128 KB), mit Format-Version und Prüfsumme. Ist der Eintrag ungültig oder fehlt er, gilt `Config_LORA.h`. Ungeprüft, auf dem Testlogger messen: Löschzeit und Strom beim Schreiben, und ob der Eintrag ein Firmware-Update per DFU übersteht (gewollt, die Version im Eintrag fängt Formatwechsel ab).
+
+### Plan S6: was in der Firmware zu bauen ist
+
+1. **Weckraster 1 min:** Heute rastet die Weckzeit auf 5 min (`tt - tt % 300`, `src/STM32_LORA_utility.ino:389`) und ist mindestens 5 min (`:387`). Neu: Weckraster = Wiegeabstand (60-s-Raster). Die 5-min-Grenze gilt nur noch für den Sendeabstand.
+2. **Wiegen ohne Senden:** Aufwachen, messen, Werte merken, nur bei fälligem Sendeabstand oder Sofort-Schwelle senden. Bei Sofort-Senden höchstens alle 250 s (Server-Sperre, siehe „Fragen an die Entwickler“ Nr. 3 und S5).
+3. **Sofort-Schwelle:** Gewichtsänderung gegenüber dem zuletzt **gesendeten** Wert, je Waage, ab Schwelle (`08`). An `Sensor_Gewicht()` (`src/beelogger_HX711_STM.ino:16`) anbinden.
+4. **Tag/Nacht/Winter aus dem Flash-Plan**, unabhängig von `WeckIntervall_aktiv`/`SOLAR_ZYKLUS_aktiv`. Die Feld-Konfigurationen haben beide auf 0 (geprüft 19.11., `lokal/feld-kit/cfg/q*/Config_LORA.h`), ohne Flash-Eintrag bleibt ihr Verhalten also wie heute 5/5.
+5. **FPort-12-Auswertung** nach obiger Tabelle, Quittung 90, Neustart nach Uplink-Ende, Neu-Join über `otaa_clear()` (`src/STM32_LORA.ino:126`).
+6. **Tests auf Testloggern** (nicht Q1/2/5/6/7): jedes Kommando einzeln, ungültige Downlinks (falsche Länge, Wert außerhalb, unbekanntes Kommando dazwischen), Akku ab → Plan bleibt, „für eine Weile“ läuft ab, Neustart/Neu-Join, Strom je Wiegung (S2). Bauen für F411 und F103, Flash-Größe notieren.
+7. **Doku:** `payload.md` (FPort 12), `intervalle.md`, `speicher.md`, TTN-Anleitung mit Beispielen.
 
 ### Auswirkung auf die beelogger-App (Code gelesen 19.11., Repo `beelogger_app`)
 
