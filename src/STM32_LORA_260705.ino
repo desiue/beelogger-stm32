@@ -100,7 +100,7 @@
 
 
 char ID_ID[16] = "STM32_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
-long l_ID = 261107;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
+long l_ID = 261119;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
 
 #define CFG_noassert 1  // supress error messages in LMIC-library
 
@@ -180,11 +180,22 @@ void setup() {
 void loop() {
 
   Spannungen_messen();
+#if SENDEPLAN
+  s6_start();
+  float v_alt = s6_akku_schwelle();  // ohne Flash-Plan = VAlternativ
+  float v_normal = v_alt + 0.1;      // wie VSysnormal
+  if (Batteriespannung < v_alt) akku_save = 1;
+  if (Batteriespannung > v_normal) akku_save = 0;
+#else
   if (Batteriespannung < VAlternativ) akku_save = 1;
   if (Batteriespannung > VSysnormal) akku_save = 0;
+#endif
   // Software-Watchdog: nach LoRa-Hänger oder zweitem Neustart in Folge gleich schlafen
   bool wdt_schlafen = (wdt_vorher >= 2) || (wdt_anzahl >= 2);
   if (wdt_schlafen) debugprintlnF("WDT: Zyklus ausgelassen");
+#if SENDEPLAN
+  if (s6_still()) wdt_schlafen = true;  // Neustart per FPort 12: bis zum nächsten Termin schlafen
+#endif
   if ((Batteriespannung > VMinimum) && !wdt_schlafen) {
     uint8_t ureq = User_Int_req();
     wdt_start(1, 60);  // Phase 1: Sensoren
@@ -192,6 +203,16 @@ void loop() {
     if (mit_i2c) i2c_bus_frei();
     else debugprintlnF("WDT: ohne I2C-Sensoren");
     if (ureq) {  // service switch on? or "time is over"
+#if SENDEPLAN
+      bool senden = s6_senden_faellig();  // alter Pfad: immer
+      bool gewogen = false;
+      if (!senden) {                      // nur wiegen, senden bei Sofort-Schwelle
+        Sensor_Gewicht(0);
+        gewogen = true;
+        senden = s6_sofort();
+      }
+      if (senden) {
+#endif
       Sensor_Temp_Zelle(0);
       Sensor_DHT();
       Sensor_DS18B20();
@@ -201,10 +222,21 @@ void loop() {
         Sensor_Si7021();
         Sensor_SHT31();
       }
+#if SENDEPLAN
+      if (!gewogen)
+#endif
       Sensor_Gewicht(0);
       Sensor_Temp_Zelle(1);
       wdt_start(2, 100);  // Phase 2: LoRa (Join bis 60 s)
+#if SENDEPLAN
+      s6_vor_senden();    // Quittung 90
+#endif
       Daten_Senden();  // only when service "off" or "time is over"
+#if SENDEPLAN
+      s6_gesendet();
+      s6_nach_senden();   // Downlink FPort 12 ausführen (Flash, Kommando 10, Neustart)
+      }
+#endif
     } else {
       Sensor_Gewicht(1);
     }

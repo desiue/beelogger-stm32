@@ -766,6 +766,11 @@ void onEvent(ev_t ev) {
         }
         if (d[6] >= 5 && d[6] <= 60) FernIntervall = d[6] - d[6] % 5;
       }
+#if SENDEPLAN
+      // Downlink FPort 12: Sendeplan-Kommandos (STM32_sendeplan.ino), ausgeführt nach dem Uplink
+      if ((LMIC.txrxFlags & TXRX_PORT) && LMIC.dataLen >= 1 && LMIC.frame[LMIC.dataBeg - 1] == 12)
+        s6_downlink(&LMIC.frame[LMIC.dataBeg], LMIC.dataLen);
+#endif
       inc_LoRaSeq();
       flag_TXCOMPLETE = true;
       break;

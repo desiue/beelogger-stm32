@@ -18,6 +18,11 @@
 #define WeckIntervall_default 15
 #define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht = Akku fast leer
 const float VSysnormal = VAlternativ + 0.1; // Spannung ab der in den Normalbetrieb gewechselt wird
+#if defined(STM32F4xx)
+#define SENDEPLAN 1  // S6: Wiegen/Senden getrennt, Plan per FPort 12 (STM32_sendeplan.ino)
+#else
+#define SENDEPLAN 0  // F1: 16-Bit-Backup-Register sind belegt
+#endif
 
 /****************************************************************/
 // Änderung Gewicht in Kilogramm bei der Daten versenden erfolgt

@@ -331,6 +331,9 @@ void Alarm_konfigurieren() {
   if (time_on > 255) {             // Power On Reset or invalid date
     time_on = 0;
   }
+#if SENDEPLAN
+  if (s6_time_on_null()) time_on = 0;  // nach Neustart per FPort 12: nächster Uplink meldet Service 0
+#endif
 
   if (digitalRead(WakeUp_Pin) == true)  // service mode ongoing
   { // PA0 Switch on/off only, no interrupt; important!
@@ -384,9 +387,17 @@ void Alarm_konfigurieren() {
     IntervallMinuten = AlternativIntervallMinuten;
   }
 
+  uint32_t raster = 300;
+#if SENDEPLAN
+  bool service = stuck_switch && (stuck_switch < (USER_INT_TM / INTERVAL_STUCK_SWITCH));
+  if (!service && s6_neu()) {  // Flash-Plan oder Kommando 10: Weckabstand = Wiegeabstand
+    IntervallMinuten = s6_wiegen_min();
+    raster = 60UL * IntervallMinuten;
+  } else
+#endif
   if (IntervallMinuten < 5) IntervallMinuten = 5;  // LoRaWan usage restrictions
   tt = ttim + (uint32_t)(IntervallMinuten * 60);   // calculate next wakeup
-  tt = tt - tt % 300;   // synchronize wakeup step, set seconds to zero
+  tt = tt - tt % raster;   // synchronize wakeup step, set seconds to zero
   tt--;                 // prevent wakeup at xx:00:00
 
 #if myDEBUG
@@ -475,6 +486,9 @@ void get_data_from_ram() {
     stuck_switch = (uint8_t) (reg & 0x001f);    // lower five bits  0 ... 31
     if (reg & 0x0100) akku_save = 1;            // upper one bit 0 / 1
     FernIntervall = ((reg >> 9) & 0x3f) * 5;    // bit 9-14: Downlink-Intervall / 5 (alte Firmware: 0)
+#if SENDEPLAN
+    s6_bkp_lesen();                             // Register 15-18
+#endif
 
 #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
     reg = (uint16_t)getBackupRegister(1);
@@ -539,6 +553,9 @@ void save_data_to_ram() {
   setBackupRegister(8, reg);
   reg = (uint32_t) (LetztesGewicht[3] * 100.0);
   setBackupRegister(9, reg);
+#if SENDEPLAN
+  s6_bkp_schreiben();                           // Register 15-18
+#endif
 
 }
 
