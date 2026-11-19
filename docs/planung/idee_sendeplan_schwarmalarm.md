@@ -49,6 +49,7 @@ Bei B–D kann ein Sofort-Uplink kurz nach dem regulären kommen. Der Server ign
 | S5 | **Server:** Verwirft beelogger.de die Sofort-Uplinks? Wenn ja, nimmt der eigene Server sie an (Sperre dort für diese Quads anpassen), der Community-Server bleibt unverändert | eigener Server | B–D | offen |
 | S6 | **Firmware:** Wiegen und Senden trennen, alles per Downlink verstellbar: Wiegeabstand (ab 1 min), Sendeabstand Tag/Nacht, Grenze Tag/Nacht, Schwelle für Sofort-Senden. Vorgabe = heutiges Verhalten (A). | Repo, Testlogger | Feld-Flash | offen |
 | S7 | **Feld-Flash erst nach S6** (auf Testloggern geprüft), damit die Feld-Logger nur einmal geflasht werden | Nutzer | Feld-Flash | entschieden 19.11. (Nutzer): erst nach S6, bis dahin laufen die Feld-Logger unverändert |
+| S9 | **Weitere Fern-Einstellungen per eigenem Downlink-Kommando:** Was soll außer Wiegen/Senden noch verstellbar sein? Kandidaten: Tabelle im Abschnitt „Was soll dann noch aus der Ferne verstellbar sein?“, Waagenkonfiguration (Nutzer 06.11.). Muss vor S6 feststehen: Das Kommando-Format kommt mit dem einen Feld-Flash ins Feld und muss erweiterbar sein. | Gespräch mit Nutzer | S6, Feld-Flash | offen |
 | S8 | **Branch:** Parameteränderungen (Intervalle) brauchen keinen eigenen Branch (Nutzer 19.11.), Absatz „Einordnung“ oben ergänzt | – | – | erledigt 19.11. |
 
 ### Auswirkung auf die beelogger-App (Code gelesen 19.11., Repo `beelogger_app`)
