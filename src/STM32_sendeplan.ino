@@ -7,9 +7,12 @@
 /****************************************************************/
 #if SENDEPLAN
 
-// Plan-Felder; Kommando 01-07 = Index 0-6, 08 = zwei Byte, 09/0A = Akkusparmodus
-enum { P_WT, P_WN, P_ST, P_SN, P_SOLAR, P_WTEMP, P_SW, P_SOF_H, P_SOF_L, P_AKKU_V, P_AKKU_S, P_ANZ };
-#define S6_MAGIC 0xB1          // Format-Version des Flash-Eintrags
+// Plan-Felder; Kommando 01-07 = Index 0-6, 08 = zwei Byte, 09/0A = Akkusparmodus, 0B = Arbeitsschalter
+enum { P_WT, P_WN, P_ST, P_SN, P_SOLAR, P_WTEMP, P_SW, P_SOF_H, P_SOF_L, P_AKKU_V, P_AKKU_S, P_USER, P_ANZ };
+#define S6_MAGIC 0xB2          // Format-Version des Flash-Eintrags (B1: 11 Werte, wird nicht mehr gelesen)
+#define S6_WORTE 4             // Datenworte im Flash: Magic + bis zu 15 Werte, danach ein Wort Prüfsumme
+// Höchstdauer Arbeitsschalter ohne Flash-Plan: USER_INT_TM aus Config, 5-150 min, Raster 5 (wie bisher)
+#define S6_USER_VORGABE ((USER_INT_TM > 150 ? 150 : (USER_INT_TM < 5 ? 5 : USER_INT_TM)) / 5 * 5)
 #define S6_KEIN_GEW (-32768)   // kein gesendetes Gewicht gemerkt
 
 // Backup-Register (14 = Software-Watchdog, 10-13 = OTAA-Session):
@@ -55,6 +58,7 @@ bool s6_wert_ok(uint8_t i, uint8_t v) {
     case P_ST: case P_SN: case P_SW: return v >= 5 && v <= 180 && v % 5 == 0;
     case P_AKKU_V: return (uint16_t)v * 5 >= (uint16_t)(VMinimum * 100 + 0.5) + 5;  // mindestens VMinimum + 0,05 V
     case P_AKKU_S: return v >= 30 && v <= 240 && v % 5 == 0;
+    case P_USER: return v >= 5 && v <= 240 && v % 5 == 0;
     default: return true;  // Solargrenze, Winter-Temperatur; Sofort-Schwelle in s6_plan_ok()
   }
 }
@@ -74,6 +78,7 @@ void s6_vorgabe(uint8_t* p) {  // ohne Flash-Plan: wie heute, Wiegen = Senden = 
   p[P_SOF_H] = p[P_SOF_L] = 0;
   p[P_AKKU_V] = (uint8_t)(VAlternativ * 20 + 0.5);
   p[P_AKKU_S] = AlternativIntervallMinuten;
+  p[P_USER] = S6_USER_VORGABE;
 }
 
 // letzter Flash-Sektor (F401/F411: 128 KB); 0 = Chip zu klein oder Programm reicht hinein
@@ -87,16 +92,17 @@ uint32_t s6_sektor(uint32_t* nr) {
   return a;
 }
 
-uint32_t s6_summe(uint32_t a, uint32_t b, uint32_t c) { return ~(a + 3 * b + 7 * c) ^ 0x5E4D3C2B; }
+uint32_t s6_summe(const uint32_t* w) { return ~(w[0] + 3 * w[1] + 7 * w[2] + 13 * w[3]) ^ 0x5E4D3C2B; }
 
 bool s6_flash_lesen(uint8_t* p) {
   uint32_t a = s6_sektor(0);
   if (a == 0) return false;
   const volatile uint32_t* f = (const volatile uint32_t*)a;
-  uint32_t w[4] = { f[0], f[1], f[2], f[3] };
-  if ((w[0] & 0xFF) != S6_MAGIC || w[3] != s6_summe(w[0], w[1], w[2])) return false;
-  uint8_t q[12];
-  for (uint8_t i = 0; i < 12; i++) q[i] = w[i / 4] >> (8 * (i % 4));
+  uint32_t w[S6_WORTE + 1];
+  for (uint8_t i = 0; i <= S6_WORTE; i++) w[i] = f[i];
+  if ((w[0] & 0xFF) != S6_MAGIC || w[S6_WORTE] != s6_summe(w)) return false;
+  uint8_t q[4 * S6_WORTE];
+  for (uint8_t i = 0; i < 4 * S6_WORTE; i++) q[i] = w[i / 4] >> (8 * (i % 4));
   if (!s6_plan_ok(q + 1)) return false;
   memcpy(p, q + 1, P_ANZ);
   return true;
@@ -106,10 +112,11 @@ bool s6_flash_schreiben(const uint8_t* p) {  // p = 0: Eintrag löschen
   uint32_t nr;
   uint32_t a = s6_sektor(&nr);
   if (a == 0) return false;
-  uint32_t w[4] = { S6_MAGIC, 0, 0, 0 };
+  static_assert(P_ANZ + 1 <= 4 * S6_WORTE, "Plan passt nicht in S6_WORTE");
+  uint32_t w[S6_WORTE + 1] = { S6_MAGIC };
   if (p) {
     for (uint8_t i = 0; i < P_ANZ; i++) w[(i + 1) / 4] |= (uint32_t)p[i] << (8 * ((i + 1) % 4));
-    w[3] = s6_summe(w[0], w[1], w[2]);
+    w[S6_WORTE] = s6_summe(w);
   }
   FLASH_EraseInitTypeDef e = {};
   e.TypeErase = FLASH_TYPEERASE_SECTORS;
@@ -120,7 +127,7 @@ bool s6_flash_schreiben(const uint8_t* p) {  // p = 0: Eintrag löschen
   HAL_FLASH_Unlock();
   __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
   bool ok = HAL_FLASHEx_Erase(&e, &err) == HAL_OK;
-  for (uint8_t i = 0; ok && p && i < 4; i++) ok = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, a + 4 * i, w[i]) == HAL_OK;
+  for (uint8_t i = 0; ok && p && i <= S6_WORTE; i++) ok = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, a + 4 * i, w[i]) == HAL_OK;
   HAL_FLASH_Lock();
   __HAL_FLASH_DATA_CACHE_DISABLE();  // Rücklesen nicht aus dem Cache
   __HAL_FLASH_DATA_CACHE_RESET();
@@ -145,6 +152,12 @@ void s6_start() {  // Anfang loop(): Plan laden, Kommando 10 abgelaufen?
     debugprintF("S6: Plan "); debugprint(s6_aktiv);
     debugprintF(" K10 "); debugprint(s6_stat & 0xFF); debugprintF("/"); debugprintln((s6_stat >> 8) & 0xFF);
   }
+}
+
+// Arbeitsschalter: Anzahl 5-min-Prüfungen bis zum Ende der Pause (vor s6_start() noch die Vorgabe)
+uint8_t s6_user_n() {
+  uint8_t m = s6_wert_ok(P_USER, s6p[P_USER]) ? s6p[P_USER] : S6_USER_VORGABE;
+  return m / INTERVAL_STUCK_SWITCH;
 }
 
 float s6_akku_schwelle() { return s6_aktiv ? s6p[P_AKKU_V] * 0.05f : VAlternativ; }
@@ -231,8 +244,8 @@ void s6_downlink(const uint8_t* d, uint8_t n) {
     if (i + 2 > n || i + 2 + d[i + 1] > n) { ok = false; break; }
     uint8_t k = d[i], l = d[i + 1];
     const uint8_t* v = d + i + 2;
-    if ((k >= 0x01 && k <= 0x07) || k == 0x09 || k == 0x0A) {
-      uint8_t x = (k <= 0x07) ? k - 1 : (k == 0x09 ? P_AKKU_V : P_AKKU_S);
+    if ((k >= 0x01 && k <= 0x07) || (k >= 0x09 && k <= 0x0B)) {
+      uint8_t x = (k <= 0x07) ? k - 1 : (k == 0x09 ? P_AKKU_V : (k == 0x0A ? P_AKKU_S : P_USER));
       ok = l == 1 && s6_wert_ok(x, v[0]);
       if (ok) { p[x] = v[0]; art |= 1; }
     } else if (k == 0x08) {

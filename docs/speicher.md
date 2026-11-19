@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 19.11.2026 · gilt für: STM32 261107, Sendeplan-Teile nur Branch `s6-sendeplan` (261119, Commit 03b4724) · geprüft gegen Code: Commit 80673f1 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
+Stand: 19.11.2026 · gilt für: STM32 261107, Sendeplan-Teile nur Branch `s6-sendeplan` (261119, Commit 03b4724; Register 5 Bit 0–7 und Flash-Format `B2` gegen den Commit „Arbeitsschalter-Dauer per FPort 12“) · geprüft gegen Code: Commit 80673f1 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 
 Der STM32-Logger schläft zwischen zwei Messungen im **Shutdown** (Standby, `LowPower.shutdown()` in
 `src/STM32_LORA_utility.ino`). Beim Aufwachen startet er wie nach einem Reset, das RAM ist dann leer.
@@ -34,13 +34,13 @@ flowchart LR
 | 1, 2 | letztes Gewicht Waage 1, 2 (× 100) | frei |
 | 3 | LoRa-Frame-Counter (`LoRaSeqCounter`) | ebenso |
 | 4 | Weckintervall (Bit 0–7), Einschaltdauer `time_on` (Bit 8–15) | ebenso |
-| 5 | `stuck_switch` (Bit 0–4), `akku_save` (Bit 8), Fern-Intervall ÷ 5 (Bit 9–14) | ebenso |
+| 5 | `stuck_switch` (Bit 0–4; Branch `s6-sendeplan`: Bit 0–7, `src/STM32_LORA_utility.ino:494`), `akku_save` (Bit 8), Fern-Intervall ÷ 5 (Bit 9–14) | ebenso |
 | 6, 7 | Datum der RTC (die F1-Uhr kennt selbst nur Sekunden, die Bibliothek legt das Datum hier ab) | letztes Gewicht Waage 1, 2 |
 | 8, 9 | letztes Gewicht Waage 3, 4 | ebenso |
 | 10 | Watchdog-Merker | OTAA-Session, Teil 1 |
 | 11–13 | – (gibt es beim F103 nicht) | OTAA-Session, Teil 2–4 |
 | 14 | – | Watchdog-Merker |
-| 15–18 | – | nur Branch `s6-sendeplan`: Sendeplan (letzte Sendung, Ende Kommando 10, Kommando-10-Werte, Merker, zuletzt gesendete Gewichte), `src/STM32_sendeplan.ino:15-19` |
+| 15–18 | – | nur Branch `s6-sendeplan`: Sendeplan (letzte Sendung, Ende Kommando 10, Kommando-10-Werte, Merker, zuletzt gesendete Gewichte), `src/STM32_sendeplan.ino:18-22` |
 
 Quelle: `save_data_to_ram()` / `get_data_from_ram()` in `src/STM32_LORA_utility.ino`, Watchdog `WDT_REG`
 ebenda, OTAA-Session `otaa_rd()`/`otaa_wr()` in `src/STM32_LORA.ino`.
@@ -94,11 +94,14 @@ wird die Seite aus der Chipgröße berechnet und gegen das Programmende geprüft
 ## Sendeplan im Flash beim BlackPill (nur Branch `s6-sendeplan`)
 
 - **Ort:** letzter 128-KB-Sektor, beim F411 (512 KB) Sektor 7 ab `0x08060000`. Nur bei mindestens 256 KB Flash
-  und nur, wenn das Programm nicht hineinreicht, sonst gibt es keinen Flash-Plan (`src/STM32_sendeplan.ino:80-88`).
-- **Inhalt:** 16 Byte: Format-Version `B1`, 11 Plan-Werte, Prüfsumme (`src/STM32_sendeplan.ino:92-104`). Ist der
-  Eintrag ungültig oder fehlt er, gilt `Config_LORA.h` und der alte Code-Pfad.
+  und nur, wenn das Programm nicht hineinreicht, sonst gibt es keinen Flash-Plan (`src/STM32_sendeplan.ino:85-93`).
+- **Inhalt:** 20 Byte: Format-Version `B2`, 12 Plan-Werte (mit Höchstdauer Arbeitsschalter `0B`), Platz für
+  3 weitere, Prüfsumme (`src/STM32_sendeplan.ino:12-13`, `:97-110`). Ist der Eintrag ungültig oder fehlt er, gilt
+  `Config_LORA.h` und der alte Code-Pfad. Einträge im alten Format `B1` (16 Byte, 11 Werte, Testbauten bis Commit
+  20a9bc1) liest die Firmware nicht mehr: Nach dem Flashen den Plan neu schicken (entschieden 19.11.2026, weil
+  nur der Testlogger beelogger08 einen `B1`-Plan hatte).
 - **Geschrieben** wird nur bei einer Plan-Änderung per FPort 12, danach zurückgelesen
-  (`src/STM32_sendeplan.ino:276-283`). Ein 128-KB-Sektor braucht zum Löschen laut F411-Datenblatt typisch 1–2 s (ungeprüft);
+  (`src/STM32_sendeplan.ino:289-296`). Ein 128-KB-Sektor braucht zum Löschen laut F411-Datenblatt typisch 1–2 s (ungeprüft);
   Strom dabei ungemessen.
 - **Übersteht** Schlaf, Reset und Stromausfall (gemessen 19.11.2026 auf beelogger08: Plan nach Reset ohne neuen
   Downlink wieder aktiv).

@@ -269,6 +269,12 @@ void System_ShutDown() {
   @param none
   @return  1 wenn Service inaktiv, 0 wenn Service aktiv
 */
+#if SENDEPLAN
+uint8_t s6_user_n();
+#define USER_INT_N (s6_user_n())  // Plan-Wert per FPort 12 (Kommando 0B), 5-240 min
+#else
+#define USER_INT_N (USER_INT_TM / INTERVAL_STUCK_SWITCH)
+#endif
 uint8_t User_Int_req() {  // User forced Wakeup
   uint8_t ret_val = 1;
 
@@ -291,7 +297,7 @@ uint8_t User_Int_req() {  // User forced Wakeup
     }
     else {
       // return "switch is set", when still on and time is not up
-      if (stuck_switch  < (USER_INT_TM / INTERVAL_STUCK_SWITCH) ) {
+      if (stuck_switch  < USER_INT_N ) {
         ret_val = 0;
         stuck_switch++; // only increment within predefined period
       }
@@ -302,7 +308,9 @@ uint8_t User_Int_req() {  // User forced Wakeup
   }
 
   debugprint (" sw:");
-  debugprintln (stuck_switch);
+  debugprint (stuck_switch);
+  debugprint ("/");
+  debugprintln (USER_INT_N);
   return (ret_val);
 }
 
@@ -345,7 +353,7 @@ void Alarm_konfigurieren() {
   }
   Pwr_flags(); // Clear Flags
 
-  if ((stuck_switch) && (stuck_switch  < (USER_INT_TM / INTERVAL_STUCK_SWITCH)))   // service mode
+  if ((stuck_switch) && (stuck_switch  < USER_INT_N))   // service mode
   {
     IntervallMinuten = INTERVAL_STUCK_SWITCH;     // Check switch every xx minutes
   } else {
@@ -389,7 +397,7 @@ void Alarm_konfigurieren() {
 
   uint32_t raster = 300;
 #if SENDEPLAN
-  bool service = stuck_switch && (stuck_switch < (USER_INT_TM / INTERVAL_STUCK_SWITCH));
+  bool service = stuck_switch && (stuck_switch < USER_INT_N);
   if (!service && s6_neu()) {  // Flash-Plan oder Kommando 10: Weckabstand = Wiegeabstand
     IntervallMinuten = s6_wiegen_min();
     raster = 60UL * IntervallMinuten;
@@ -483,7 +491,7 @@ void get_data_from_ram() {
     time_on = (uint32_t) (reg >> 8);   // max 255sec.
 
     reg = getBackupRegister(5);
-    stuck_switch = (uint8_t) (reg & 0x001f);    // lower five bits  0 ... 31
+    stuck_switch = (uint8_t) (reg & 0x00ff);    // bit 0-7: 0 ... 255 (bis 260705: 5 Bit, Bit 5-7 waren 0)
     if (reg & 0x0100) akku_save = 1;            // upper one bit 0 / 1
     FernIntervall = ((reg >> 9) & 0x3f) * 5;    // bit 9-14: Downlink-Intervall / 5 (alte Firmware: 0)
 #if SENDEPLAN
@@ -534,7 +542,7 @@ void save_data_to_ram() {
   setBackupRegister(4, reg);
 
   reg = 0; if (akku_save)reg = 0x0100;      // set upper bit
-  reg = reg | (stuck_switch & 0x001f);      // lower five bits  0 ... 31
+  reg = reg | (stuck_switch & 0x00ff);      // bit 0-7: 0 ... 255 (240 min / 5 = 48)
   reg = reg | ((uint32_t)(FernIntervall / 5) << 9);  // bit 9-14
   setBackupRegister(5, reg);
 
