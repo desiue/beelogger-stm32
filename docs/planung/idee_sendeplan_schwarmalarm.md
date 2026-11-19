@@ -6,9 +6,60 @@ Stand 07.11.2026, ergänzt 19.11.2026 (Variante 10 min senden / 5 min wiegen), *
 
 **Antwort beelogger-Team (07.11.):** LoRa sendet ohnehin mindestens alle 10 min, forciertes Senden braucht es nicht. Öfter bringt nichts: Der Server ignoriert kurze Abstände (Okt–März 400 s; *Stand Code M41: 220 s, auf community.beelogger.de Okt–Feb 520 s, `beelogger_log.php` Z. 573–574, vom Team am 18.11. bestätigt*), und die Schwarmlogik ist auf den 10-min-Takt ausgelegt (Windböen). Dabei bleibt es. **Status: nicht für `main`**, höchstens als Experiment im eigenen Branch mit eigenem Server.
 
-**Einordnung (07.11.):** `main` bleibt maximal kompatibel zum Original-beelogger und zum Community-Server. Was hier beschrieben ist und Daten oder Verhalten am Server berührt (Zusatz-Uplinks, Service-Quittung, eigener Sendeplan), wird zuerst in einem **eigenen Branch** gebaut und auf einem eigenen beelogger-Server getestet. In `main` kommt es nur, wenn die Entwickler es ausdrücklich wollen.
+**Einordnung (07.11.):** `main` bleibt maximal kompatibel zum Original-beelogger und zum Community-Server. Was hier beschrieben ist und Daten oder Verhalten am Server berührt (Zusatz-Uplinks, Service-Quittung, eigener Sendeplan), wird zuerst in einem **eigenen Branch** gebaut und auf einem eigenen beelogger-Server getestet. In `main` kommt es nur, wenn die Entwickler es ausdrücklich wollen. **Ergänzung 19.11.:** Reine Parameteränderungen (Intervalle) brauchen keinen eigenen Branch, die Original-Firmware hat schon einstellbare Zeiten (Nutzer 19.11.).
 
 **Korrektur 07.11. (nach Lesen der Server-Skripte M40_261004):** Die frühere Annahme „ein Zusatz-Uplink ab 200 s wird gespeichert“ war falsch. Der Server stempelt jede Meldung mit seiner eigenen Uhr, **auf die Minute abgerundet**. Sicher gespeichert wird erst ab **240 s** Abstand, wir planen mit **250 s**. Außerdem hat der Server schon eine eigene Sendeintervall-Steuerung, die bei LoRa nur nicht beim Logger ankommt (Abschnitt „Was die Firmware heute schon kann“).
+
+## Überblick und offene Aufgaben (Stand 19.11.2026)
+
+Roter Faden für alles zu Sendeplan, Schwarm- und Diebstahlerkennung. Die Abschnitte darunter sind die Einzelheiten dazu.
+
+### Ziele
+
+1. **Schwarmalarm:** Gewichtsverlust schnell melden. Der Server alarmiert bei Verlust über `DifferenzGewicht` innerhalb `ReferenzZeit` (M40 `beelogger_log.php` Z. 927–955).
+2. **Diebstahl- und Manipulationsschutz:** Völker werden umgeworfen oder gestohlen, vor allem nachts. Bienenstände wurden schon gestohlen (Nutzer 19.11.). Die schnelle Erkennung muss deshalb auch nachts laufen, nicht nur in der Schwarmzeit (Nutzer 19.11.).
+3. **Sparen:** seltener senden (Akku, Funkzeit, Speicherplatz am Server), ohne die schnelle Erkennung zu verlieren (Nutzer 19.11.).
+4. **Nur einmal flashen:** Die Feld-Logger stehen verteilt an mehreren Ständen. Was später verstellbar sein soll, muss die Firmware beim nächsten Feld-Flash schon können, damit danach Downlinks reichen (Nutzer 19.11.).
+
+### Was die Firmware heute kann
+
+- Jede Wiegung ist ein Uplink, Wiegen und Senden sind nicht getrennt.
+- Per Downlink (FPort 10) ist nur der Sendeabstand verstellbar: 5–180 min im 5-min-Raster (`src/STM32_LORA.ino` Z. 750). Unter 5 min sperrt die Firmware (`src/STM32_LORA_utility.ino` Z. 387).
+- Eine Wiegung alle Minute oder Senden bei Gewichtsänderung braucht also neue Firmware und damit einen Feld-Flash.
+
+### Varianten
+
+| Variante | Wiegen | Senden regulär | Senden bei Änderung | Erkennung nach | Offene Punkte |
+|---|---|---|---|---|---|
+| A (heute) | 5 min | 5 min | – | ≤ 5 min | – |
+| B | 5 min | 10 min | sofort | ≤ 5 min | S1, S2, S5, S6 |
+| C | 5 min | tags 10 min, nachts 15 min | sofort | ≤ 5 min | S1, S2, S5, S6 |
+| D (Diebstahl-Test) | 1 min | 10–15 min | sofort | ≤ 1 min | S1–S6 |
+
+Bei B–D kann ein Sofort-Uplink kurz nach dem regulären kommen. Der Server ignoriert kurze Abstände (siehe Kopf: 220 s, auf community.beelogger.de Okt–Feb 520 s, `beelogger_log.php` Z. 573–574). Bei B–D kommen die Zeilen außerdem unregelmäßig an, was die beelogger-App betrifft (S1).
+
+### Offene Aufgaben
+
+| Nr. | Aufgabe | Wo | Nötig für | Stand |
+|---|---|---|---|---|
+| S1 | **App bewerten:** Ist die Auswirkung (Tabelle unten) schlimm, oder lässt sich die App anpassen (Zeitabstände statt Zeilen zählen)? | App-Projekt `beelogger_app`, übergeben 19.11. | Wahl B/C/D | offen |
+| S2 | **Akku messen:** Ladung je Wiegung ohne Uplink und je Wiegung mit Uplink (Multimeter am Testlogger), daraus der Tagesbedarf von A–D. Erwartung Nutzer: seltener senden schont den Akku (ungeprüft). | Testlogger | Wahl der Variante | offen |
+| S3 | **Solarstrom im Sommer** für Wiegen jede Minute (Abschnitt „Offene Frage: Reicht im Sommer der Strom …“) | Testlogger | D | offen |
+| S4 | **Diebstahl-Test:** jede Minute wiegen, nur bei Änderung senden | Testlogger, eigener Server | D | offen |
+| S5 | **Server:** Verwirft beelogger.de die Sofort-Uplinks? Wenn ja, nimmt der eigene Server sie an (Sperre dort für diese Quads anpassen), der Community-Server bleibt unverändert | eigener Server | B–D | offen |
+| S6 | **Firmware:** Wiegen und Senden trennen, alles per Downlink verstellbar: Wiegeabstand (ab 1 min), Sendeabstand Tag/Nacht, Grenze Tag/Nacht, Schwelle für Sofort-Senden. Vorgabe = heutiges Verhalten (A). | Repo, Testlogger | Feld-Flash | offen |
+| S7 | **Feld-Flash erst nach S6** (auf Testloggern geprüft), damit die Feld-Logger nur einmal geflasht werden | Entscheidung Nutzer | Feld-Flash | offen |
+| S8 | **Branch:** Parameteränderungen (Intervalle) brauchen keinen eigenen Branch (Nutzer 19.11.), Absatz „Einordnung“ oben ergänzt | – | – | erledigt 19.11. |
+
+### Auswirkung auf die beelogger-App (Code gelesen 19.11., Repo `beelogger_app`)
+
+| Erkennung | Stelle | Senden alle 10 min | Senden alle 15 min |
+|---|---|---|---|
+| Nachtrauschen | `lib.php` Z. 113: nur Zeilenpaare 240–360 s auseinander | fällt aus | fällt aus |
+| Spikes | `lib.php` Z. 119: Puffer aus 7 Zeilen, Lücke > 360 s leert ihn | fällt aus | fällt aus |
+| „Wert hing fest“ | `lib.php` Z. 74: ab 48 Zeilen (24 bei Tag), Stunden = Zeilen / 12 | erst nach 8 statt 4 h, zeigt halbe Stunden | erst nach 12 h, zeigt ein Drittel |
+| Abdeckung (Lückenwarnung) | `lib.php` Z. 151, `config.php` Z. 110: Anteil 15-min-Fenster, gelb unter 0,90 | ok | knapp, einzelne leere Fenster möglich (ungeprüft) |
+| Schwarm, Schritte | `auswertung.php`: 900-s-Fenster | ok | ok |
 
 ## Grundsatz und Reihenfolge
 
