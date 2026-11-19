@@ -168,7 +168,7 @@ etwas, startet der Logger neu ([entwicklung.md](entwicklung.md), Änderung 8).
   Server sendet Downlinks und bestimmt Intervall und Uhrzeit (siehe [server.md](server.md)).
 
 ### Server
-- `beelogger_log.php` (Server-Skripte M40_261109, Kopie in `server/M40_261109/`): Passwort prüfen, Zeitstempel = Serverzeit (Sekunden 00),
+- `beelogger_log.php` (Server-Skripte M40_261109, Kopie in `server/M40_261109/`; in M41 gleich): Passwort prüfen, Zeitstempel = Serverzeit (Sekunden 00),
   Waagen temperaturkompensieren, in `beelogger.csv`, `month.csv`, `week.csv` schreiben, Schwarmalarm prüfen.
   Anzeige mit `beelogger_show.php`.
 - Der Ordnername bestimmt die Zahl der Waagen: `beelogger`=1, `Duo`=2, `Triple`=3, `Quad`=4, `Penta`=5, `Hexa`=6.

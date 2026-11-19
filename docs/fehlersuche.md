@@ -2,9 +2,9 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1 (Serverteil: M40_261109, Commit 7ccdb38; Ergänzungen 10.11.: Commit a688002)
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1 (Serverteil: M40_261109, Commit 7ccdb38; Ergänzungen 10.11.: Commit a688002; Serverteil gegen M41_261110a geprüft 19.11.2026, Commit 8c5fb97)
 (Meldungen aus `src/STM32_LORA.ino`, `src/STM32_LORA_utility.ino`, `src/STM32_LORA_260705.ino`;
-Serverantworten aus `beelogger_log.php` M40_261109)
+Serverantworten aus `beelogger_log.php` M40_261109 und M41, dort gleich)
 
 Schon bekannte Fälle, nach Anzeichen geordnet: [Häufige Fehler](haeufige_fehler.md).
 

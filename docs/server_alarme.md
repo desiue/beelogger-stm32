@@ -2,9 +2,10 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261109) ·
-geprüft gegen Code: `server/M40_261109/beelogger1/beelogger_log.php`, `beelogger_cron21.php`,
-`beelogger_mobileWatch.php`, Commit a688002
+Stand: 19.11.2026 · gilt für: Server-Skripte M.41 (Paket M41_261110a) und M.40 (Paket M40_261109) ·
+geprüft gegen Code: `beelogger1/beelogger_log.php`, `beelogger_cron21.php`, `beelogger_mobileWatch.php`
+aus M41_261110a am 19.11.2026 (Repo-Stand Commit 8c5fb97; gleiche Zeilennummern wie `server/M40_261109/`);
+vorher M40_261109, Commit a688002
 
 Die Alarme laufen auf dem Server, nicht im Logger. Für LoRa-Logger gilt alles genauso, die Firmware weiß davon
 nichts. Eingestellt wird in der Web-Konfiguration des Loggers (`beelogger_ini.php`). Zeilennummern beziehen sich

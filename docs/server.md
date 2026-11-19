@@ -2,12 +2,14 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: Server-Skripte M.40 (Paket M40_261109), `server/lora_downlink.php` vom 09.11.2026 ·
-geprüft gegen Code: `server/M40_261109/beelogger1/beelogger_log.php`, Commit 7ccdb38; CSV, Zahlenformate,
-Kompensation, Installation: Commit a688002
+Stand: 19.11.2026 · gilt für: Server-Skripte M.41 (Paket M41_261110a) und M.40 (Paket M40_261109),
+`server/lora_downlink.php` vom 09.11.2026 · geprüft gegen Code: Paket M41_261110a am 19.11.2026 (Repo-Stand
+Commit 8c5fb97); vorher M40_261109, Commits 7ccdb38 und a688002
 
 Die Server-Skripte stammen von beelogger.de (GPLv3). Eine unveränderte Kopie des Pakets M40_261109 liegt unter
-[`server/M40_261109/`](../server/M40_261109/). Zeilennummern beziehen sich auf deren `beelogger1/beelogger_log.php`. Überblick über den Datenweg: [architektur.md](architektur.md).
+[`server/M40_261109/`](../server/M40_261109/). Zeilennummern beziehen sich auf deren `beelogger1/beelogger_log.php`.
+Das Paket M41 (M41_261110a) unterscheidet sich davon nur in den Versionszeilen und bringt zusätzlich
+`beelogger_show.php` mit; die Zeilennummern in `beelogger_log.php` sind in beiden Paketen gleich. Überblick über den Datenweg: [architektur.md](architektur.md).
 
 ## Ordner und Dateien
 
@@ -40,11 +42,12 @@ landen in `ErrorcheckerData.php` im Basisordner. `local_Updater.php` kopiert neu
 ohne Option nur Anzeige, `?U` Skripte, `?X` Icons und Sprachen. Weitere Logger-Ordner legt die Web-Konfiguration
 an; die Ordnernamen nicht von Hand ändern.
 
-**Oberfläche.** `beelogger_show.php` zeichnet mit Dygraph bis zu 26 Datenreihen (CSV-Spalten 2–27) aus
+**Oberfläche.** `beelogger_show.php` zeichnet mit Dygraph je nach Logger-Typ 13 (einfacher beelogger) bis 34 (Hexa)
+Datenreihen, beim Quad 26 (CSV-Spalten 2–27; `$Sensor_max_count` in `beelogger_show.php`), aus
 `week.csv`, `month.csv` oder `beelogger.csv`, mit Anmerkungen aus `notes.csv`. Zugang zur Konfiguration mit dem
 Show-Passwort (`$BeeloggerShowPasswort`), die Annahme mit dem Log-Passwort (`$BeeloggerLogPasswort`). Im Paket
-M40_261109 fehlt `beelogger_show.php` (Packfehler); vorhanden ist die schlanke Variante `beelogger_sml.php`.
-Das beelogger-Team liefert `beelogger_show.php` mit dem nächsten Paket M41 nach (Auskunft 10.11.2026).
+M40_261109 fehlte `beelogger_show.php` (Packfehler), M41 enthält sie. Die schlanke Variante `beelogger_sml.php`
+ist in beiden Paketen dabei.
 
 ## Ablauf bei einer LoRa-Meldung
 
@@ -314,8 +317,9 @@ Intervalls (TTN Fair Use: etwa 10 pro Gerät und Tag). Nur Intervalle von 5–60
 | `lora_downlink.log` | eine Zeile pro Downlink-Versuch mit HTTP-Antwort von TTN |
 
 **Zugriffsrechte:** Beide Dateien liegen im Logger-Ordner und sind über die Webseite abrufbar, solange der Server sie
-ausliefert (Rechte 644). Das Skript setzt in der Fassung vom 17.11.2026 (beelogger-Team, M41) die Rechte der State-Datei
-bei jedem Aufruf auf 0600; auf `community.beelogger.de` schreibt es das Log gar nicht. Wer das Skript von Hand einspielt,
+ausliefert (Rechte 644). In der Fassung, die das beelogger-Team am 17.11.2026 auf seinem Server verteilt hat, setzt das Skript
+die Rechte der State-Datei bei jedem Aufruf auf 0600; auf `community.beelogger.de` schreibt es das Log gar nicht.
+Diese Fassung steckt weder im Paket M41_261110a noch in `server/lora_downlink.php`. Wer das Skript von Hand einspielt,
 setzt beide Dateien einmal selbst auf 0600 (danach liefert der Server 403). Das Log liest man dann per SSH.
 
 Beispielzeile im Log:
