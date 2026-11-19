@@ -5,6 +5,21 @@
 Stand: 06.11.2026. Sammelt Entscheidungen, Fakten und offene Fragen aus der Planung.
 Keine Schlüssel in diese Datei.
 
+!!! warning "Arbeitsverlauf, kein gültiger Stand"
+    Diese Seite ist das Arbeitsprotokoll vom 06.–09.11.2026. Einzelne Werte darin sind überholt.
+    Gültig sind die Seiten unter „Einstieg“ bis „Wenn etwas nicht geht“. Die Kästchen wurden am
+    19.11.2026 gegen Code, Seriell-Log und TTN abgeglichen; was danach noch offen ist, steht in der Tabelle.
+
+### Noch offen (Abgleich 19.11.2026)
+
+| Punkt | Stand |
+|---|---|
+| Alte ABP-Geräte `beelogger08` und `beelogger011` in TTN löschen | beide noch vorhanden; OTAA-Geräte laufen stabil |
+| Kanäle `LORA_CHANNELS` endgültig festlegen | Vorlage und Testgeräte: 3; keine Entscheidung |
+| Seriell-Ausgabe `Data:` lesbar machen, `t-on` nach `System On` | nicht umgesetzt (nur Anzeige, auch im Original) |
+| ATmega-Vorschlag auf einem echten beelogger testen | nur auf dem Steckbrett getestet ([atmega_lora/README.md](https://github.com/desiue/beelogger-stm32/blob/main/atmega_lora/README.md)) |
+| Ideen: Tag-/Nachtintervall per Downlink, Waagenkonfiguration per Downlink, Sendeplan/Schwarmalarm, Intervall-Rückmeldung im Uplink | nur Ideen, siehe [Idee Sendeplan](idee_sendeplan_schwarmalarm.md) und [Vorschlag Payload](vorschlag_payload_erweiterung.md) |
+
 ## Ziel
 
 1. Sendeintervall aus der Ferne über TTN-Downlink einstellen (5, 10, 15 ... Minuten).
@@ -151,19 +166,19 @@ Bei WLAN/LTE antwortet `beelogger_log.php` mit `<Zeit>T<Intervall><A–D>[P]ok *
 - Logger: Uhr per `rtc_stm.setEpoch()`, `time_on` wird mitkorrigiert. Intervall wie FPort 10 in `FernIntervall` (Backup-Register 5), kein neues Register nötig.
 - Uhr zeigt wie bei WLAN Ortszeit (MEZ/MESZ). Fehler bis 08.11. abends: Server schickte UTC, Uhren 1 h nach; behoben 80673f1.
 - Test 08.11.: Black und Blue stellen die Uhr (von 2022 auf die richtige Zeit) und übernehmen 15 min. Intervalländerung 15 → 10 auf der Webseite kommt beim nächsten Uplink an.
-- Offen: Uhr-Stellen beim Tageswechsel prüfen; Vorschlag an Rudolf (Server-Teil ist sein Code, Einbindung eine Zeile); ATmega (kein Flash frei).
+- Offen (Stand 08.11.): Uhr-Stellen beim Tageswechsel prüfen; Vorschlag an das beelogger-Team (Server-Teil ist dessen Code, Einbindung eine Zeile); ATmega (kein Flash frei). 19.11.: Uhr wird täglich gestellt (Langzeittest, [architektur.md](../architektur.md)); Rückmeldung des Teams siehe nächster Abschnitt.
 
 ### Rückmeldung beelogger-Team (09.11.2026) und Plan
 
 - Register-Belegung bleibt wie sie ist (Variante 1). Bei einer späteren Angleichung: Hinweis „nach dem Update einmal Strom trennen (Jumper ziehen)“.
-- Steuerung vorrangig über Solarspannung, Schwelle **1 V** für alle Systeme (heute Vorlage 0,1 V). Uhrzeit im Rückkanal ist erlaubt.
+- Steuerung vorrangig über Solarspannung, Schwelle **1 V** für alle Systeme (heute Vorlage 0,1 V). Uhrzeit im Rückkanal ist erlaubt. *(10.11. eingeschränkt: 1 V nur mit CN3065/TP4056, bei SPV1040 0,25 V, siehe [intervalle.md](../intervalle.md).)*
 - Auswahl über den Webhook wie bei WLAN mit `Z=2`: steht `Z=2` in der Webhook-Adresse, Intervall und Uhr (FPort 11, 7 Byte), sonst nur Intervall (FPort 10, 1 Byte). Keine Einstellung in der Web-Konfiguration nötig.
-- Geplant (noch nicht gebaut):
-  - [ ] `lora_downlink.php`: `Z=2` auswerten, ohne `Z=2` FPort 10 mit 1 Byte
-  - [ ] Uhrzeit sofort schicken bei Neustart des Loggers (f_cnt kleiner als zuletzt) und nach Sommer-/Winterzeit-Wechsel (`date("I")` in der Merkdatei)
-  - [ ] Vorlage `Config_LORA.h.example`: `SOLAR_ZYKLUS_aktiv 1`, `SolarSpannung_Sommertag 1.0`; Temperatur für Winter prüfen
-  - [ ] Abweichung der Uhr pro Tag im Langzeittest messen (Uhr vor dem Stellen loggen)
-  - [ ] Idee beelogger-Team: Tag-/Nachtintervall per Downlink im Logger hinterlegen statt Voreinstellung
+- Geplant (Stand 09.11.; Abgleich 19.11. dahinter):
+  - [x] `lora_downlink.php`: `Z=2` auswerten, ohne `Z=2` FPort 10 mit 1 Byte – umgesetzt (`server/lora_downlink.php`, `$z2`)
+  - [x] Uhrzeit sofort schicken bei Neustart des Loggers (f_cnt kleiner als zuletzt) und nach Sommer-/Winterzeit-Wechsel (`date("I")` in der Merkdatei) – umgesetzt (`server/lora_downlink.php`, `neustart`/`dst`)
+  - [x] Vorlage `Config_LORA.h.example`: `SOLAR_ZYKLUS_aktiv 1`, `SolarSpannung_Sommertag 1.0` – umgesetzt; Schwelle je Lademodul siehe [intervalle.md](../intervalle.md)
+  - [x] Abweichung der Uhr pro Tag im Langzeittest messen – gemessen, Ergebnis in [architektur.md](../architektur.md) (unter 10 s mit täglichem Stellen)
+  - [ ] Idee beelogger-Team: Tag-/Nachtintervall per Downlink im Logger hinterlegen statt Voreinstellung – nur Idee
 - Eigene Logger und eigener Server: Variante mit Uhr läuft weiter (Langzeittest).
 
 ## Arbeitspakete (je eine eigene Sitzung)
@@ -197,7 +212,7 @@ Jede Sitzung startet mit dieser Datei und endet mit einem Eintrag unter „Verla
 
 ## Rückmeldung eines anderen Nutzers (06.11.2026)
 
-- Alte beelogger universal (ATmega, LoRa-Chip + Level-Shifter) und beeloggerSMD mit LoRa-Shield, TTN; ein Gerät im Helium-Netz mit eigenem OTAA+ADR-Sketch (OTAA-Umsetzung von Marcus: Sketch und Bibliotheken verkleinert, eigenes Timing für das RX-Fenster; Marc hat sie aufgespielt und betreibt sie).
+- Alte beelogger universal (ATmega, LoRa-Chip + Level-Shifter) und beeloggerSMD mit LoRa-Shield, TTN; ein Gerät im Helium-Netz mit eigenem OTAA+ADR-Sketch (OTAA-Umsetzung eines weiteren Nutzers: Sketch und Bibliotheken verkleinert, eigenes Timing für das RX-Fenster; der Nutzer hat sie aufgespielt und betreibt sie).
 - **Unsere STM32-Firmware läuft auf dessen Geräten nicht.** Er ist für dieses Projekt kein Ziel, aber für die Wiki-Anleitung 06/06a.
 - Problem nach der Umstellung aus 06a: Gateway empfängt, App bekommt nichts. Logger sendet `f_cnt 62980`. Genau der in 06a (Abschnitt „Voraussetzung Frame Counter“, 6.1, 11) beschriebene Fall: Nach „Reset session and MAC state“ erwartet TTN den Zähler bei 0, Lücke > 16 384 → Uplinks verworfen. „Resets frame counters“ hilft nicht, es erlaubt nur den Sprung zurück auf 0, keine große Lücke nach vorn.
 - (Das Frame-Counter-Problem ist laut Nutzer gelöst, steht im Wiki.)
@@ -259,14 +274,14 @@ Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgen
 ## Offene Punkte (Stand 06.11.2026, Ende Sitzung 3)
 
 - [x] beelogger08: Akku kurz ab → Startzeile DevAddr 0, neuer Join (neue DevAddr in TTN). 06.11. 22:32: Join nach 8 s, DevAddr 260B056F, FCnt 0 angenommen, Wachzeit mit Join 19 s. (3,96 V kam vom Multimeter in Reihe.)
-- [ ] beelogger08: Link-Check am nächsten Tag im Log (`Link-Check Fehlversuche: 0`) – mit Release 261107 (Check 1x/Tag, RTC-Tageswechsel).
+- [x] beelogger08: Link-Check am nächsten Tag im Log (`Link-Check Fehlversuche: 0`) – mit Release 261107 (Check 1x/Tag, RTC-Tageswechsel). *19.11.: erledigt, Seriell-Log 06.–19.11. täglich `Link-Check Fehlversuche: 0` (einmal 1, danach wieder 0).*
 - [x] 07.11. Tests beelogger08 mit Test-Build (261107, Link-Check bei jedem Uplink, nur Scratch-Kopie): 10:56 `Link-Check Fehlversuche: 0` (FOpts 02, Antwort kam), TTN `adr` aus (261106: `adr: true`). Downlink `0F` 10:44 angekommen (`DL Port 10: 15`, Weckzeit +15 min), `00` zurück. Dann TTN-Session per API gelöscht (PATCH, Feldmaske session, mac_state): Fehlversuche 1/2/3 um 10:59/11:04/11:09, 11:14 DevAddr 0 → Join, 11:15:03 `Joined` 0x260B54D3 (= TTN), FCnt 0, ADR aus. 11:24 Release 261107 geflasht.
 - [x] 07.11. beeloggerblue05 auf Release 261107 (Config aus `.bak_beeloggerblue05`, Scratch-Build): TTN FCnt 1, 2, `adr` aus. Zähler-Sprung auf 0 siehe „Beobachten“.
 - [x] beelogger08: Strom mit neuer FW (261106 OTAA) gemessen 06.11.: Schlaf 18,09 µA, wach 24–34 mA – gleich wie alte FW. Wachzeit normaler Zyklus noch aus `t-on` ablesen (mit Join 19 s).
 - [x] beelogger08: Spannungsanzeige gegen Multimeter geprüft (07.11.: Multimeter 4,20 V, gemeldet 4,111 V). Kalibrierung aus Log-Bitwert 1647–1649 auf 4200 mV / 1648 Bit gesetzt, 07.11. 02:58 geflasht, Anzeige jetzt 4,20 V.
-- [ ] beelogger08: altes ABP-Gerät `beelogger08` in TTN löschen, wenn OTAA stabil läuft.
+- [ ] beelogger08: altes ABP-Gerät `beelogger08` in TTN löschen, wenn OTAA stabil läuft. *19.11.: Gerät in TTN noch vorhanden.*
 - [x] Paket 3 auf F1 (beelogger011), 07.11.: Session im Flash 0x0800FC00 (63 KB), nur bei Änderung geschrieben; TTN-Gerät beelogger011-otaa per Skript; Join 01:18:34 (260B21D9), Wiederanlauf 01:23 ohne Join. Akkuspannung nicht extra geprüft (Versand nur über VMinimum).
-- [ ] beelogger011: Link-Check am nächsten Tag (Flash-Schreiben 1x/Tag), altes ABP-Gerät beelogger011 löschen, wenn stabil.
+- [ ] beelogger011: Link-Check am nächsten Tag (Flash-Schreiben 1x/Tag), altes ABP-Gerät beelogger011 löschen, wenn stabil. *19.11.: Link-Check auf F103 im Langzeittest belegt; ABP-Gerät in TTN noch vorhanden.*
 - [x] ADR: Firmware setzt ADR-Bit im Uplink (`"adr": true`, LMIC-Vorgabe, kein `LMIC_setAdrMode(0)`); TTN-Einstellung ADR aus verhindert ADR-Befehle. 07.11.: Kein Handlungsbedarf, Gerät bleibt fest auf SF7, ADR-Rückfall der LMIC ist durch `LMIC_setLinkCheckMode(0)` bei jedem Aufwachen aus. Zeile höchstens beim nächsten Flashen.
 - [x] `scripts/ttn-status.sh` stürzt bei Join-Einträgen in recent_uplinks ab (kein mac_payload). 07.11. behoben (e398458).
 
@@ -298,14 +313,14 @@ Stand 07.11.: OTAA mit gespeicherter Session läuft auf F4 und F1 (Paket 3 abgen
 **Firmware-Kleinigkeiten (Nutzer 07.11.: für später merken)**
 - [ ] Debug-Ausgabe im Block `Data:` lesbar machen. Heute druckt `STM32_LORA.ino` (~Z. 496) je Wert die zwei Payload-Bytes einzeln dezimal ohne Trenner (auch im Original 260705). Beispiele beelogger08 07.11. 03:05: `temperature: 8245` = 8 | 245 = 0x08F5 = 2293 → 22,93 °C (DS18B20 22,94); `batt.: 16106` = 16 | 106 = 0x106A = 4202 mV; `solar: 110` = 1 | 10 = 0x010A = 266 mV; `weight 2: 05` = 0 | 5 → 0,05 kg; `HDR: 22829` = 0x592D (letzte zwei Payload-Bytes `59 2D`), `info:6` = Service-Wert. Vorschlag: Wert dezimal mit Einheit und Bytes in Hex, z. B. `batt.: 4202 mV (10 6A)`.
 - [ ] `t-on` in der zweiten Infozeile nach `System On` zeigt die RTC-Zeit statt der Wachzeit (`t-on: 1641011399` = 01.01.2022 04:29:59 UTC): `time_on` hält bis zum Zyklusende den Startzeitpunkt (`STM32_LORA_utility.ino` Z. 195, Differenz erst Z. 328). Auch im Original. Nur Anzeige.
-- [ ] ADR-Bit aus: `LMIC_setAdrMode(0)` nach `LMIC_setLinkCheckMode(0)` in `setup_LORA()` (siehe Helium-Bewertung). 07.11.: eingebaut (Nutzer zugestimmt), F411 und F103 kompilieren. l_ID 261107. Offen: nach dem Link-Check-Test (08.11.) auf beelogger08 flashen, prüfen: Uplink in TTN `"adr": false`.
+- [x] ADR-Bit aus: `LMIC_setAdrMode(0)` nach `LMIC_setLinkCheckMode(0)` in `setup_LORA()` (siehe Helium-Bewertung). 07.11.: eingebaut (Nutzer zugestimmt), F411 und F103 kompilieren. l_ID 261107. Offen: nach dem Link-Check-Test (08.11.) auf beelogger08 flashen, prüfen: Uplink in TTN `"adr": false`. *19.11.: erledigt, `src/STM32_LORA.ino` `LMIC_setAdrMode(0)`.*
 - [ ] **ATmega-LoRa-Sketch 250326** (beelogger.de, Universal 1.x/beeloggerSMD, Original in `orginal_firmware_bibliotheken/beelogger_LORA_250326/`): hat dieselbe Stelle zur Sketch-ID (`LMIC.seqnoUp % 10` in `prep_payload()`, `seqnoUp` nach `LMIC_reset()` = 0, lmic.c `os_clearMem`), kein `LMIC_setAdrMode(0)` und beantwortet keine MAC-Befehle. 07.11.: Vorschlag `atmega_lora/beelogger_LORA_261107/` (2 Zeilen + l_ID 261107, Bibliothek original, `DISABLE_JOIN` bleibt). Build mit PlatformIO atmelavr: Pro Mini 8 MHz 26 264 B Flash / 1 437 B RAM (Original 26 278 / 1 439), Pro Mini 16 MHz und Nano 26 280 / 1 439 (Original 26 292 / 1 439), von 30 720 / 2 048. Kein ATmega-beelogger hier → Test auf einem Logger bei einem Nutzer mit beeloggerSMD anfragen, Ablauf in `atmega_lora/README.md`. OTAA auf ATmega: laut beelogger-Team (07.11.) nicht vom Team untersucht; die frühere Lösung (Marcus) nutzte eine andere Bibliothek, war kein Arduino-IDE-Sketch und ist nicht verteilbar. Wird hier nicht angekündigt.
 
 **Später / Ideen**
-- [ ] **beeloggerHexa** (07.11.: Entwurf `docs/vorschlag_payload_erweiterung.md`, wartet auf Rückmeldung der Entwickler): 6 (oder 8) Waagen. Klären: Payload-Größe je Waage/Temperatur, maximale Sendehäufigkeit unter der Fair Use Policy bei SF7…SF12, ob Aufteilung auf mehrere Pakete nötig.
+- [x] **beeloggerHexa** (07.11.: Entwurf `docs/vorschlag_payload_erweiterung.md`, wartet auf Rückmeldung der Entwickler): 6 (oder 8) Waagen. Klären: Payload-Größe je Waage/Temperatur, maximale Sendehäufigkeit unter der Fair Use Policy bei SF7…SF12, ob Aufteilung auf mehrere Pakete nötig. *08.11. entschieden: nicht in diese Firmware, höchstens 4 Waagen ([fragen.md](../fragen.md)).*
 - [ ] Waagenkonfiguration per Downlink.
 - [ ] **Zum Besprechen:** Sendeplan nach Jahreszeit, Schwarmalarm auf Ereignis (Gewichtssturz → sofort Uplink), und was aus der Ferne überhaupt verstellbar sein soll (Plan-Werte, Schwellwert, vorübergehend schneller/langsamer mit Ablauf). Ausarbeitung `docs/idee_sendeplan_schwarmalarm.md` (07.11.). Kürzer als 3 min am Tag passt nicht in Fair Use. 07.11. (Gespräch mit Nutzer): erst minimal-invasiv bleiben, als Nächstes nur Varianten ohne Server-/Payload-Änderung mit den Entwicklern abstimmen (Fragenliste in der Idee-Datei). Richtung: Plan über Solarspannung/Temperatur statt Uhr (LoRa-Logger hat keine echte Uhrzeit), öfter wiegen statt öfter senden (Server speichert erst ab 4 min Abstand, Zusatz-Uplink ≥ 250 s; 07.11. korrigiert, vorher 200 s), Rückmeldung über Zeitabstand + Service-Quittung 81–98 (Service ≥ 99 schaltet den Schwarmalarm am Server ab). Testaufbau einige Wochen statt ein Jahr.
-- [ ] **Wiki nachziehen (Server-Erkenntnisse 07.11.)**, über die Web-Oberfläche wie beim Abgleich 07.11. (lokale Kopie `~/wiki-pages` kann veraltet sein, vorher frisch lesen):
+- [x] **Wiki nachziehen (Server-Erkenntnisse 07.11.)**, über die Web-Oberfläche wie beim Abgleich 07.11. (lokale Kopie `~/wiki-pages` kann veraltet sein, vorher frisch lesen): *19.11.: erledigt, Wiki-Technikseiten auf Verweis zu dieser Doku umgestellt.*
   - `08_server`: Speicherregel um „Zeitstempel auf Minute abgerundet → effektiv 4 min“ ergänzen; Schwarmprüfung nur bei > 200 s; Service-Auswertung (99/>240 Icon, ≥ 99 sperrt 2 Meldungen, < 0 = RSSI, −1 leer, > 1000 → 99); Kompensation mit 99.9 als **geprüft** statt Lesart; Intervall-Steuerung des Servers und dass sie LoRa nicht erreicht. Quelle M40_261004 `beelogger_log.php` nennen.
   - `09_betrieb_test` Z. ~32: „> 200 s“ → „ab 4 min (Serverzeit auf Minute abgerundet)“.
   - `03_firmware`: Schwarmerkennung `Sensor_Gewicht()`/`Alarm_Gewicht` vorhanden, Ergebnis ungenutzt.
