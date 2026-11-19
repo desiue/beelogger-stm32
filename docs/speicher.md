@@ -74,8 +74,8 @@ er nicht, er rechnet sie nach jedem Aufwachen aus dem AppKey neu aus.
   Schlafmodus (Stop/deepSleep), der laut beelogger-Team beim F103 kaum mehr Strom braucht. Das wäre ein
   Umbau des Schlafablaufs und ist nicht geplant.
 
-**Fehler bis 07.11.2026:** Die Seite lag zuerst fest bei 63 KB. Die Firmware mit BME280 und Lichtsensor ist
-etwa 64 KB groß. Beim ersten Join schrieb der Logger seine Session mitten ins eigene Programm und löschte
+**Fehler bis 07.11.2026:** Die Seite lag zuerst fest bei 63 KB. Die Firmware mit BME280 und Lichtsensor war
+etwa 64 KB groß (heute 68 276 Byte, gebaut 19.11.2026 für `bluepill_f103c8` mit BME280, Licht und OTAA). Beim ersten Join schrieb der Logger seine Session mitten ins eigene Programm und löschte
 dabei ein Stück davon. Das war kein Stack- oder Compilerproblem, sondern die feste Adresse. Seit 07.11.2026
 wird die Seite aus der Chipgröße berechnet und gegen das Programmende geprüft.
 
