@@ -2,8 +2,9 @@
 
 Steckbrett-Aufbau zum Testen des Sketches `beelogger_LORA_261107` ohne beelogger-Platine.
 ABP-Senden an TTN damit am 08.11.2026 getestet.
+Seit 08.11.2026 läuft derselbe Aufbau mit OTAA (Sketch `beelogger_LORA_OTAA_261119`, TTN-Gerät `uno-otaa01`; Sketch-ID 261119 gemessen im Uplink FCnt 1320, 19.11.2026 09:16 UTC). Das ABP-Gerät `uno-test01` sendet seit 08.11.2026 nicht mehr.
 
-Stand: 19.11.2026 · gilt für: ATmega 261107 · geprüft gegen Code: Commit a0e1614 (Pins, 1-Wire, Intervalle, Service-Schalter)
+Stand: 19.11.2026 · gilt für: ATmega 261107 · geprüft gegen Code: Commit a0e1614 (Pins, 1-Wire, Intervalle, Service-Schalter); bis c2c9b1a ändern sich in `atmega_lora/` nur `Config_LORA.h` und `Multi_LORA.ino` (OTAA), Pins und Konfiguration der Testkopie unverändert (`diff -rq` 261107 gegen 261119, 19.11.2026)
 
 ```mermaid
 flowchart LR
@@ -112,5 +113,5 @@ Vor dem Flashen das serielle Log des Ports stoppen: `PORT=/dev/ttyUSB2 scripts/s
   - Nano: `/INT frei`, `Alarm1 hh:mm:00`
   - Tags alle 10 min, nachts (23–6 Uhr) alle 30 min.
 - Die Uhr der Nachbildung steht nach dem Start auf der Übersetzungszeit. Der Uno stellt sie auf seine eigene, falls die später ist. Die Uhrzeit weicht dann ab, das spielt keine Rolle.
-- TTN: `scripts/ttn-status.sh beeloggeratmega01 uno-test01`.
+- TTN: `scripts/ttn-status.sh beeloggeratmega01 uno-otaa01` (OTAA, sendet). `uno-test01` ist das alte ABP-Gerät.
 - 1-Wire-Fehlersuche: [`testaufbau/onewire_scan`](testaufbau/onewire_scan/onewire_scan.ino) auf den Uno flashen (sucht an D6, zeigt Adressen und Temperaturen). Danach den Logger-Sketch wieder aufspielen.
