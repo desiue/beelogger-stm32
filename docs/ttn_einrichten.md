@@ -306,6 +306,9 @@ Pro Gerät im Schnitt **30 s Uplink-Airtime** und **höchstens 10 Downlinks** in
 | 10 min | 144 | 11,1 s |
 | 15 min | 96 | 7,4 s |
 
+Die Tabelle rechnet grob mit 77 ms für jeden Uplink (Quad mit Außensensor und Sketch-ID). Da die Sketch-ID nur
+in jedem 10. Uplink steckt, sind es bei 5 min genau etwa 20,9 s ([lorawan.md](lorawan.md#sendezeit-airtime)).
+
 - Bei 5 min und SF8 wäre die Grenze überschritten, deshalb ist SF7 fest eingestellt. Mehr Payload (z. B. weitere Waagen) braucht längere Intervalle.
 - Ein Intervall-Downlink ist ein einzelner Downlink und liegt weit unter der Grenze.
 - Ein Gerät in der Downlink-Schleife bekommt dagegen bis zu 288 Downlinks am Tag, fast das 30-Fache. Deshalb die MAC-Einstellungen (Abschnitt 7) genau übernehmen.
