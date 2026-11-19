@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: STM32 261107, Rückkanal FPort 11 · geprüft gegen Code: Commit 863302f
+Stand: 09.11.2026 · gilt für: STM32 261107, Rückkanal FPort 11 · geprüft gegen Code: Commit 863302f (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 
 Fragen, die beim Austausch mit dem beelogger-Team und anderen Nutzern aufkamen. Die Antworten sind kurz,
 die Links führen zu den Einzelheiten.

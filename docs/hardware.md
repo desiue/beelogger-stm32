@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: STM32 261107 (Pinbelegung gleich wie 260705) · geprüft gegen Code: Commit a3ac566
+Stand: 10.11.2026 · gilt für: STM32 261107 (Pinbelegung gleich wie 260705) · geprüft gegen Code: Commit a3ac566 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 
 Die **Pinbelegung** stammt aus dem Code (`src/STM32_beelogger.h`, `src/STM32_LORA.ino`) und gilt für alle
 Platinen. Die **Bauteilwerte** unter „Baugruppen“ sind aus Schaltplänen gelesen (siehe

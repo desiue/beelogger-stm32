@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1
+Stand: 09.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 80673f1 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 
 Der STM32-Logger schläft zwischen zwei Messungen im **Shutdown** (Standby, `LowPower.shutdown()` in
 `src/STM32_LORA_utility.ino`). Beim Aufwachen startet er wie nach einem Reset, das RAM ist dann leer.

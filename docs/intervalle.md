@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 7ccdb38
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit 7ccdb38 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 (`src/STM32_LORA_utility.ino`, `Alarm_konfigurieren()`; `src/STM32_LORA_260705.ino`, `loop()`;
 `src/Config_LORA.h.example`)
 

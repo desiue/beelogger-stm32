@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit a3ac566
+Stand: 10.11.2026 · gilt für: STM32 261107, ATmega 261107/261108 · geprüft gegen Code: Commit a3ac566 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 
 ## Überblick
 

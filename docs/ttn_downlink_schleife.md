@@ -3,7 +3,7 @@
 [← Übersicht](README.md)
 
 Stand: 10.11.2026 · gilt für: Original-Firmware 230711/260705 (ABP) und STM32 261107 (ABP/OTAA) ·
-geprüft gegen Code: Commit a688002, Kanäle/CFList: 325d02b · Messungen: The Things Stack Sandbox eu1, v3.37.0, 23.10.–07.11.2026
+geprüft gegen Code: Commit a688002, Kanäle/CFList: 325d02b (danach bis 9a536c5 in `src/` nur Kommentare, geprüft 19.11.2026) · Messungen: The Things Stack Sandbox eu1, v3.37.0, 23.10.–07.11.2026
 
 Hintergrund zu [ttn_einrichten.md, Abschnitt 7](ttn_einrichten.md#7-mac-einstellungen-im-detail-abp-lmic-dieser-firmware).
 Wer nur einen Logger richtig anlegen will, braucht diese Seite nicht.

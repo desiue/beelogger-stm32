@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 08.11.2026 · gilt für: STM32 261107 (LMIC 1.5), ABP und OTAA
+Stand: 08.11.2026 · gilt für: STM32 261107 (LMIC 1.5), ABP und OTAA · geprüft gegen Code: Commit 9a536c5 (`src/`, 19.11.2026)
 
 Für diese Firmware (Kennung 261107, LMIC 1.5). Gilt für alle vier Varianten (BluePill F103, BlackPill F411/F401, jeweils ABP oder OTAA). Welche Variante passt: [abp_otaa.md](abp_otaa.md).
 

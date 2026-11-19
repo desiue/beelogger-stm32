@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 18.11.2026 · gilt für: STM32 261107 (Spannungsgrenzen gleich wie 260705) · geprüft gegen Code: Commit e8aa70d
+Stand: 18.11.2026 · gilt für: STM32 261107 (Spannungsgrenzen gleich wie 260705) · geprüft gegen Code: Commit e8aa70d (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 (Spannungsgrenzen aus `src/Config_MULTI.h`, `src/STM32_beelogger.h`, `src/STM32_LORA_260705.ino`;
 Hardware-Hinweise sind Erfahrungswerte aus dem Betrieb und dem beelogger-Support, nicht aus dem Code)
 

@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit a3ac566
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit a3ac566 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 
 Diese Seite erklärt das Protokoll so weit, wie man es für Fehlersuche, eigene Netzwerkserver oder eine
 eigene Firmware braucht. Für den normalen Betrieb mit TTN reicht [ttn_einrichten.md](ttn_einrichten.md).

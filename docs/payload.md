@@ -3,7 +3,7 @@
 [← Übersicht](README.md)
 
 Stand: 08.11.2026 · gilt für: STM32 261107 (Uplink identisch mit 260705 und ATmega 250326/261107) ·
-geprüft gegen Code: Commit 325d02b (`src/STM32_LORA.ino`, `prep_payload()`, `onEvent()`;
+geprüft gegen Code: Commit 325d02b (danach bis 9a536c5 in `src/` nur Kommentare, geprüft 19.11.2026) (`src/STM32_LORA.ino`, `prep_payload()`, `onEvent()`;
 `docs/ttn/payload_decoder_ttn.js`, `server/lora_downlink.php`)
 
 Überblick: [architektur.md](architektur.md)
