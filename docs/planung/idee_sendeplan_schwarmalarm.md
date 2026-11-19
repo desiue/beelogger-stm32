@@ -281,6 +281,7 @@ Wenn Plan und Schwarmalarm im Logger stecken, ist das Fern-Intervall in seiner h
 | vorübergehend langsamer / Pause | Akku schwach im Winter, Fair Use überschritten, Logger im Lager | mittel | ja |
 | festes Intervall wie heute (ohne Ablauf) | einfach, gibt es schon | gering, Risiko: bleibt aus Versehen stehen | ja (umgesetzt) |
 | Uhrzeit setzen | nur nötig, wenn Plan nach Uhr/Kalender | gering, Solar/Temperatur reicht | ja |
+| Sensor-Zuordnung (welcher Sensor liefert welchen Wert) | defekten Sensor ersetzen, ohne zu flashen | **nur Möglichkeit, keine Aufgabe** (Nutzer 19.11.2026), Beschreibung: [Fern-Einstellungen, Möglichkeiten](../fern_einstellungen.md#möglichkeiten-nicht-geplant) | ja |
 
 Gemeinsame Voraussetzungen:
 - **Rückmeldung**, was gilt. Ohne Server-Änderung: Zeitabstand + Service-Quittung (oben). Mit Inhalt (aktives Intervall, Plan-Version, Schwellwert): Payload-Vorschlag, später.

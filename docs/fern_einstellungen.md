@@ -37,6 +37,72 @@ alles in `Config_LORA.h`/`Config_MULTI.h`, also nur per Flashen.
 F103 sind die Backup-Register belegt, dort bleibt nur FPort 10/11 (`src/STM32_beelogger.h:24`). Der Flash-Plan
 braucht mindestens 256 KB Flash (`src/STM32_sendeplan.ino:87`).
 
+## Welcher FPort wofür
+
+| Richtung | FPort | Wer schickt | Wofür | Beleg |
+|---|---|---|---|---|
+| Uplink | 1 | Logger | Messwerte (Format: [payload.md](payload.md)) | `src/STM32_LORA.ino:433` |
+| Downlink | 10 | TTN-Konsole/API oder `server/lora_downlink.php` | festes Sendeintervall | `src/STM32_LORA.ino:755` |
+| Downlink | 11 | `server/lora_downlink.php` (automatisch) | Uhr stellen + Intervall vom Server | `src/STM32_LORA.ino:772` |
+| Downlink | 12 | TTN-Konsole/API (von Hand) | Sendeplan, Kommandos `01`–`30` (Tabelle oben) | `src/STM32_sendeplan.ino:242-267` |
+
+Downlinks kommen nur nach einem Uplink an (LoRaWAN Class A), siehe [Downlink schicken](#downlink-schicken).
+
+## Nach welchen Regeln der Logger sendet
+
+Es gibt zwei Fälle, je nachdem, ob ein Plan im Flash liegt.
+
+**Mit Flash-Plan** (FPort 12, nur F4):
+
+| Regel | Woran erkannt | Beleg |
+|---|---|---|
+| Tag/Nacht | Solarspannung unter der Grenze `05` = Nacht, nicht die Uhrzeit | `src/STM32_sendeplan.ino:144` |
+| Winter | Temperatur DS18B20 unter `06` = Winter, nicht der Monat | `src/STM32_sendeplan.ino:232` |
+| Akku schwach | Spannung unter `09` → Sendeabstand `0A` | `src/STM32_sendeplan.ino:178-184` |
+| Für eine Weile anders | Kommando `10`, gilt ab Empfang für 1–72 h, dann wieder Plan | `src/STM32_sendeplan.ino:258` |
+| Gewichtssprung | Sofort-Senden ab Schwelle `08` | `src/STM32_sendeplan.ino:205` |
+
+Nach Uhrzeit, Kalender oder zu festen Zeitpunkten (z. B. 7, 12 und 18 Uhr) sendet der Plan **nicht**. Die Uhr
+aus FPort 11 wird trotzdem gestellt (`src/STM32_LORA.ino:772`), eine Erweiterung wäre also möglich (siehe
+[Möglichkeiten](#möglichkeiten-nicht-geplant)).
+
+**Ohne Flash-Plan** (auch F103 und `main`): Es gilt der alte Ablauf aus `Config_LORA.h`. Nacht nach Uhrzeit
+(`WeckIntervall_Nacht_Anfang`/`_Ende`), Winter nach Monat und Temperatur (`src/STM32_LORA_utility.ino:363-386`).
+Diese Werte sind beim Bauen fest. Aus der Ferne wirkt nur FPort 10/11; der Server rechnet dafür sein Intervall
+nach Uhrzeit, Licht oder Solarspannung (`ServerZeitSteuerung()`, siehe [server.md](server.md)).
+
+## Was starr bleibt
+
+Diese Werte stehen in `Config_LORA.h`/`Config_MULTI.h` und ändern sich nur durch Flashen:
+
+| Wert | Wo | Per Downlink sinnvoll? |
+|---|---|---|
+| `VMinimum` (Abschaltspannung) | `src/Config_MULTI.h:96` | nein, entschieden 19.11.2026: ein Tippfehler kann den Akku tiefentladen |
+| Tara und Skalierung der Waagen | `src/Config_MULTI.h:167-168` | nein, entschieden 19.11.2026: Kalibrieren braucht ein Prüfgewicht am Stand. Denkbar wäre nur, eine kaputte Waage abzuschalten (`Taragewicht = 10` heißt „aus“, `src/beelogger_HX711_STM.ino:31`) |
+| Spannungsteiler (`Kalib_Spannung`, `Kalib_Bitwert`) | `src/Config_MULTI.h:169-170` | eher nein, Abgleich braucht ein Messgerät am Logger |
+| Sensoren: Anzahl je Typ und Zuordnung (`Aussenwerte`, `Beute1`–`4`, `Temp_Zelle`) | `src/Config_MULTI.h:11-43` | ja, siehe [Möglichkeiten](#möglichkeiten-nicht-geplant) |
+| `Korrektur_Luftdruck` | `src/Config_MULTI.h:50` | nicht nötig, der Server korrigiert selbst (`$KorrPressure`, `M41_261110a_ServerSkripte/beelogger1/beelogger_log.php:596`) |
+| `Alarm_Gewicht` (1 kg) | `src/STM32_beelogger.h:30` | nicht nötig: Bei LoRa wird der Schwarmalarm der Firmware nicht ausgewertet (`src/STM32_LORA_260705.ino:210-241`), den Gewichtssprung deckt `08` ab, den Schwarmalarm macht der Server |
+| LoRa-Schlüssel, `LOGGER_NAME`, Kanäle | `src/Config_LORA.h` | nein, Sicherheit |
+
+Alle Intervalle (`WeckIntervall*`), `VAlternativ`, `AlternativIntervallMinuten` und `USER_INT_TM` gelten nur,
+solange kein Flash-Plan da ist. Mit Plan ersetzen sie `01`–`0B` (`src/STM32_sendeplan.ino:73-82`).
+
+## Möglichkeiten (nicht geplant)
+
+Keine Aufgaben, nur festgehalten, was das Format zulassen würde (unbekannte Kommandos überspringt der Logger,
+`src/STM32_sendeplan.ino:242-267`):
+
+- **Sensor-Zuordnung per Downlink:** Alle Sensortreiber fest einbauen und per Kommando (z. B. `0C`) wählen,
+  welcher Sensor welchen Wert liefert. Beispiel: BME280 außen defekt, DS18B20 nachgerüstet (an PA8 mit Pull-up),
+  ein Downlink stellt „außen“ auf den DS18B20 um. I2C-Sensoren und DS18B20 ließen sich auch suchen, ein DHT22 nicht.
+  Payload und Server bleiben gleich. Ungeprüft, ob der Platz bei 4 Waagen reicht (q2 heute 71 984 Byte).
+- **Senden nach Uhrzeit oder Kalender im Plan:** feste Zeitpunkte oder Nacht/Winter nach Uhr und Monat
+  statt nach Solarspannung und Temperatur.
+- **Sendeplan auf der Blue Pill (F103):** heute aus, weil der Flash unter 256 KB liegt und die
+  Backup-Register belegt sind (`src/STM32_beelogger.h:21-25`, `src/STM32_sendeplan.ino:87`). Ginge nur mit
+  einem Plan in einer 1-KB-Flash-Seite und ohne Backup-Register.
+
 ## FPort 12: Aufbau
 
 Byte 0 = Format-Version `01`, danach beliebig viele Blöcke `Kommando · Länge · Daten`
