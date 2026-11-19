@@ -207,7 +207,7 @@ Zeitzone des Servers eine Stunde vor dem UTC-Nullpunkt.
 | Umstellung Sommer-/Winterzeit (nachts um 2 bzw. 3 Uhr) | geht kurz 1 h falsch | beim ersten Uplink nach der Umstellung (Server merkt sich `date("I")`) |
 | ohne Rückkanal | läuft vom Startwert aus weiter | nie |
 
-Wie weit die Uhr ohne Stellen wegläuft, zeigt der Langzeittest: an einer BluePill F103
+Wie weit die Uhr ohne Stellen wegläuft, zeigt der Langzeittest (seit 08.11.2026, läuft weiter): an einer BluePill F103
 etwa **6 s pro Tag** nach (gemessen vom 10.11. bis 13.11.2026, jeden Tag +7 s vor dem Stellen, 1 s
 Auflösung). Mit dem täglichen Stellen durch `lora_downlink.php` bleibt die Abweichung also unter 10 s.
 Ohne Rückkanal sind es etwa 3 min im Monat.
