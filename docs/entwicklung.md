@@ -17,7 +17,7 @@ Vollständig in [`aenderungen_gegen_260705.diff`](aenderungen_gegen_260705.diff)
    - Getestet auf BlackPill F411 (beelogger09) und BluePill F103 (beeloggerblue05).
 3. **Sketch-ID-Fehler behoben** (Header-Bit `TYPE_AUX2` in der Firmware, Feld `Aux3` in Decoder und Server; siehe „Gefundene Fehler“).
 4. `Config_LORA.h`: `LOGGER_NAME` je Geräteblock.
-5. **Firmware-Kennung** `l_ID` = **261107** (261106: ohne ADR-aus) (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
+5. **Firmware-Kennung** `l_ID` = **261119** (261107: ohne Sendeplan, 261106: ohne ADR-aus) (Form JJMMTT wie im Original, `STM32_LORA_260705.ino`). Steht in der Startzeile und geht alle 10 Uplinks an den Server. Bei jeder neuen Version auf das Datum setzen.
 6. **OTAA** (`#define LORA_OTAA 1`, Werte `DEVEUI`, `APPEUI` = JoinEUI, beide LSB, `APPKEY` MSB; TTN: LoRaWAN 1.0.2, RP 1.0.2 rev B):
    - Join beim ersten Versand. Gespeichert werden nur DevAddr, NetID, AppNonce, DevNonce, Rx1-Delay und Rx2-DR, mit Version und Prüfsumme: BlackPill in RTC-Backup-Registern 10–13, BluePill in der letzten Flash-Seite laut Chip, beim F103CB 0x0801FC00 (nur bei Änderung geschrieben; liegt die Seite im Programm, wird nichts gespeichert und der Logger joint bei jedem Start). Die Session-Schlüssel rechnet der Logger nach jedem Aufwachen aus dem AppKey neu (`LMIC_restoreJoin`).
    - Neu-Join: nach Power-On-Reset (Akku ab), bei ungültigem Datum, ab FCnt 16000 und nach 3 Tagen ohne Antwort auf den täglichen LinkCheckReq (1 Downlink/Tag).

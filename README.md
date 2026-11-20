@@ -2,7 +2,7 @@
 
 Die beelogger-Firmware **STM32_LORA_260705** von [beelogger.de](https://beelogger.de) als PlatformIO-Projekt für VS Code, mit Erweiterungen. Gefundene Fehler werden behoben und dokumentiert, damit die beelogger-Entwickler sie übernehmen können.
 
-**Download für die Arduino IDE:** [beelogger_STM32_LORA_261107.zip](https://github.com/desiue/beelogger-stm32/releases/download/STM32_LORA_261107/beelogger_STM32_LORA_261107.zip) ([Release](https://github.com/desiue/beelogger-stm32/releases/tag/STM32_LORA_261107)) – Sketch-Ordner wie bei beelogger.de, ohne Schlüssel. Neu bauen mit `scripts/lieferpaket.sh`.
+**Download für die Arduino IDE:** [beelogger_STM32_LORA_261119.zip](https://github.com/desiue/beelogger-stm32/releases/download/STM32_LORA_261119/beelogger_STM32_LORA_261119.zip) ([Release](https://github.com/desiue/beelogger-stm32/releases/tag/STM32_LORA_261119)) – Sketch-Ordner wie bei beelogger.de, ohne Schlüssel. Neu gegenüber 261107: Sendeplan und Fern-Einstellungen per Downlink ([Übersicht](docs/fern_einstellungen.md)); die OTAA-Anleitung (PDF) liegt nicht im ZIP, sie steht unter [docs/ttn/](docs/ttn/STM32_LORA_OTAA_Einrichtung_261107.pdf). Neu bauen mit `scripts/lieferpaket.sh`.
 
 **Übersicht: was geht wohin** (Einzelheiten in [Architektur](docs/architektur.md))
 

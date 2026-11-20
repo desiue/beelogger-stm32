@@ -88,11 +88,11 @@ Board = PlatformIO-Umgebung, ABP/OTAA = Schalter im Geräteblock von `Config_LOR
 9600 Baud, BluePill an `Serial` (PA9/PA10), BlackPill an `Serial1`. Nach jedem Start (also jedem Zyklus) erscheint:
 
 ```
-STM32_LORA_261107 - STM32F411CE
+STM32_LORA_261119 - STM32F411CE
 Name: beelogger09 UID: 353439323337510600410066 DevAddr: 260BD691
 ```
 
-- `261107`: Firmware-Kennung (`l_ID`), danach der Chip-Typ.
+- `261119`: Firmware-Kennung (`l_ID`), danach der Chip-Typ.
 - `Name`: `LOGGER_NAME` aus `Config_LORA.h`.
 - `UID`: 96-Bit-Seriennummer des Chips, eindeutig je Board.
 - `DevAddr`: LoRaWAN-Adresse, unter der das Gerät in TTN steht.
