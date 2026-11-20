@@ -25,7 +25,8 @@ cp "$REPO/src/Config_MULTI.h.example" "$S/Config_MULTI.h"
 cp -r "$REPO/src/lmic_otaa" "$S/src/"
 cp "$REPO/docs/aenderungen_gegen_260705.diff" "$TMP/"
 PDF="STM32_LORA_OTAA_Einrichtung_${ID}.pdf"
-cp "$REPO/docs/ttn/$PDF" "$TMP/"
+PDFLIST=""
+if [ -f "$REPO/docs/ttn/$PDF" ]; then cp "$REPO/docs/ttn/$PDF" "$TMP/"; PDFLIST="$PDF"; else echo "Hinweis: $PDF fehlt, Paket ohne PDF" >&2; fi
 
 # Sicherheitsprüfung: keine Schlüssel ungleich 0x00 im Paket
 if grep -rhoE '(NWKSKEY|APPSKEY|APPKEY|DEVEUI|APPEUI)\[[0-9]+\] *= *\{[^}]*\}' "$S"/Config_LORA.h \
@@ -36,5 +37,5 @@ fi
 mkdir -p "$REPO/$ZIEL"
 OUT="$REPO/$ZIEL/beelogger_${NAME}.zip"
 rm -f "$OUT"
-(cd "$TMP" && bsdtar --format zip -cf "$OUT" "$NAME" aenderungen_gegen_260705.diff "$PDF")
+(cd "$TMP" && bsdtar --format zip -cf "$OUT" "$NAME" aenderungen_gegen_260705.diff $PDFLIST)
 echo "$OUT"

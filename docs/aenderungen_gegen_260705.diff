@@ -1,7 +1,7 @@
 diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
---- orig/Config_LORA.h	2026-11-07 23:53:40.506660689 +0100
-+++ neu/Config_LORA.h	2026-11-07 23:53:40.546444382 +0100
-@@ -1,68 +1,82 @@
+--- orig/Config_LORA.h	2026-11-20 08:48:24.831092503 +0100
++++ neu/Config_LORA.h	2026-11-20 08:48:24.855950616 +0100
+@@ -1,68 +1,83 @@
 -/****************************************************************/
 -// LORA Konfiguration
 -/****************************************************************/
@@ -145,108 +145,32 @@ diff --color -ruN orig/Config_LORA.h neu/Config_LORA.h
 +// alternative Messzyklusumschaltung
 +#define TEMP_ZYKLUS_aktiv    0            //  0 / 1 aktiviert Umschaltung Messzyklus Winter per Temperatur
 +const float Temperatur_Wintertag = 8.0;   // < = Wintertag
-+#define SOLAR_ZYKLUS_aktiv   0            //  0 / 1 aktiviert Umschaltung Messzyklus Tag/Nacht per Solarzellenspannung
-+const float SolarSpannung_Sommertag = 0.1;// < = Nacht
++#define SOLAR_ZYKLUS_aktiv   1            //  0 / 1 aktiviert Umschaltung Messzyklus Tag/Nacht per Solarzellenspannung
++const float SolarSpannung_Sommertag = 1.0;// < = Nacht
++                                          // 1.0 V fuer Lademodul CN3065 oder TP4056, mit SPV1040 0.25 V
 +
 +
 +
 +// 
 +#define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht
-diff --color -ruN orig/src/lmic_otaa/hal/hal.cpp neu/src/lmic_otaa/hal/hal.cpp
---- orig/src/lmic_otaa/hal/hal.cpp	2026-11-07 23:53:40.509568211 +0100
-+++ neu/src/lmic_otaa/hal/hal.cpp	2026-11-07 23:53:40.546710974 +0100
-@@ -240,6 +240,10 @@
- #endif
- }
+diff --color -ruN orig/STM32_beelogger.h neu/STM32_beelogger.h
+--- orig/STM32_beelogger.h	2026-11-20 08:48:24.832366612 +0100
++++ neu/STM32_beelogger.h	2026-11-20 08:48:24.856047654 +0100
+@@ -18,6 +18,11 @@
+ #define WeckIntervall_default 15
+ #define AlternativIntervallMinuten  120  // Weckinterval, wenn VAlternativ erreicht = Akku fast leer
+ const float VSysnormal = VAlternativ + 0.1; // Spannung ab der in den Normalbetrieb gewechselt wird
++#if defined(STM32F4xx)
++#define SENDEPLAN 1  // S6: Wiegen/Senden getrennt, Plan per FPort 12 (STM32_sendeplan.ino)
++#else
++#define SENDEPLAN 0  // F1: 16-Bit-Backup-Register sind belegt
++#endif
  
-+// beelogger (desiue, 2026-11-07): Der Sketch kann lmic_fehler() bereitstellen (Software-Watchdog:
-+// Phase merken und neu starten). Sonst wie bisher: Interrupts aus, Endlosschleife.
-+void lmic_fehler() __attribute__((weak));
-+
- void hal_failed (const char *file, u2_t line) {
- #if defined(LMIC_FAILURE_TO)
-     LMIC_FAILURE_TO.println("FAILURE ");
-@@ -248,6 +252,7 @@
-     LMIC_FAILURE_TO.println(line);
-     LMIC_FAILURE_TO.flush();
- #endif
-+    if (lmic_fehler) lmic_fehler();
-     hal_disableIRQs();
-     while(1);
- }
-diff --color -ruN orig/src/lmic_otaa/lmic/config.h neu/src/lmic_otaa/lmic/config.h
---- orig/src/lmic_otaa/lmic/config.h	2026-11-07 23:53:40.509796820 +0100
-+++ neu/src/lmic_otaa/lmic/config.h	2026-11-07 23:53:40.546699636 +0100
-@@ -38,7 +38,7 @@
- #define LMIC_FAILURE_TO Serial
- 
- // Uncomment this to disable all code related to joining
--#define DISABLE_JOIN  //mod
-+//#define DISABLE_JOIN  //mod  beelogger: Join für OTAA (ABP-Geräte joinen nie, DevAddr != 0)
- // Uncomment this to disable all code related to ping
- #define DISABLE_PING  //mod
- // Uncomment this to disable all code related to beacon tracking.
-diff --color -ruN orig/src/lmic_otaa/lmic/lmic.c neu/src/lmic_otaa/lmic/lmic.c
---- orig/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:53:40.510202998 +0100
-+++ neu/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:53:40.546659221 +0100
-@@ -1144,6 +1144,7 @@
-         case MCMD_LCHK_ANS: {
-             //int gwmargin = opts[oidx+1];
-             //int ngws = opts[oidx+2];
-+            LMIC.lchkReq = 3;  // beelogger
-             oidx += 3;
-             continue;
-         }
-@@ -1642,6 +1643,11 @@
-         LMIC.dn2Ans = 0;
-     }
- #endif // !DISABLE_MCMD_DN2P_SET
-+    if( LMIC.lchkReq == 1 ) {  // beelogger: link check request
-+        LMIC.frame[end] = MCMD_LCHK_REQ;
-+        end += 1;
-+        LMIC.lchkReq = 2;
-+    }
-     if( LMIC.devsAns ) {  // answer to device status
-         LMIC.frame[end+0] = MCMD_DEVS_ANS;
-         LMIC.frame[end+1] = os_getBattLevel();
-@@ -2361,6 +2367,15 @@
-     DO_DEVDB(LMIC.seqnoDn, seqnoDn);
- }
- 
-+// beelogger: OTAA-Session aus gespeicherten Join-Werten wiederherstellen.
-+// artnonce_netid = AppNonce (3) + NetID (3) wie im Join-Accept (LSB zuerst);
-+// devnonce = DevNonce des erfolgreichen Join-Request. Schlüssel kommen aus os_getDevKey().
-+void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid) {
-+    u1_t nwk[16], art[16];
-+    aes_sessKeys(devnonce, artnonce_netid, nwk, art);
-+    LMIC_setSession(netid, devaddr, nwk, art);
-+}
-+
- // Enable/disable link check validation.
- // LMIC sets the ADRACKREQ bit in UP frames if there were no DN frames
- // for a while. It expects the network to provide a DN message to prove
-diff --color -ruN orig/src/lmic_otaa/lmic/lmic.h neu/src/lmic_otaa/lmic/lmic.h
---- orig/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:53:40.510400369 +0100
-+++ neu/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:53:40.546632598 +0100
-@@ -215,6 +215,7 @@
-     u1_t        margin;
-     bit_t       ladrAns;      // link adr adapt answer pending
-     bit_t       devsAns;      // device status answer pending
-+    u1_t        lchkReq;      // beelogger: 1 = LinkCheckReq senden, 2 = gesendet, 3 = LinkCheckAns erhalten
-     u1_t        adrEnabled;
-     u1_t        moreData;     // NWK has more data pending
- #if !defined(DISABLE_MCMD_DCAP_REQ)
-@@ -304,6 +305,7 @@
- 
- void LMIC_setSession (u4_t netid, devaddr_t devaddr, xref2u1_t nwkKey, xref2u1_t artKey);
- void LMIC_setLinkCheckMode (bit_t enabled);
-+void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid);
- void LMIC_setClockError(u2_t error);
- 
- // Declare onEvent() function, to make sure any definition will have the
+ /****************************************************************/
+ // Änderung Gewicht in Kilogramm bei der Daten versenden erfolgt
 diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
---- orig/STM32_LORA_260705.ino	2026-11-07 23:53:40.507389282 +0100
-+++ neu/STM32_LORA_260705.ino	2026-11-07 23:53:40.546452422 +0100
+--- orig/STM32_LORA_260705.ino	2026-11-20 08:48:24.833531384 +0100
++++ neu/STM32_LORA_260705.ino	2026-11-20 08:48:24.856239780 +0100
 @@ -1,3 +1,9 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
@@ -262,7 +186,7 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
  
  char ID_ID[16] = "STM32_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
 -long l_ID = 260705;
-+long l_ID = 261107;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
++long l_ID = 261119;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
  
  #define CFG_noassert 1  // supress error messages in LMIC-library
  
@@ -293,14 +217,27 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
    //----------------------------------------------------------------
  
    Spannungen_messen();
-@@ -170,25 +182,35 @@
+@@ -168,27 +180,69 @@
+ void loop() {
+ 
    Spannungen_messen();
++#if SENDEPLAN
++  s6_start();
++  float v_alt = s6_akku_schwelle();  // ohne Flash-Plan = VAlternativ
++  float v_normal = v_alt + 0.1;      // wie VSysnormal
++  if (Batteriespannung < v_alt) akku_save = 1;
++  if (Batteriespannung > v_normal) akku_save = 0;
++#else
    if (Batteriespannung < VAlternativ) akku_save = 1;
    if (Batteriespannung > VSysnormal) akku_save = 0;
 -  if (Batteriespannung > VMinimum) {
++#endif
 +  // Software-Watchdog: nach LoRa-Hänger oder zweitem Neustart in Folge gleich schlafen
 +  bool wdt_schlafen = (wdt_vorher >= 2) || (wdt_anzahl >= 2);
 +  if (wdt_schlafen) debugprintlnF("WDT: Zyklus ausgelassen");
++#if SENDEPLAN
++  if (s6_still()) wdt_schlafen = true;  // Neustart per FPort 12: bis zum nächsten Termin schlafen
++#endif
 +  if ((Batteriespannung > VMinimum) && !wdt_schlafen) {
      uint8_t ureq = User_Int_req();
 +    wdt_start(1, 60);  // Phase 1: Sensoren
@@ -308,6 +245,16 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
 +    if (mit_i2c) i2c_bus_frei();
 +    else debugprintlnF("WDT: ohne I2C-Sensoren");
      if (ureq) {  // service switch on? or "time is over"
++#if SENDEPLAN
++      bool senden = s6_senden_faellig();  // alter Pfad: immer
++      bool gewogen = false;
++      if (!senden) {                      // nur wiegen, senden bei Sofort-Schwelle
++        Sensor_Gewicht(0);
++        gewogen = true;
++        senden = s6_sofort();
++      }
++      if (senden) {
++#endif
        Sensor_Temp_Zelle(0);
        Sensor_DHT();
        Sensor_DS18B20();
@@ -321,10 +268,21 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
 +        Sensor_Si7021();
 +        Sensor_SHT31();
 +      }
++#if SENDEPLAN
++      if (!gewogen)
++#endif
        Sensor_Gewicht(0);
        Sensor_Temp_Zelle(1);
 +      wdt_start(2, 100);  // Phase 2: LoRa (Join bis 60 s)
++#if SENDEPLAN
++      s6_vor_senden();    // Quittung 90
++#endif
        Daten_Senden();  // only when service "off" or "time is over"
++#if SENDEPLAN
++      s6_gesendet();
++      s6_nach_senden();   // Downlink FPort 12 ausführen (Flash, Kommando 10, Neustart)
++      }
++#endif
      } else {
        Sensor_Gewicht(1);
      }
@@ -336,19 +294,20 @@ diff --color -ruN orig/STM32_LORA_260705.ino neu/STM32_LORA_260705.ino
  
    blink_LED(10, 500);  // we will never make it to here
 diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
---- orig/STM32_LORA.ino	2026-11-07 23:53:40.507599381 +0100
-+++ neu/STM32_LORA.ino	2026-11-07 23:53:40.546493603 +0100
-@@ -1,3 +1,9 @@
+--- orig/STM32_LORA.ino	2026-11-20 08:48:24.834238692 +0100
++++ neu/STM32_LORA.ino	2026-11-20 08:48:24.856281946 +0100
+@@ -1,3 +1,10 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Downlink FPort 10 auswerten (onEvent); Aux3-Fehler behoben (LoRaSeqCounter % 10).
 +//   2026-11-06, desiue: OTAA per #define LORA_OTAA (Join, Session F4: Backup-Register 10-13, F1: letzte Flash-Seite; Link-Check 1x/Tag).
 +//   2026-11-07, desiue: F1-Session-Seite aus Flash-Ende statt fest bei 63 KB (Programm wurde überschrieben).
++//   2026-11-08, desiue: Downlink FPort 11 (Serverquittung: Uhr stellen + Intervall, Gegenstueck server/lora_downlink.php).
 +//   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 +
  /****************************************************************/
  // Funktion LORA - Daten Senden
  /****************************************************************/
-@@ -51,6 +57,105 @@
+@@ -51,6 +58,105 @@
  bool flag_TXCOMPLETE = false;
  uint8_t payload[64];
  
@@ -454,7 +413,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
  //#define eeAddress  0x20 // EE-Prom Adress wear leveling
  //#define eeAd_data  0x30 // EE-Prom Adress LoRa sequence number
  //uint16_t LoRaSeqCounter = 0;      // TTN Sequence numbber
-@@ -124,11 +229,15 @@
+@@ -124,11 +230,15 @@
    // These values are stored in flash and only copied to RAM once.
    // Copy them to a temporary buffer here, LMIC_setSession will
    // copy them into a buffer of its own again.
@@ -470,7 +429,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
  
    //#if defined(CFG_eu868)
    // Set up the channels used by the Things Network, which corresponds
-@@ -171,10 +280,20 @@
+@@ -171,10 +281,20 @@
    // Disable link check validation
    LMIC_setLinkCheckMode(0);
  
@@ -491,7 +450,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
  
    // Set data rate and transmit power for uplink (note: txpow seems to be ignored by the library)
    LMIC_setDrTxpow(DR_SF7, 14);  //Low-Power
-@@ -299,16 +418,39 @@
+@@ -299,16 +419,39 @@
  #endif
  
      LMIC.seqnoUp = LoRaSeqCounter;
@@ -532,7 +491,7 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
    } else {
      debugprintlnF("err");
    }
-@@ -537,7 +679,7 @@
+@@ -537,7 +680,7 @@
    cnt_pld++;
    debugprintF("info:");  debugprintln(svc);
  
@@ -541,17 +500,44 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
      //payload[cnt_pld] = TYPE_AUX2;
      //cnt_pld++;
      PayloadHeader |= TYPE_AUX2;
-@@ -599,9 +741,27 @@
+@@ -599,9 +742,54 @@
  
              }
        */
++#if SENDEPLAN
++#define S6_PLAN_GILT s6_plan_gilt()  // gültiger Flash-Plan: Intervall aus FPort 10/11 wird ignoriert
++#else
++#define S6_PLAN_GILT false
++#endif
 +      // Downlink FPort 10, 1 Byte: Sendeintervall in Minuten (5..180, 0 = Firmware-Vorgabe)
 +      if ((LMIC.txrxFlags & TXRX_PORT) && LMIC.dataLen == 1 && LMIC.frame[LMIC.dataBeg - 1] == 10) {
 +        uint8_t m = LMIC.frame[LMIC.dataBeg];
 +        debugprintF("DL Port 10: ");
 +        debugprintln(m);
-+        if (m == 0 || (m >= 5 && m <= 180)) FernIntervall = m - m % 5;  // Weckzeit rastet auf 5 min
++        if ((m == 0 || (m >= 5 && m <= 180)) && !S6_PLAN_GILT) FernIntervall = m - m % 5;  // Weckzeit rastet auf 5 min; Flash-Plan geht vor
 +      }
++      // Downlink FPort 11, 7 Byte: Serverquittung (server/lora_downlink.php)
++      // Byte 0 FCnt-Bezug, 1-4 Empfangszeit des Bezugs-Uplinks (wie WLAN-Quittung), 5 Abstand [min], 6 Intervall (5..60, 0 = unveraendert)
++      if ((LMIC.txrxFlags & TXRX_PORT) && LMIC.dataLen == 7 && LMIC.frame[LMIC.dataBeg - 1] == 11) {
++        const uint8_t* d = &LMIC.frame[LMIC.dataBeg];
++        uint32_t t = ((uint32_t)d[1] << 24) | ((uint32_t)d[2] << 16) | ((uint32_t)d[3] << 8) | d[4];
++        debugprintF("DL Port 11: ");
++        debugprint(d[0]); debugprintF(" "); debugprint(t); debugprintF(" "); debugprint(d[5]); debugprintF(" "); debugprintln(d[6]);
++        uint8_t fc = (uint8_t)LoRaSeqCounter;               // FCnt dieses Uplinks
++        if (t && d[0] != fc) t = (d[0] == (uint8_t)(fc - 1) && d[5]) ? t + 60UL * d[5] : 0;  // Downlink zum vorigen Uplink
++        if (t) {
++          uint32_t alt = rtc_stm.getEpoch();
++          rtc_stm.setEpoch(t + 1);                          // ca. 1 s seit Uplink-Ende (RX-Fenster)
++          time_on += rtc_stm.getEpoch() - alt;              // Wachzeit bleibt richtig
++          debugprintlnF("Uhr gestellt");
++        }
++        if (d[6] >= 5 && d[6] <= 60 && !S6_PLAN_GILT) FernIntervall = d[6] - d[6] % 5;  // Flash-Plan geht vor, Uhr gilt trotzdem
++      }
++#if SENDEPLAN
++      // Downlink FPort 12: Sendeplan-Kommandos (STM32_sendeplan.ino), ausgeführt nach dem Uplink
++      if ((LMIC.txrxFlags & TXRX_PORT) && LMIC.dataLen >= 1 && LMIC.frame[LMIC.dataBeg - 1] == 12)
++        s6_downlink(&LMIC.frame[LMIC.dataBeg], LMIC.dataLen);
++#endif
        inc_LoRaSeq();
        flag_TXCOMPLETE = true;
        break;
@@ -570,8 +556,8 @@ diff --color -ruN orig/STM32_LORA.ino neu/STM32_LORA.ino
        // data received in ping slot
        debugprintlnF("RX !");
 diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
---- orig/STM32_LORA_utility.ino	2026-11-07 23:53:40.507911454 +0100
-+++ neu/STM32_LORA_utility.ino	2026-11-07 23:53:40.546480659 +0100
+--- orig/STM32_LORA_utility.ino	2026-11-20 08:48:24.834440801 +0100
++++ neu/STM32_LORA_utility.ino	2026-11-20 08:48:24.856340076 +0100
 @@ -1,3 +1,9 @@
 +// Geändert gegenüber beelogger.de STM32_LORA_260705 (GPL v3 §5a):
 +//   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Startzeile Name/UID/DevAddr; FernIntervall in Backup-Register 5 Bit 9-14; Vorrang in Alarm_konfigurieren().
@@ -622,7 +608,68 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
  
    /*
      debugprint(EEProm_Size);
-@@ -355,6 +378,7 @@
+@@ -246,6 +269,12 @@
+   @param none
+   @return  1 wenn Service inaktiv, 0 wenn Service aktiv
+ */
++#if SENDEPLAN
++uint8_t s6_user_n();
++#define USER_INT_N (s6_user_n())  // Plan-Wert per FPort 12 (Kommando 0B), 5-240 min
++#else
++#define USER_INT_N (USER_INT_TM / INTERVAL_STUCK_SWITCH)
++#endif
+ uint8_t User_Int_req() {  // User forced Wakeup
+   uint8_t ret_val = 1;
+ 
+@@ -268,7 +297,7 @@
+     }
+     else {
+       // return "switch is set", when still on and time is not up
+-      if (stuck_switch  < (USER_INT_TM / INTERVAL_STUCK_SWITCH) ) {
++      if (stuck_switch  < USER_INT_N ) {
+         ret_val = 0;
+         stuck_switch++; // only increment within predefined period
+       }
+@@ -279,7 +308,9 @@
+   }
+ 
+   debugprint (" sw:");
+-  debugprintln (stuck_switch);
++  debugprint (stuck_switch);
++  debugprint ("/");
++  debugprintln (USER_INT_N);
+   return (ret_val);
+ }
+ 
+@@ -308,6 +339,9 @@
+   if (time_on > 255) {             // Power On Reset or invalid date
+     time_on = 0;
+   }
++#if SENDEPLAN
++  if (s6_time_on_null()) time_on = 0;  // nach Neustart per FPort 12: nächster Uplink meldet Service 0
++#endif
+ 
+   if (digitalRead(WakeUp_Pin) == true)  // service mode ongoing
+   { // PA0 Switch on/off only, no interrupt; important!
+@@ -319,7 +353,7 @@
+   }
+   Pwr_flags(); // Clear Flags
+ 
+-  if ((stuck_switch) && (stuck_switch  < (USER_INT_TM / INTERVAL_STUCK_SWITCH)))   // service mode
++  if ((stuck_switch) && (stuck_switch  < USER_INT_N))   // service mode
+   {
+     IntervallMinuten = INTERVAL_STUCK_SWITCH;     // Check switch every xx minutes
+   } else {
+@@ -330,7 +364,7 @@
+       h_now = rtc_stm.getHours();
+       month_now = rtc_stm.getMonth();
+ #if  SOLAR_ZYKLUS_aktiv
+-      if (Solarspannung < SolarSpannung_Sommertag) { // es ist "Tag"
++      if (Solarspannung < SolarSpannung_Sommertag) { // zu wenig Sonne: "Nacht"
+         IntervallMinuten = WeckIntervall_Nacht;
+       }
+       else {
+@@ -355,14 +389,23 @@
        }
  #endif
      }
@@ -630,7 +677,24 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    }
    if (akku_save == 1) {
      IntervallMinuten = AlternativIntervallMinuten;
-@@ -434,6 +458,9 @@
+   }
+ 
++  uint32_t raster = 300;
++#if SENDEPLAN
++  bool service = stuck_switch && (stuck_switch < USER_INT_N);
++  if (!service && s6_neu()) {  // Flash-Plan oder Kommando 10: Weckabstand = Wiegeabstand
++    IntervallMinuten = s6_wiegen_min();
++    raster = 60UL * IntervallMinuten;
++  } else
++#endif
+   if (IntervallMinuten < 5) IntervallMinuten = 5;  // LoRaWan usage restrictions
+   tt = ttim + (uint32_t)(IntervallMinuten * 60);   // calculate next wakeup
+-  tt = tt - tt % 300;   // synchronize wakeup step, set seconds to zero
++  tt = tt - tt % raster;   // synchronize wakeup step, set seconds to zero
+   tt--;                 // prevent wakeup at xx:00:00
+ 
+ #if myDEBUG
+@@ -434,6 +477,9 @@
      rtc_stm.setYear(22);  // LORA w/o server response
      rtc_stm.setMonth(1);
      rtc_stm.setDay(1);
@@ -640,23 +704,41 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    }
    else {
  
-@@ -447,6 +474,7 @@
+@@ -445,8 +491,12 @@
+     time_on = (uint32_t) (reg >> 8);   // max 255sec.
+ 
      reg = getBackupRegister(5);
-     stuck_switch = (uint8_t) (reg & 0x001f);    // lower five bits  0 ... 31
+-    stuck_switch = (uint8_t) (reg & 0x001f);    // lower five bits  0 ... 31
++    stuck_switch = (uint8_t) (reg & 0x00ff);    // bit 0-7: 0 ... 255 (bis 260705: 5 Bit, Bit 5-7 waren 0)
      if (reg & 0x0100) akku_save = 1;            // upper one bit 0 / 1
 +    FernIntervall = ((reg >> 9) & 0x3f) * 5;    // bit 9-14: Downlink-Intervall / 5 (alte Firmware: 0)
++#if SENDEPLAN
++    s6_bkp_lesen();                             // Register 15-18
++#endif
  
  #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
      reg = (uint16_t)getBackupRegister(1);
-@@ -493,6 +521,7 @@
+@@ -492,7 +542,8 @@
+   setBackupRegister(4, reg);
  
    reg = 0; if (akku_save)reg = 0x0100;      // set upper bit
-   reg = reg | (stuck_switch & 0x001f);      // lower five bits  0 ... 31
+-  reg = reg | (stuck_switch & 0x001f);      // lower five bits  0 ... 31
++  reg = reg | (stuck_switch & 0x00ff);      // bit 0-7: 0 ... 255 (240 min / 5 = 48)
 +  reg = reg | ((uint32_t)(FernIntervall / 5) << 9);  // bit 9-14
    setBackupRegister(5, reg);
  
  #if defined (STM32F1xx)  // STM32 rtc lib with STM32F1xx uses register 6 / 7
-@@ -546,6 +575,8 @@
+@@ -510,6 +561,9 @@
+   setBackupRegister(8, reg);
+   reg = (uint32_t) (LetztesGewicht[3] * 100.0);
+   setBackupRegister(9, reg);
++#if SENDEPLAN
++  s6_bkp_schreiben();                           // Register 15-18
++#endif
+ 
+ }
+ 
+@@ -546,6 +600,8 @@
    //  debugprint(send_cycle);
    debugprint(" Interval: ");
    debugprint(WeckIntervallMinuten);
@@ -665,7 +747,7 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
    debugprint("min  t-on: ");
    debugprint(time_on);
    //  debugprint("s  dly: ");
-@@ -567,3 +598,84 @@
+@@ -567,3 +623,84 @@
    debugprintF("Datum:    "); debugprintln(buff);
  #endif
  }
@@ -750,3 +832,429 @@ diff --color -ruN orig/STM32_LORA_utility.ino neu/STM32_LORA_utility.ino
 +  pinMode(PIN_WIRE_SDA, INPUT_PULLUP);
 +  pinMode(PIN_WIRE_SCL, INPUT_PULLUP);
 +}
+diff --color -ruN orig/STM32_sendeplan.ino neu/STM32_sendeplan.ino
+--- orig/STM32_sendeplan.ino	1970-01-01 01:00:00.000000000 +0100
++++ neu/STM32_sendeplan.ino	2026-11-20 08:48:24.856457217 +0100
+@@ -0,0 +1,330 @@
++/****************************************************************/
++// Sendeplan S6 (docs/planung/idee_sendeplan_schwarmalarm.md, "Entwurf Kommando-Format FPort 12", "Plan S6")
++// Wiegen und Senden getrennt, Plan per Downlink FPort 12 im Flash, "für eine Weile anders" (Kommando 10)
++// in Backup-Registern. Nur F4 (32-Bit-Backup-Register, 128-KB-Flash-Sektor am Ende).
++// Ohne gültigen Flash-Plan und ohne laufendes Kommando 10 bleibt der alte Code-Pfad unverändert:
++// jedes Aufwachen misst und sendet, Weckraster 300 s.
++/****************************************************************/
++#if SENDEPLAN
++
++// Plan-Felder; Kommando 01-07 = Index 0-6, 08 = zwei Byte, 09/0A = Akkusparmodus, 0B = Arbeitsschalter
++enum { P_WT, P_WN, P_ST, P_SN, P_SOLAR, P_WTEMP, P_SW, P_SOF_H, P_SOF_L, P_AKKU_V, P_AKKU_S, P_USER, P_ANZ };
++#define S6_MAGIC 0xB2          // Format-Version des Flash-Eintrags (B1: 11 Werte, wird nicht mehr gelesen)
++#define S6_WORTE 4             // Datenworte im Flash: Magic + bis zu 15 Werte, danach ein Wort Prüfsumme
++// Höchstdauer Arbeitsschalter ohne Flash-Plan: USER_INT_TM aus Config, 5-150 min, Raster 5 (wie bisher)
++#define S6_USER_VORGABE ((USER_INT_TM > 150 ? 150 : (USER_INT_TM < 5 ? 5 : USER_INT_TM)) / 5 * 5)
++#define S6_KEIN_GEW (-32768)   // kein gesendetes Gewicht gemerkt
++
++// Backup-Register (14 = Software-Watchdog, 10-13 = OTAA-Session):
++// 15: Bit 0-15 Minute der letzten Sendung, Bit 16-31 Minute, zu der Kommando 10 endet
++// 16: Bit 0-7 Wiegen [min] und Bit 8-15 Senden [min] aus Kommando 10 (0 = keins), Bit 16 Winter,
++//     Bit 17 Quittung offen, Bit 18 letzte Sendung gültig, Bit 19 nach Neustart einen Lauf auslassen
++// 17/18: zuletzt gesendetes Gewicht Waage 1/2 und 3/4 [10 g], int16
++#define S6_WINTER  (1UL << 16)
++#define S6_QUITT   (1UL << 17)
++#define S6_GESENDET (1UL << 18)
++#define S6_STILL   (1UL << 19)
++uint32_t s6_zeit = 0, s6_stat = 0;
++uint32_t s6_gew[2] = { 0x80008000, 0x80008000 };
++
++uint8_t s6p[P_ANZ];          // gültiger Plan: Flash oder Vorgabe aus Config
++bool s6_aktiv = false;       // Flash-Plan gültig
++uint16_t s6_jetzt = 0;       // Minute dieses Aufwachens (Epoche / 60, gerundet)
++// letzter angenommener Downlink FPort 12, ausgeführt nach dem Uplink in s6_nach_senden()
++uint8_t s6_dl[P_ANZ];
++uint8_t s6_dl_art = 0;       // Bit 0 Plan-Wert, Bit 1 0F, Bit 2 Kommando 10, Bit 3 Kommando 30
++uint8_t s6_ov[3];            // Kommando 10: Wiegen, Senden, Dauer [h]
++uint8_t s6_neustart = 0;     // Kommando 20: 1 Neustart, 2 Neustart + Neu-Join
++
++extern "C" uint32_t _sidata, _sdata, _edata;
++
++void s6_bkp_lesen() {
++  s6_zeit = getBackupRegister(15);
++  s6_stat = getBackupRegister(16);
++  s6_gew[0] = getBackupRegister(17);
++  s6_gew[1] = getBackupRegister(18);
++}
++
++void s6_bkp_schreiben() {  // nach enableBackupDomain()
++  setBackupRegister(15, s6_zeit);
++  setBackupRegister(16, s6_stat);
++  setBackupRegister(17, s6_gew[0]);
++  setBackupRegister(18, s6_gew[1]);
++}
++
++bool s6_wert_ok(uint8_t i, uint8_t v) {
++  switch (i) {
++    case P_WT: case P_WN: return v >= 1 && v <= 60;
++    case P_ST: case P_SN: case P_SW: return v >= 5 && v <= 180 && v % 5 == 0;
++    case P_AKKU_V: return (uint16_t)v * 5 >= (uint16_t)(VMinimum * 100 + 0.5) + 5;  // mindestens VMinimum + 0,05 V
++    case P_AKKU_S: return v >= 30 && v <= 240 && v % 5 == 0;
++    case P_USER: return v >= 5 && v <= 240 && v % 5 == 0;
++    default: return true;  // Solargrenze, Winter-Temperatur; Sofort-Schwelle in s6_plan_ok()
++  }
++}
++
++bool s6_plan_ok(const uint8_t* p) {
++  for (uint8_t i = 0; i < P_ANZ; i++)
++    if (!s6_wert_ok(i, p[i])) return false;
++  uint16_t sof = (uint16_t)p[P_SOF_H] << 8 | p[P_SOF_L];
++  return sof == 0 || sof >= 50;
++}
++
++void s6_vorgabe(uint8_t* p) {  // ohne Flash-Plan: wie heute, Wiegen = Senden = WeckIntervall
++  p[P_WT] = p[P_WN] = p[P_ST] = p[P_SN] = WeckIntervall;
++  p[P_SOLAR] = 0;        // immer Tag
++  p[P_WTEMP] = 0x80;     // kein Winter
++  p[P_SW] = WeckIntervall_Winter;
++  p[P_SOF_H] = p[P_SOF_L] = 0;
++  p[P_AKKU_V] = (uint8_t)(VAlternativ * 20 + 0.5);
++  p[P_AKKU_S] = AlternativIntervallMinuten;
++  p[P_USER] = S6_USER_VORGABE;
++}
++
++// letzter Flash-Sektor (F401/F411: 128 KB); 0 = Chip zu klein oder Programm reicht hinein
++uint32_t s6_sektor(uint32_t* nr) {
++  uint32_t kb = *(volatile uint16_t*)FLASHSIZE_BASE;
++  if (kb < 256) return 0;
++  uint32_t a = FLASH_BASE + kb * 1024 - 128UL * 1024;
++  uint32_t ende = (uint32_t)&_sidata + ((uint32_t)&_edata - (uint32_t)&_sdata);  // Programmende im Flash
++  if (ende > a) return 0;
++  if (nr) *nr = 4 + (kb - 128) / 128;  // Sektor 4 = 64 KB, ab 5 je 128 KB
++  return a;
++}
++
++uint32_t s6_summe(const uint32_t* w) { return ~(w[0] + 3 * w[1] + 7 * w[2] + 13 * w[3]) ^ 0x5E4D3C2B; }
++
++bool s6_flash_lesen(uint8_t* p) {
++  uint32_t a = s6_sektor(0);
++  if (a == 0) return false;
++  const volatile uint32_t* f = (const volatile uint32_t*)a;
++  uint32_t w[S6_WORTE + 1];
++  for (uint8_t i = 0; i <= S6_WORTE; i++) w[i] = f[i];
++  if ((w[0] & 0xFF) != S6_MAGIC || w[S6_WORTE] != s6_summe(w)) return false;
++  uint8_t q[4 * S6_WORTE];
++  for (uint8_t i = 0; i < 4 * S6_WORTE; i++) q[i] = w[i / 4] >> (8 * (i % 4));
++  if (!s6_plan_ok(q + 1)) return false;
++  memcpy(p, q + 1, P_ANZ);
++  return true;
++}
++
++bool s6_flash_schreiben(const uint8_t* p) {  // p = 0: Eintrag löschen
++  uint32_t nr;
++  uint32_t a = s6_sektor(&nr);
++  if (a == 0) return false;
++  static_assert(P_ANZ + 1 <= 4 * S6_WORTE, "Plan passt nicht in S6_WORTE");
++  uint32_t w[S6_WORTE + 1] = { S6_MAGIC };
++  if (p) {
++    for (uint8_t i = 0; i < P_ANZ; i++) w[(i + 1) / 4] |= (uint32_t)p[i] << (8 * ((i + 1) % 4));
++    w[S6_WORTE] = s6_summe(w);
++  }
++  FLASH_EraseInitTypeDef e = {};
++  e.TypeErase = FLASH_TYPEERASE_SECTORS;
++  e.Sector = nr;
++  e.NbSectors = 1;
++  e.VoltageRange = FLASH_VOLTAGE_RANGE_3;
++  uint32_t err;
++  HAL_FLASH_Unlock();
++  __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
++  bool ok = HAL_FLASHEx_Erase(&e, &err) == HAL_OK;
++  for (uint8_t i = 0; ok && p && i <= S6_WORTE; i++) ok = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, a + 4 * i, w[i]) == HAL_OK;
++  HAL_FLASH_Lock();
++  __HAL_FLASH_DATA_CACHE_DISABLE();  // Rücklesen nicht aus dem Cache
++  __HAL_FLASH_DATA_CACHE_RESET();
++  __HAL_FLASH_DATA_CACHE_ENABLE();
++  return ok;
++}
++
++bool s6_ov_aktiv() {  // Kommando 10 läuft (nur plausible Werte, sonst Registerinhalt einer anderen Firmware)
++  uint8_t w = s6_stat & 0xFF, s = (s6_stat >> 8) & 0xFF;
++  return w >= 1 && w <= 60 && s >= 5 && s <= 180;
++}
++bool s6_neu() { return s6_aktiv || s6_ov_aktiv(); }  // neuer Code-Pfad
++bool s6_plan_gilt() { return s6_aktiv; }  // für onEvent: FPort 10/11 setzen dann kein Intervall
++bool s6_nacht() { return s6p[P_SOLAR] && Solarspannung < s6p[P_SOLAR] * 0.05f; }
++
++void s6_start() {  // Anfang loop(): Plan laden, Kommando 10 abgelaufen?
++  s6_jetzt = (uint16_t)((rtc_stm.getEpoch() + 30) / 60);
++  s6_aktiv = s6_flash_lesen(s6p);
++  if (!s6_aktiv) s6_vorgabe(s6p);
++  if (s6_ov_aktiv() && (int16_t)((uint16_t)(s6_zeit >> 16) - s6_jetzt) <= 0) s6_stat &= ~0xFFFFUL;
++  if (s6_neu()) {
++    debugprintF("S6: Plan "); debugprint(s6_aktiv);
++    debugprintF(" K10 "); debugprint(s6_stat & 0xFF); debugprintF("/"); debugprintln((s6_stat >> 8) & 0xFF);
++  }
++}
++
++// Arbeitsschalter: Anzahl 5-min-Prüfungen bis zum Ende der Pause (vor s6_start() noch die Vorgabe)
++uint8_t s6_user_n() {
++  uint8_t m = s6_wert_ok(P_USER, s6p[P_USER]) ? s6p[P_USER] : S6_USER_VORGABE;
++  return m / INTERVAL_STUCK_SWITCH;
++}
++
++float s6_akku_schwelle() { return s6_aktiv ? s6p[P_AKKU_V] * 0.05f : VAlternativ; }
++
++bool s6_null = false;        // Lauf nach Neustart: Wachzeit nicht melden
++
++bool s6_time_on_null() { return s6_null; }
++
++bool s6_still() {  // nach Neustart per Downlink einen Lauf auslassen
++  if (!(s6_stat & S6_STILL)) return false;
++  s6_stat &= ~S6_STILL;
++  s6_null = true;
++  debugprintlnF("S6: nach Neustart schlafen");
++  return true;
++}
++
++// Rangfolge: Akkusparmodus -> Kommando 10 -> FPort 10/11 -> Plan (Winter, Tag/Nacht)
++uint8_t s6_senden_min() {
++  if (akku_save) return s6p[P_AKKU_S];
++  if (s6_ov_aktiv()) return (s6_stat >> 8) & 0xFF;
++  if (FernIntervall) return FernIntervall;
++  if ((s6_stat & S6_WINTER) && s6p[P_WTEMP] != 0x80) return s6p[P_SW];
++  return s6_nacht() ? s6p[P_SN] : s6p[P_ST];
++}
++
++uint8_t s6_wiegen_min() {
++  uint8_t s = s6_senden_min();
++  if (akku_save) return s;
++  uint8_t w = s6_ov_aktiv() ? (s6_stat & 0xFF) : (s6_nacht() ? s6p[P_WN] : s6p[P_WT]);
++  return w < s ? w : s;
++}
++
++uint16_t s6_seit_sendung() { return (uint16_t)(s6_jetzt - (uint16_t)s6_zeit); }
++
++bool s6_senden_faellig() {
++  if (!s6_neu()) return true;                // alter Pfad: jedes Aufwachen sendet
++  if (Service == 99.0) return true;          // Arbeitsschalter
++  if (!(s6_stat & S6_GESENDET)) return true;
++  return s6_seit_sendung() >= s6_senden_min();
++}
++
++bool s6_sofort() {  // Gewicht gegenüber der letzten Sendung um die Schwelle geändert?
++  uint16_t sof = (uint16_t)s6p[P_SOF_H] << 8 | s6p[P_SOF_L];
++  if (sof == 0 || akku_save) return false;
++  if ((s6_stat & S6_GESENDET) && s6_seit_sendung() < 5) return false;  // Server-Sperre 220 s
++  for (uint8_t i = 0; i < Anzahl_Sensoren_Gewicht && i < 4; i++) {
++    int16_t alt = (int16_t)(s6_gew[i / 2] >> (16 * (i % 2)));
++    if (alt == S6_KEIN_GEW || Gewicht[i] == No_Value) continue;
++    if (fabsf(Gewicht[i] * 100.0f - alt) * 10.0f >= sof) {
++      debugprintF("S6: Sofort, Waage "); debugprintln(i + 1);
++      return true;
++    }
++  }
++  return false;
++}
++
++void s6_vor_senden() {
++  if ((s6_stat & S6_QUITT) && Service != 99.0) Service = 90.0;  // Quittung FPort 12
++}
++
++void s6_gesendet() {
++  s6_zeit = (s6_zeit & 0xFFFF0000UL) | s6_jetzt;
++  s6_stat |= S6_GESENDET;
++  if (Service == 90.0) s6_stat &= ~S6_QUITT;
++  for (uint8_t i = 0; i < 4; i++) {
++    float g = (i < Anzahl_Sensoren_Gewicht) ? Gewicht[i] : No_Value;
++    int32_t v = (g == No_Value || g < -300.0f || g > 300.0f) ? S6_KEIN_GEW : (int32_t)lroundf(g * 100.0f);
++    uint8_t sh = 16 * (i % 2);
++    s6_gew[i / 2] = (s6_gew[i / 2] & ~(0xFFFFUL << sh)) | ((uint32_t)(uint16_t)v << sh);
++  }
++  // Winter: DS_Temp gibt es nur in Läufen mit Sendung, darum hier merken
++  if (s6p[P_WTEMP] != 0x80 && DS_Temp != No_Val && DS_Temp < (int8_t)s6p[P_WTEMP] * 0.5f) s6_stat |= S6_WINTER;
++  else s6_stat &= ~S6_WINTER;
++}
++
++// FPort 12 aus onEvent(): erst alles prüfen, nur ganz gültige Downlinks werden gemerkt
++void s6_downlink(const uint8_t* d, uint8_t n) {
++  s6_dl_art = 0;
++  s6_neustart = 0;
++  uint8_t p[P_ANZ], ov[3] = { 0, 0, 0 }, art = 0, ns = 0, i = 1;
++  memcpy(p, s6p, P_ANZ);
++  bool ok = n >= 1 && d[0] == 0x01;
++  while (ok && i < n) {
++    if (i + 2 > n || i + 2 + d[i + 1] > n) { ok = false; break; }
++    uint8_t k = d[i], l = d[i + 1];
++    const uint8_t* v = d + i + 2;
++    if ((k >= 0x01 && k <= 0x07) || (k >= 0x09 && k <= 0x0B)) {
++      uint8_t x = (k <= 0x07) ? k - 1 : (k == 0x09 ? P_AKKU_V : (k == 0x0A ? P_AKKU_S : P_USER));
++      ok = l == 1 && s6_wert_ok(x, v[0]);
++      if (ok) { p[x] = v[0]; art |= 1; }
++    } else if (k == 0x08) {
++      ok = l == 2 && (((uint16_t)v[0] << 8 | v[1]) == 0 || ((uint16_t)v[0] << 8 | v[1]) >= 50);
++      if (ok) { p[P_SOF_H] = v[0]; p[P_SOF_L] = v[1]; art |= 1; }
++    } else if (k == 0x0F) {
++      ok = l == 0;
++      if (ok) { s6_vorgabe(p); art |= 2; }
++    } else if (k == 0x10) {
++      ok = l == 3 && v[0] >= 1 && v[0] <= 60 && v[1] >= 5 && v[1] <= 180 && v[1] % 5 == 0 && v[2] <= 72;
++      if (ok) { memcpy(ov, v, 3); art |= 4; }
++    } else if (k == 0x20) {
++      ok = l == 3 && (v[0] == 1 || v[0] == 2) && ((uint16_t)v[1] << 8 | v[2]) == (uint16_t)LMIC.devaddr;
++      if (ok) ns = v[0];
++    } else if (k == 0x30) {
++      ok = l == 0;
++      if (ok) art |= 8;
++    }  // unbekannte Kommandos überspringen
++    i += 2 + l;
++  }
++  if (ok && (art & 1)) ok = s6_plan_ok(p);  // ganzer Plan gültig (auch die Vorgaben aus Config)?
++  debugprintF("DL Port 12: ");
++  if (!ok) { debugprintlnF("verworfen"); return; }
++  debugprintln(art);
++  memcpy(s6_dl, p, P_ANZ);
++  memcpy(s6_ov, ov, 3);
++  s6_dl_art = art;
++  s6_neustart = ns;
++}
++
++void s6_nach_senden() {  // nach Daten_Senden(): Downlink FPort 12 ausführen
++  uint8_t art = s6_dl_art;
++  s6_dl_art = 0;
++  if (art & 3) {  // Plan
++    uint8_t vg[P_ANZ];
++    s6_vorgabe(vg);
++    bool vorgabe = memcmp(s6_dl, vg, P_ANZ) == 0;
++    bool ziel = !(vorgabe && (art & 2)) && (s6_aktiv || !vorgabe);  // danach Flash-Plan gültig?
++    if (ziel != s6_aktiv || (ziel && memcmp(s6_dl, s6p, P_ANZ) != 0)) {
++      if (akku_save) { debugprintlnF("S6: Sparmodus, Plan nicht geschrieben"); s6_neustart = 0; return; }
++      uint8_t r[P_ANZ];
++      bool ok = s6_flash_schreiben(ziel ? s6_dl : 0);
++      bool da = s6_flash_lesen(r);
++      ok = ok && (ziel ? (da && memcmp(r, s6_dl, P_ANZ) == 0) : !da);
++      debugprintF("S6: Flash "); debugprintln(ok);
++      if (!ok) {  // Flash-Inhalt jetzt unklar: neu lesen, sonst gilt Config
++        s6_aktiv = s6_flash_lesen(s6p);
++        if (!s6_aktiv) s6_vorgabe(s6p);
++        s6_neustart = 0;
++        return;
++      }
++      s6_aktiv = ziel;
++      if (ziel) memcpy(s6p, s6_dl, P_ANZ);
++      else s6_vorgabe(s6p);
++    }
++    if (art & 1) FernIntervall = 0;  // fester Wert aus FPort 10/11 verdeckt sonst den Plan
++  }
++  if (art & 4) {  // Kommando 10
++    if (s6_ov[2] == 0) s6_stat &= ~0xFFFFUL;
++    else {
++      s6_stat = (s6_stat & ~0xFFFFUL) | s6_ov[0] | (uint32_t)s6_ov[1] << 8;
++      s6_zeit = (s6_zeit & 0xFFFF) | (uint32_t)(uint16_t)(s6_jetzt + 60U * s6_ov[2]) << 16;
++    }
++  }
++  if (art) s6_stat |= S6_QUITT;
++  if (s6_neustart) {
++#if LORA_OTAA
++    if (s6_neustart == 2) otaa_clear();
++#endif
++    s6_stat &= ~(0xFFFFUL | S6_QUITT);  // Kommando 10 endet, Quittung entfällt (Service 0 nach Neustart)
++    s6_stat |= S6_STILL;                 // Lauf nach dem Neustart misst und sendet nicht
++    time_on = 0;
++    save_data_to_ram();
++    debugprintlnF("S6: Neustart");
++    debugflush();
++    digitalWrite(Power_Pin, LOW);
++    delay(5);
++    NVIC_SystemReset();
++  }
++}
++
++#endif  // SENDEPLAN
+diff --color -ruN orig/src/lmic_otaa/hal/hal.cpp neu/src/lmic_otaa/hal/hal.cpp
+--- orig/src/lmic_otaa/hal/hal.cpp	2026-11-07 23:53:40.509568211 +0100
++++ neu/src/lmic_otaa/hal/hal.cpp	2026-11-07 23:53:40.546710974 +0100
+@@ -240,6 +240,10 @@
+ #endif
+ }
+ 
++// beelogger (desiue, 2026-11-07): Der Sketch kann lmic_fehler() bereitstellen (Software-Watchdog:
++// Phase merken und neu starten). Sonst wie bisher: Interrupts aus, Endlosschleife.
++void lmic_fehler() __attribute__((weak));
++
+ void hal_failed (const char *file, u2_t line) {
+ #if defined(LMIC_FAILURE_TO)
+     LMIC_FAILURE_TO.println("FAILURE ");
+@@ -248,6 +252,7 @@
+     LMIC_FAILURE_TO.println(line);
+     LMIC_FAILURE_TO.flush();
+ #endif
++    if (lmic_fehler) lmic_fehler();
+     hal_disableIRQs();
+     while(1);
+ }
+diff --color -ruN orig/src/lmic_otaa/lmic/config.h neu/src/lmic_otaa/lmic/config.h
+--- orig/src/lmic_otaa/lmic/config.h	2026-11-07 23:53:40.509796820 +0100
++++ neu/src/lmic_otaa/lmic/config.h	2026-11-07 23:53:40.546699636 +0100
+@@ -38,7 +38,7 @@
+ #define LMIC_FAILURE_TO Serial
+ 
+ // Uncomment this to disable all code related to joining
+-#define DISABLE_JOIN  //mod
++//#define DISABLE_JOIN  //mod  beelogger: Join für OTAA (ABP-Geräte joinen nie, DevAddr != 0)
+ // Uncomment this to disable all code related to ping
+ #define DISABLE_PING  //mod
+ // Uncomment this to disable all code related to beacon tracking.
+diff --color -ruN orig/src/lmic_otaa/lmic/lmic.c neu/src/lmic_otaa/lmic/lmic.c
+--- orig/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:53:40.510202998 +0100
++++ neu/src/lmic_otaa/lmic/lmic.c	2026-11-07 23:53:40.546659221 +0100
+@@ -1144,6 +1144,7 @@
+         case MCMD_LCHK_ANS: {
+             //int gwmargin = opts[oidx+1];
+             //int ngws = opts[oidx+2];
++            LMIC.lchkReq = 3;  // beelogger
+             oidx += 3;
+             continue;
+         }
+@@ -1642,6 +1643,11 @@
+         LMIC.dn2Ans = 0;
+     }
+ #endif // !DISABLE_MCMD_DN2P_SET
++    if( LMIC.lchkReq == 1 ) {  // beelogger: link check request
++        LMIC.frame[end] = MCMD_LCHK_REQ;
++        end += 1;
++        LMIC.lchkReq = 2;
++    }
+     if( LMIC.devsAns ) {  // answer to device status
+         LMIC.frame[end+0] = MCMD_DEVS_ANS;
+         LMIC.frame[end+1] = os_getBattLevel();
+@@ -2361,6 +2367,15 @@
+     DO_DEVDB(LMIC.seqnoDn, seqnoDn);
+ }
+ 
++// beelogger: OTAA-Session aus gespeicherten Join-Werten wiederherstellen.
++// artnonce_netid = AppNonce (3) + NetID (3) wie im Join-Accept (LSB zuerst);
++// devnonce = DevNonce des erfolgreichen Join-Request. Schlüssel kommen aus os_getDevKey().
++void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid) {
++    u1_t nwk[16], art[16];
++    aes_sessKeys(devnonce, artnonce_netid, nwk, art);
++    LMIC_setSession(netid, devaddr, nwk, art);
++}
++
+ // Enable/disable link check validation.
+ // LMIC sets the ADRACKREQ bit in UP frames if there were no DN frames
+ // for a while. It expects the network to provide a DN message to prove
+diff --color -ruN orig/src/lmic_otaa/lmic/lmic.h neu/src/lmic_otaa/lmic/lmic.h
+--- orig/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:53:40.510400369 +0100
++++ neu/src/lmic_otaa/lmic/lmic.h	2026-11-07 23:53:40.546632598 +0100
+@@ -215,6 +215,7 @@
+     u1_t        margin;
+     bit_t       ladrAns;      // link adr adapt answer pending
+     bit_t       devsAns;      // device status answer pending
++    u1_t        lchkReq;      // beelogger: 1 = LinkCheckReq senden, 2 = gesendet, 3 = LinkCheckAns erhalten
+     u1_t        adrEnabled;
+     u1_t        moreData;     // NWK has more data pending
+ #if !defined(DISABLE_MCMD_DCAP_REQ)
+@@ -304,6 +305,7 @@
+ 
+ void LMIC_setSession (u4_t netid, devaddr_t devaddr, xref2u1_t nwkKey, xref2u1_t artKey);
+ void LMIC_setLinkCheckMode (bit_t enabled);
++void LMIC_restoreJoin (u4_t netid, devaddr_t devaddr, u2_t devnonce, xref2cu1_t artnonce_netid);
+ void LMIC_setClockError(u2_t error);
+ 
+ // Declare onEvent() function, to make sure any definition will have the
