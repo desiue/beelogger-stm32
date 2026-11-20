@@ -34,6 +34,27 @@ Wichtig:
   Kommando `05` auf `0` steht (Vorgabe), ist immer „Tag“, und die Nacht-Werte `02`/`04` wirken nie.
 - Werte außerhalb des Bereichs oder falsche Länge: der **ganze** Downlink wird verworfen, nichts ändert sich.
 - Wer sich verrechnet hat: `01 0F 00` stellt die Vorgabe wieder her.
+
+### Gemessene Solarspannung nachts (Grundlage für die Grenze `05`)
+
+Messung 20.11.2026, Server-CSV `Quad<N>/beelogger.csv` auf dem eigenen Server, alle Werte vom 01.11. bis 20.11.2026 09:02,
+Mittel je Stunde. Spalte: Solarspannung nach der Server-Formel `x[10+(MultiType-1)*3]` bei 4 Waagen
+(`beelogger_show.php`, Zeilen 880–890; Akku davor, Spalte 18). Nur November, Sommerwerte fehlen.
+
+| Standort (Quad) | Dunkelheit (Stunden 18 bis 5), Mittel | Dunkelheit, höchster Wert | 06 Uhr, höchster Wert | Mittag 12 Uhr, Mittel |
+|---|---|---|---|---|
+| Q1 | 0,03 V | 0,09 V | 0,46 V | 5,34 V |
+| Q2 | 0,04–0,05 V | 0,85 V (einmal) | 0,20 V | 4,82 V |
+| Q5 (Straßenlaterne in der Nähe) | 0,05 V | 0,08 V | 0,40 V | 4,67 V |
+| Q6 | 0,08 V | 0,10 V | 0,50 V | 5,29 V |
+| Q7 | 0,04 V | 0,06 V | 0,29 V | 4,44 V |
+
+- Nachts liegt die Solarspannung überall unter 0,1 V; die Straßenlaterne bei Q5 ändert nichts.
+- Morgens (06 Uhr) steigt sie auf höchstens 0,5 V, ab 07 Uhr liegt der Mittelwert über 1,4 V.
+- Q2 hatte nachts zwei einzelne Ausreißer (19.11. 19:11 mit 0,85 V, 23:06 mit 0,18 V, je ein Messwert). Ursache unbekannt,
+  vermutet: Scheinwerfer eines Autos im Moment der Messung. Mit Grenze 0,5 V (`05` = `0A`) würde so ein Wert einmal „Tag“ ergeben.
+- Am 01. und 02.11. lag Q2 gegen 18 Uhr in der Dämmerung kurz bis 0,19 V.
+- Ergebnis: Grenze 0,5 V trennt Tag und Nacht an allen fünf Ständen sauber; die Messung muss nicht wiederholt werden, außer mit Sommerwerten.
 - Beim Neustart prüft der Logger die DevAddr (TTN-Konsole: *Device address*), damit kein falsches Gerät
   neu startet.
 - Ohne Plan (F103, `main`, oder noch nie ein Plan gesetzt) bleibt es beim alten Ablauf, siehe
