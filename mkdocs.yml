@@ -70,5 +70,6 @@ nav:
       - Lizenz: lizenz.md
       - Planung:
           - Idee Sendeplan/Schwarmalarm: planung/idee_sendeplan_schwarmalarm.md
+          - Idee Fern-Kalibrierung: planung/idee_fern_kalibrierung.md
           - Planung OTAA/Downlink: planung/planung_otaa_downlink.md
           - Vorschlag Payload-Erweiterung: planung/vorschlag_payload_erweiterung.md
