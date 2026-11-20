@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 20.11.2026 · gilt für: STM32 261119, **nur Branch `s6-sendeplan`** (noch nicht auf `main`) ·
+Stand: 20.11.2026 · gilt für: STM32 261119 (seit Merge auf `main`) ·
 geprüft gegen Code: Commit d3b1d87 und der Commit mit dieser Seite („Plan gewinnt“, `S6_PLAN_GILT`); `0B` und Flash-Format `B2` gegen den Commit „Arbeitsschalter-Dauer per FPort 12“
 (`src/STM32_sendeplan.ino`, `src/STM32_LORA.ino:745-777`, `src/STM32_beelogger.h:22`)
 
@@ -11,7 +11,7 @@ der älteren Downlinks: [payload.md](payload.md), Wirkung auf die Intervalle: [i
 
 ## Kurzanleitung: Was will ich einstellen?
 
-Gilt nur für F4-Logger (F401/F411) mit Firmware aus dem Branch `s6-sendeplan`. Alle Downlinks gehen an
+Gilt nur für F4-Logger (F401/F411) mit Firmware 261119 oder neuer. Alle Downlinks gehen an
 **FPort 12** (TTN-Konsole → Gerät → *Messaging* → *Schedule downlink*, Payload in Hex, siehe
 [Downlink schicken](#downlink-schicken)). Er kommt erst nach dem nächsten Uplink beim Logger an. Jeder Payload
 beginnt mit `01`. Vor dem ersten Plan arbeitet der Logger mit den **Vorgaben** (Spalte „Vorgabe“ in der Tabelle
@@ -47,19 +47,19 @@ Die technischen Einzelheiten (alle Kommandos, Format, Rangfolge, Messungen) steh
 |---|---|---|---|---|---|
 | Festes Sendeintervall | FPort 10, 1 Byte | 5–180 min, `0` = Firmware-Vorgabe (`src/STM32_LORA.ino:755`) | `0` = Firmware-Vorgabe | Backup-Register | ja |
 | Uhr stellen + Intervall | FPort 11, 7 Byte (automatisch vom Server) | Intervall 5–60 min (`src/STM32_LORA.ino:772`) | – | RTC / Backup-Register | ja |
-| Wiegeabstand Tag / Nacht | FPort 12, `01` / `02` | 1–60 min (`src/STM32_sendeplan.ino:57`) | 5 min (`WeckIntervall`) | Flash | nein, nur Branch |
-| Sendeabstand Tag / Nacht | FPort 12, `03` / `04` | 5–180 min, Raster 5 (`src/STM32_sendeplan.ino:58`) | 5 min (`WeckIntervall`) | Flash | nein, nur Branch |
-| Grenze Tag/Nacht (Solarspannung) | FPort 12, `05` | 0–255 × 0,05 V, `0` = immer Tag (`src/STM32_sendeplan.ino:144`) | `0` = immer Tag | Flash | nein, nur Branch |
-| Winter-Temperatur | FPort 12, `06` | 0,5-°C-Schritte mit Vorzeichen, `80` = aus (`src/STM32_sendeplan.ino:232`) | `80` = aus | Flash | nein, nur Branch |
-| Sendeabstand Winter | FPort 12, `07` | 5–180 min, Raster 5 (`src/STM32_sendeplan.ino:58`) | 60 min (`WeckIntervall_Winter`) | Flash | nein, nur Branch |
-| Schwelle Sofort-Senden (Gewichtssprung) | FPort 12, `08`, 2 Byte | `0` = aus, 50–65 535 g (`src/STM32_sendeplan.ino:252`) | `0` = aus | Flash | nein, nur Branch |
-| Akkuspar-Schwelle | FPort 12, `09` | × 0,05 V, mindestens `VMinimum` + 0,05 V (`src/STM32_sendeplan.ino:59`) | 3,8 V (`VAlternativ`) | Flash | nein, nur Branch |
-| Sendeabstand im Akkusparmodus | FPort 12, `0A` | 30–240 min, Raster 5 (`src/STM32_sendeplan.ino:60`) | 120 min (`AlternativIntervallMinuten`) | Flash | nein, nur Branch |
-| Höchstdauer Arbeitsschalter (Pause bei dauernd eingeschaltetem Schalter) | FPort 12, `0B` | 5–240 min, Raster 5 (`src/STM32_sendeplan.ino:61`); ohne Flash-Plan `USER_INT_TM`, gekappt auf 150 (`src/STM32_sendeplan.ino:15`) | Config `USER_INT_TM` (180), gekappt auf 150 min | Flash | nein, nur Branch; ungeprüft auf Hardware |
-| Plan auf Firmware-Vorgabe zurück | FPort 12, `0F` | – (`src/STM32_sendeplan.ino:254`) | – | Flash-Eintrag gelöscht | nein, nur Branch |
-| Für eine Weile anders (Wiegen, Senden, Dauer) | FPort 12, `10`, 3 Byte | 1–60 min, 5–180 min, 0–72 h (`src/STM32_sendeplan.ino:258`) | – | Backup-Register | nein, nur Branch |
-| Neustart / Neustart + Neu-Join | FPort 12, `20`, 3 Byte | Art `01`/`02` + Prüfwert DevAddr (`src/STM32_sendeplan.ino:261`) | – | – | nein, nur Branch |
-| Status senden | FPort 12, `30` | reserviert, bewirkt nur die Quittung (`src/STM32_sendeplan.ino:264`) | – | – | nein, nur Branch |
+| Wiegeabstand Tag / Nacht | FPort 12, `01` / `02` | 1–60 min (`src/STM32_sendeplan.ino:57`) | 5 min (`WeckIntervall`) | Flash | ja |
+| Sendeabstand Tag / Nacht | FPort 12, `03` / `04` | 5–180 min, Raster 5 (`src/STM32_sendeplan.ino:58`) | 5 min (`WeckIntervall`) | Flash | ja |
+| Grenze Tag/Nacht (Solarspannung) | FPort 12, `05` | 0–255 × 0,05 V, `0` = immer Tag (`src/STM32_sendeplan.ino:144`) | `0` = immer Tag | Flash | ja |
+| Winter-Temperatur | FPort 12, `06` | 0,5-°C-Schritte mit Vorzeichen, `80` = aus (`src/STM32_sendeplan.ino:232`) | `80` = aus | Flash | ja |
+| Sendeabstand Winter | FPort 12, `07` | 5–180 min, Raster 5 (`src/STM32_sendeplan.ino:58`) | 60 min (`WeckIntervall_Winter`) | Flash | ja |
+| Schwelle Sofort-Senden (Gewichtssprung) | FPort 12, `08`, 2 Byte | `0` = aus, 50–65 535 g (`src/STM32_sendeplan.ino:252`) | `0` = aus | Flash | ja |
+| Akkuspar-Schwelle | FPort 12, `09` | × 0,05 V, mindestens `VMinimum` + 0,05 V (`src/STM32_sendeplan.ino:59`) | 3,8 V (`VAlternativ`) | Flash | ja |
+| Sendeabstand im Akkusparmodus | FPort 12, `0A` | 30–240 min, Raster 5 (`src/STM32_sendeplan.ino:60`) | 120 min (`AlternativIntervallMinuten`) | Flash | ja |
+| Höchstdauer Arbeitsschalter (Pause bei dauernd eingeschaltetem Schalter) | FPort 12, `0B` | 5–240 min, Raster 5 (`src/STM32_sendeplan.ino:61`); ohne Flash-Plan `USER_INT_TM`, gekappt auf 150 (`src/STM32_sendeplan.ino:15`) | Config `USER_INT_TM` (180), gekappt auf 150 min | Flash | ja; Hardware-Test 19.11.2026 bestanden |
+| Plan auf Firmware-Vorgabe zurück | FPort 12, `0F` | – (`src/STM32_sendeplan.ino:254`) | – | Flash-Eintrag gelöscht | ja |
+| Für eine Weile anders (Wiegen, Senden, Dauer) | FPort 12, `10`, 3 Byte | 1–60 min, 5–180 min, 0–72 h (`src/STM32_sendeplan.ino:258`) | – | Backup-Register | ja |
+| Neustart / Neustart + Neu-Join | FPort 12, `20`, 3 Byte | Art `01`/`02` + Prüfwert DevAddr (`src/STM32_sendeplan.ino:261`) | – | – | ja |
+| Status senden | FPort 12, `30` | reserviert, bewirkt nur die Quittung (`src/STM32_sendeplan.ino:264`) | – | – | ja |
 
 **Nicht per Downlink verstellbar** (entschieden 19.11.2026): Waagenkonfiguration (Tara, Kalibrierfaktor),
 weil Kalibrieren ein Prüfgewicht am Stand braucht. Ebenso nicht: `VMinimum`, Sensorauswahl, LoRa-Schlüssel –
@@ -177,7 +177,7 @@ Kommando 20 (`src/STM32_sendeplan.ino:318`) und vermutlich durch Akku ab ohne Pu
 verwerfen und neu joinen (bei ABP wie `01`). Ausgeführt wird nur, wenn die letzten 2 Byte der DevAddr passen
 (TTN-Konsole: *Device address*). Der Neustart läuft erst nach dem Uplink. Der Lauf danach misst und sendet
 nicht, der nächste Uplink meldet Service 0, ein laufendes Kommando 10 endet (`src/STM32_sendeplan.ino:314-327`).
-Ungeprüft auf Hardware (Test steht aus).
+Gemessen 19.11.2026 auf beelogger08: `20/01` und `20/02` bestanden (Neustart, Neu-Join mit Plan danach weiter gültig).
 
 ## Rangfolge im Logger
 
@@ -215,7 +215,7 @@ Beispiele:
 
 **Achtung beim Server-Downlink:** `server/lora_downlink.php` muss Downlinks einreihen (`x-downlink-push`),
 nicht ersetzen (`x-downlink-replace`), sonst löscht er einen wartenden FPort-12-Downlink
-(`server/lora_downlink.php:76`, nur Branch).
+(`server/lora_downlink.php:76`).
 
 ## Speicher und Flashen
 
@@ -227,5 +227,4 @@ Akkuwechsel. **Ein Löschen des ganzen Chips löscht auch den Plan**, z. B. `stm
 
 Gemessen 19.11.2026 auf beelogger08 (F411, Testlogger): Plan setzen, Reset (Plan bleibt), ungültiger Wert,
 Längenfehler, unbekanntes Kommando, Plan löschen `0F`, Plan neu setzen, Kommando 10 – alle bestanden.
-Noch offen: Ablauf von Kommando 10, Neustart `20/01`, Neu-Join `20/02`, FPort 10 bei aktivem Plan,
-Akku ab, Sofort-Schwelle `08`, Strom je Wiegung.
+Bestanden außerdem: Neustart `20/01`, Neu-Join `20/02`, FPort 10 bei aktivem Plan wirkungslos, `0B` 240 min, Akku ab (Plan bleibt), Arbeitsschalter 240 min real (20.11.2026). **Noch ungeprüft auf Hardware:** `05`, `06`/`07` (Winter), `08` (Sofort-Senden), `09`/`0A` (Akkusparmodus), Waagen-Pfad, Strom je Wiegung.

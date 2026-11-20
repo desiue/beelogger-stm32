@@ -65,7 +65,7 @@ Werte der Vorlagen `Config_LORA.h.example` und `Config_MULTI.h.example`. Wie die
 | `Taragewicht[4]`, `Skalierung[4]` | Kalibrierung je Waage, Tara `10` = Waage nicht benutzt | 10 / 1.0 |
 | `Kalib_Spannung`, `Kalib_Bitwert` | Akkumessung, **muss ersetzt werden** (unten) | 1000 / 100 |
 | `VAlternativ`, `VMinimum` | Akku: ab hier 120 min, darunter nichts senden | 3.8 / 3.75 V |
-| `USER_INT_TM` | Pause in Minuten bei dauernd gedrücktem Arbeitsschalter, höchstens 150 (nur Branch `s6-sendeplan`: per FPort 12 `0B` bis 240) | 30 |
+| `USER_INT_TM` | Pause in Minuten bei dauernd gedrücktem Arbeitsschalter, höchstens 150 (ab 261119, F4: per FPort 12 `0B` bis 240) | 30 |
 
 Sensor-Nummern: 1–2 DHT, 3 Si7021, 4–5 SHT31, 6–7 BME280, 8–9 DS18B20 (Kommentar in `Config_MULTI.h.example`).
 

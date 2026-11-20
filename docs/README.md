@@ -31,7 +31,7 @@ Alle Seiten nach Themen. Wer neu ist: oben anfangen.
 | [LoRaWAN](lorawan.md) | Frame-Aufbau, Verschlüsselung, Frame-Counter, OTAA, Kanäle, Sendezeit |
 | [Payload](payload.md) | Byte-Formate Uplink FPort 1, Downlink FPort 10 und 11, mit Hex-Beispielen |
 | [Intervalle](intervalle.md) | Tag, Nacht, Winter, Akku, Fern-Intervall: was gilt wann |
-| [Fern-Einstellungen](fern_einstellungen.md) | Übersicht: was per Downlink verstellbar ist (FPort 10, 11, 12 Sendeplan – FPort 12 nur Branch `s6-sendeplan`) |
+| [Fern-Einstellungen](fern_einstellungen.md) | Übersicht: was per Downlink verstellbar ist (FPort 10, 11, 12 Sendeplan – FPort 12 nur F4, ab 261119) |
 | [Speicher](speicher.md) | Backup-Register, Flash beim BluePill, was nach Stromausfall oder Update bleibt |
 
 ## Wenn etwas nicht geht

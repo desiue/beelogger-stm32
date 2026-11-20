@@ -52,8 +52,8 @@ Zusätzlich:
   der Logger sofort eine Meldung mit Service = 99. Solange der Schalter an bleibt, wacht er alle 5 min
   auf (`INTERVAL_STUCK_SWITCH`), misst nur das Gewicht und sendet nicht. Das dauert höchstens
   `USER_INT_TM` Minuten. Die Vorlage hat 30, der Code begrenzt auf höchstens 150 (größere Werte ergeben beim
-  Bauen die Warnung `USER_INT_TM set to 150 minutes`). Nur Branch `s6-sendeplan` (F4): per FPort 12, Kommando `0B`,
-  aus der Ferne 5–240 min, Raster 5 (`src/STM32_sendeplan.ino:61`, ungeprüft auf Hardware), siehe
+  Bauen die Warnung `USER_INT_TM set to 150 minutes`). Nur F4: per FPort 12, Kommando `0B`,
+  aus der Ferne 5–240 min, Raster 5 (`src/STM32_sendeplan.ino:61`, gemessen 19.11.2026), siehe
   [fern_einstellungen.md](fern_einstellungen.md). Danach geht er in den normalen
   Takt zurück, auch wenn der Schalter vergessen wurde.
   LED (PC13): 1 × lang (0,5 s) = Schalter erkannt; ist er 2 s später noch an, 4 × kurz = Meldung mit
@@ -91,7 +91,7 @@ Ohne diesen Rückkanal sind die Varianten nach Solarspannung und Temperatur die 
 
 ## Fern-Intervall per Downlink
 
-Übersicht aller per Downlink verstellbaren Werte, auch Sendeplan FPort 12 (nur Branch `s6-sendeplan`, dort setzen FPort 10/11 bei gültigem Plan kein Intervall): [fern_einstellungen.md](fern_einstellungen.md).
+Übersicht aller per Downlink verstellbaren Werte, auch Sendeplan FPort 12 (nur F4, dort setzen FPort 10/11 bei gültigem Plan kein Intervall): [fern_einstellungen.md](fern_einstellungen.md).
 
 - **FPort 10** (von Hand in der TTN-Konsole): 1 Byte Minuten, 5–180. `0` schaltet zurück auf die eigene
   Logik. Beispiel: `1E` = 30 min.

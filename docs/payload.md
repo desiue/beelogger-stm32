@@ -23,7 +23,7 @@ flowchart LR
 | Uplink (Logger → Server) | 1 | 9–28 Byte | Messwerte, Header am Ende |
 | Downlink (Server → Logger) | 10 | 1 Byte | Fern-Intervall in Minuten |
 | Downlink (Server → Logger) | 11 | 7 Byte | Serverquittung: Uhrzeit + Intervall |
-| Downlink (TTN-Konsole → Logger) | 12 | 3–51 Byte | Sendeplan-Kommandos, nur Branch `s6-sendeplan`, siehe [fern_einstellungen.md](fern_einstellungen.md) |
+| Downlink (TTN-Konsole → Logger) | 12 | 3–51 Byte | Sendeplan-Kommandos (F4, ab 261119), siehe [fern_einstellungen.md](fern_einstellungen.md) |
 
 Alle Mehrbyte-Werte sind **big endian** (höchstwertiges Byte zuerst).
 

@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 19.11.2026 · gilt für: STM32 261107, Sendeplan-Teile nur Branch `s6-sendeplan` (261119, Commit 03b4724; Register 5 Bit 0–7 und Flash-Format `B2` gegen den Commit „Arbeitsschalter-Dauer per FPort 12“) · geprüft gegen Code: Commit 80673f1 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
+Stand: 19.11.2026 · gilt für: STM32 261107, Sendeplan-Teile 261119 (261119, Commit 03b4724; Register 5 Bit 0–7 und Flash-Format `B2` gegen den Commit „Arbeitsschalter-Dauer per FPort 12“) · geprüft gegen Code: Commit 80673f1 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
 
 Der STM32-Logger schläft zwischen zwei Messungen im **Shutdown** (Standby, `LowPower.shutdown()` in
 `src/STM32_LORA_utility.ino`). Beim Aufwachen startet er wie nach einem Reset, das RAM ist dann leer.
@@ -10,7 +10,7 @@ Alles, was er sich über den Schlaf hinweg merken muss, liegt deshalb an zwei St
 
 - in den **RTC-Backup-Registern** (laufen mit der Uhr weiter, solange Strom da ist),
 - beim BluePill zusätzlich in **einer Flash-Seite** (übersteht auch einen Stromausfall),
-- beim BlackPill mit Sendeplan (nur Branch `s6-sendeplan`) im **letzten Flash-Sektor** (Plan-Werte aus FPort 12, siehe [fern_einstellungen.md](fern_einstellungen.md)).
+- beim BlackPill mit Sendeplan (261119) im **letzten Flash-Sektor** (Plan-Werte aus FPort 12, siehe [fern_einstellungen.md](fern_einstellungen.md)).
 
 ## Wo was liegt
 
@@ -34,13 +34,13 @@ flowchart LR
 | 1, 2 | letztes Gewicht Waage 1, 2 (× 100) | frei |
 | 3 | LoRa-Frame-Counter (`LoRaSeqCounter`) | ebenso |
 | 4 | Weckintervall (Bit 0–7), Einschaltdauer `time_on` (Bit 8–15) | ebenso |
-| 5 | `stuck_switch` (Bit 0–4; Branch `s6-sendeplan`: Bit 0–7, `src/STM32_LORA_utility.ino:494`), `akku_save` (Bit 8), Fern-Intervall ÷ 5 (Bit 9–14) | ebenso |
+| 5 | `stuck_switch` (Bit 0–4; ab 261119: Bit 0–7, `src/STM32_LORA_utility.ino:494`), `akku_save` (Bit 8), Fern-Intervall ÷ 5 (Bit 9–14) | ebenso |
 | 6, 7 | Datum der RTC (die F1-Uhr kennt selbst nur Sekunden, die Bibliothek legt das Datum hier ab) | letztes Gewicht Waage 1, 2 |
 | 8, 9 | letztes Gewicht Waage 3, 4 | ebenso |
 | 10 | Watchdog-Merker | OTAA-Session, Teil 1 |
 | 11–13 | – (gibt es beim F103 nicht) | OTAA-Session, Teil 2–4 |
 | 14 | – | Watchdog-Merker |
-| 15–18 | – | nur Branch `s6-sendeplan`: Sendeplan (letzte Sendung, Ende Kommando 10, Kommando-10-Werte, Merker, zuletzt gesendete Gewichte), `src/STM32_sendeplan.ino:18-22` |
+| 15–18 | – | ab 261119: Sendeplan (letzte Sendung, Ende Kommando 10, Kommando-10-Werte, Merker, zuletzt gesendete Gewichte), `src/STM32_sendeplan.ino:18-22` |
 
 Quelle: `save_data_to_ram()` / `get_data_from_ram()` in `src/STM32_LORA_utility.ino`, Watchdog `WDT_REG`
 ebenda, OTAA-Session `otaa_rd()`/`otaa_wr()` in `src/STM32_LORA.ino`.
@@ -89,9 +89,9 @@ wird die Seite aus der Chipgröße berechnet und gegen das Programmende geprüft
 | Reset, Watchdog-Neustart | bleiben | bleibt | wie Tiefschlaf |
 | **Stromausfall** (Akku ab, Strom-Jumper gezogen) | **gelöscht** | bleibt | Uhr auf 01.01.2022, Zähler 0, Gewichte leer, Fern-Intervall weg. Bei OTAA löscht der Sketch auch die gespeicherte Session und joint neu |
 | Flashen ohne Löschen (Strom bleibt an) | bleiben | bleibt | neue Firmware liest die alten Werte |
-| Flashen mit Löschen (`stm32loader -e`) | bleiben | **gelöscht** | BluePill: neuer Join; BlackPill: Session bleibt, aber ein Sendeplan im Flash ist weg (nur Branch `s6-sendeplan`) |
+| Flashen mit Löschen (`stm32loader -e`) | bleiben | **gelöscht** | BluePill: neuer Join; BlackPill: Session bleibt, aber ein Sendeplan im Flash ist weg (ab 261119) |
 
-## Sendeplan im Flash beim BlackPill (nur Branch `s6-sendeplan`)
+## Sendeplan im Flash beim BlackPill (ab 261119)
 
 - **Ort:** letzter 128-KB-Sektor, beim F411 (512 KB) Sektor 7 ab `0x08060000`. Nur bei mindestens 256 KB Flash
   und nur, wenn das Programm nicht hineinreicht, sonst gibt es keinen Flash-Plan (`src/STM32_sendeplan.ino:85-93`).
