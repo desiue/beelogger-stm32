@@ -2,32 +2,64 @@
 
 [← Übersicht](README.md)
 
-Stand: 19.11.2026 · gilt für: STM32 261119, **nur Branch `s6-sendeplan`** (noch nicht auf `main`) ·
+Stand: 20.11.2026 · gilt für: STM32 261119, **nur Branch `s6-sendeplan`** (noch nicht auf `main`) ·
 geprüft gegen Code: Commit d3b1d87 und der Commit mit dieser Seite („Plan gewinnt“, `S6_PLAN_GILT`); `0B` und Flash-Format `B2` gegen den Commit „Arbeitsschalter-Dauer per FPort 12“
 (`src/STM32_sendeplan.ino`, `src/STM32_LORA.ino:745-777`, `src/STM32_beelogger.h:22`)
 
 Diese Seite ist die Übersicht aller Werte, die sich aus der Ferne über TTN verstellen lassen. Format-Details
 der älteren Downlinks: [payload.md](payload.md), Wirkung auf die Intervalle: [intervalle.md](intervalle.md).
 
+## Kurzanleitung: Was will ich einstellen?
+
+Gilt nur für F4-Logger (F401/F411) mit Firmware aus dem Branch `s6-sendeplan`. Alle Downlinks gehen an
+**FPort 12** (TTN-Konsole → Gerät → *Messaging* → *Schedule downlink*, Payload in Hex, siehe
+[Downlink schicken](#downlink-schicken)). Er kommt erst nach dem nächsten Uplink beim Logger an. Jeder Payload
+beginnt mit `01`. Vor dem ersten Plan arbeitet der Logger mit den **Vorgaben** (Spalte „Vorgabe“ in der Tabelle
+darunter); wer einen Wert setzt, legt damit einen Plan im Flash an, alle anderen Werte bleiben auf der Vorgabe.
+
+| Ich will … | Payload (Hex) | Wirkt |
+|---|---|---|
+| alle 10 min senden (Tag und Nacht) | `01 03 01 0A 04 01 0A` | dauerhaft |
+| nachts seltener senden (30 min), „Nacht“ = Solarspannung unter 0,5 V | `01 04 01 1E 05 01 0A` | dauerhaft |
+| öfter wiegen als senden (alle 2 min wiegen, alle 10 min senden) | `01 01 01 02 03 01 0A` | dauerhaft |
+| 6 h lang jede Minute wiegen, alle 5 min senden, danach wieder wie vorher | `01 10 03 01 05 06` | befristet (1–72 h) |
+| befristete Änderung sofort beenden | `01 10 03 01 05 00` | sofort |
+| Arbeitsschalter höchstens 4 h aktiv lassen | `01 0B 01 F0` | dauerhaft |
+| alles auf die Vorgabe zurück | `01 0F 00` | dauerhaft |
+| Logger neu starten (mit Neu-Join) | `01 20 03 02 <letzte 2 Byte der DevAddr>` | einmalig |
+
+Wichtig:
+
+- **„Nacht“ bedeutet hier: zu wenig Licht**, gemessen an der Solarspannung. Es gibt keine Uhrzeiten. Solange
+  Kommando `05` auf `0` steht (Vorgabe), ist immer „Tag“, und die Nacht-Werte `02`/`04` wirken nie.
+- Werte außerhalb des Bereichs oder falsche Länge: der **ganze** Downlink wird verworfen, nichts ändert sich.
+- Wer sich verrechnet hat: `01 0F 00` stellt die Vorgabe wieder her.
+- Beim Neustart prüft der Logger die DevAddr (TTN-Konsole: *Device address*), damit kein falsches Gerät
+  neu startet.
+- Ohne Plan (F103, `main`, oder noch nie ein Plan gesetzt) bleibt es beim alten Ablauf, siehe
+  [Nach welchen Regeln der Logger sendet](#nach-welchen-regeln-der-logger-sendet).
+
+Die technischen Einzelheiten (alle Kommandos, Format, Rangfolge, Messungen) stehen ab hier.
+
 ## Auf einen Blick
 
-| Was | Downlink | Bereich | Speicher | Auf `main`? |
-|---|---|---|---|---|
-| Festes Sendeintervall | FPort 10, 1 Byte | 5–180 min, `0` = Firmware-Vorgabe (`src/STM32_LORA.ino:755`) | Backup-Register | ja |
-| Uhr stellen + Intervall | FPort 11, 7 Byte (automatisch vom Server) | Intervall 5–60 min (`src/STM32_LORA.ino:772`) | RTC / Backup-Register | ja |
-| Wiegeabstand Tag / Nacht | FPort 12, `01` / `02` | 1–60 min (`src/STM32_sendeplan.ino:57`) | Flash | nein, nur Branch |
-| Sendeabstand Tag / Nacht | FPort 12, `03` / `04` | 5–180 min, Raster 5 (`src/STM32_sendeplan.ino:58`) | Flash | nein, nur Branch |
-| Grenze Tag/Nacht (Solarspannung) | FPort 12, `05` | 0–255 × 0,05 V, `0` = immer Tag (`src/STM32_sendeplan.ino:144`) | Flash | nein, nur Branch |
-| Winter-Temperatur | FPort 12, `06` | 0,5-°C-Schritte mit Vorzeichen, `80` = aus (`src/STM32_sendeplan.ino:232`) | Flash | nein, nur Branch |
-| Sendeabstand Winter | FPort 12, `07` | 5–180 min, Raster 5 (`src/STM32_sendeplan.ino:58`) | Flash | nein, nur Branch |
-| Schwelle Sofort-Senden (Gewichtssprung) | FPort 12, `08`, 2 Byte | `0` = aus, 50–65 535 g (`src/STM32_sendeplan.ino:252`) | Flash | nein, nur Branch |
-| Akkuspar-Schwelle | FPort 12, `09` | × 0,05 V, mindestens `VMinimum` + 0,05 V (`src/STM32_sendeplan.ino:59`) | Flash | nein, nur Branch |
-| Sendeabstand im Akkusparmodus | FPort 12, `0A` | 30–240 min, Raster 5 (`src/STM32_sendeplan.ino:60`) | Flash | nein, nur Branch |
-| Höchstdauer Arbeitsschalter (Pause bei dauernd eingeschaltetem Schalter) | FPort 12, `0B` | 5–240 min, Raster 5 (`src/STM32_sendeplan.ino:61`); ohne Flash-Plan `USER_INT_TM`, gekappt auf 150 (`src/STM32_sendeplan.ino:15`) | Flash | nein, nur Branch; ungeprüft auf Hardware |
-| Plan auf Firmware-Vorgabe zurück | FPort 12, `0F` | – (`src/STM32_sendeplan.ino:254`) | Flash-Eintrag gelöscht | nein, nur Branch |
-| Für eine Weile anders (Wiegen, Senden, Dauer) | FPort 12, `10`, 3 Byte | 1–60 min, 5–180 min, 0–72 h (`src/STM32_sendeplan.ino:258`) | Backup-Register | nein, nur Branch |
-| Neustart / Neustart + Neu-Join | FPort 12, `20`, 3 Byte | Art `01`/`02` + Prüfwert DevAddr (`src/STM32_sendeplan.ino:261`) | – | nein, nur Branch |
-| Status senden | FPort 12, `30` | reserviert, bewirkt nur die Quittung (`src/STM32_sendeplan.ino:264`) | – | nein, nur Branch |
+| Was | Downlink | Bereich | Vorgabe ohne Plan (Config dieses Repos) | Speicher | Auf `main`? |
+|---|---|---|---|---|---|
+| Festes Sendeintervall | FPort 10, 1 Byte | 5–180 min, `0` = Firmware-Vorgabe (`src/STM32_LORA.ino:755`) | `0` = Firmware-Vorgabe | Backup-Register | ja |
+| Uhr stellen + Intervall | FPort 11, 7 Byte (automatisch vom Server) | Intervall 5–60 min (`src/STM32_LORA.ino:772`) | – | RTC / Backup-Register | ja |
+| Wiegeabstand Tag / Nacht | FPort 12, `01` / `02` | 1–60 min (`src/STM32_sendeplan.ino:57`) | 5 min (`WeckIntervall`) | Flash | nein, nur Branch |
+| Sendeabstand Tag / Nacht | FPort 12, `03` / `04` | 5–180 min, Raster 5 (`src/STM32_sendeplan.ino:58`) | 5 min (`WeckIntervall`) | Flash | nein, nur Branch |
+| Grenze Tag/Nacht (Solarspannung) | FPort 12, `05` | 0–255 × 0,05 V, `0` = immer Tag (`src/STM32_sendeplan.ino:144`) | `0` = immer Tag | Flash | nein, nur Branch |
+| Winter-Temperatur | FPort 12, `06` | 0,5-°C-Schritte mit Vorzeichen, `80` = aus (`src/STM32_sendeplan.ino:232`) | `80` = aus | Flash | nein, nur Branch |
+| Sendeabstand Winter | FPort 12, `07` | 5–180 min, Raster 5 (`src/STM32_sendeplan.ino:58`) | 60 min (`WeckIntervall_Winter`) | Flash | nein, nur Branch |
+| Schwelle Sofort-Senden (Gewichtssprung) | FPort 12, `08`, 2 Byte | `0` = aus, 50–65 535 g (`src/STM32_sendeplan.ino:252`) | `0` = aus | Flash | nein, nur Branch |
+| Akkuspar-Schwelle | FPort 12, `09` | × 0,05 V, mindestens `VMinimum` + 0,05 V (`src/STM32_sendeplan.ino:59`) | 3,8 V (`VAlternativ`) | Flash | nein, nur Branch |
+| Sendeabstand im Akkusparmodus | FPort 12, `0A` | 30–240 min, Raster 5 (`src/STM32_sendeplan.ino:60`) | 120 min (`AlternativIntervallMinuten`) | Flash | nein, nur Branch |
+| Höchstdauer Arbeitsschalter (Pause bei dauernd eingeschaltetem Schalter) | FPort 12, `0B` | 5–240 min, Raster 5 (`src/STM32_sendeplan.ino:61`); ohne Flash-Plan `USER_INT_TM`, gekappt auf 150 (`src/STM32_sendeplan.ino:15`) | Config `USER_INT_TM` (180), gekappt auf 150 min | Flash | nein, nur Branch; ungeprüft auf Hardware |
+| Plan auf Firmware-Vorgabe zurück | FPort 12, `0F` | – (`src/STM32_sendeplan.ino:254`) | – | Flash-Eintrag gelöscht | nein, nur Branch |
+| Für eine Weile anders (Wiegen, Senden, Dauer) | FPort 12, `10`, 3 Byte | 1–60 min, 5–180 min, 0–72 h (`src/STM32_sendeplan.ino:258`) | – | Backup-Register | nein, nur Branch |
+| Neustart / Neustart + Neu-Join | FPort 12, `20`, 3 Byte | Art `01`/`02` + Prüfwert DevAddr (`src/STM32_sendeplan.ino:261`) | – | – | nein, nur Branch |
+| Status senden | FPort 12, `30` | reserviert, bewirkt nur die Quittung (`src/STM32_sendeplan.ino:264`) | – | – | nein, nur Branch |
 
 **Nicht per Downlink verstellbar** (entschieden 19.11.2026): Waagenkonfiguration (Tara, Kalibrierfaktor),
 weil Kalibrieren ein Prüfgewicht am Stand braucht. Ebenso nicht: `VMinimum`, Sensorauswahl, LoRa-Schlüssel –
