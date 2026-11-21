@@ -103,6 +103,8 @@ Das Fern-Intervall ersetzt Tag/Nacht/Winter, **nicht** den Akku-Sparmodus. Es li
 (Register 5, Bit 9–14, gespeichert als Minuten ÷ 5) und übersteht den Tiefschlaf, aber keinen
 Stromausfall. Danach gilt wieder die eigene Logik, bis der nächste Downlink kommt.
 
+**Nur F4 mit Sendeplan (FPort 12):** Solange ein gültiger Plan im Flash liegt, setzen FPort 10 und 11 kein Intervall; die Uhrzeit aus FPort 11 gilt trotzdem (`src/STM32_LORA.ino:746-772`). Jeder angenommene Plan-Downlink setzt das Fern-Intervall auf 0 (`src/STM32_sendeplan.ino:304`). Nach `0F` (Plan zurück auf die Vorgabe) bleibt es 0, es gilt das Intervall aus der Config. Der Server schickt sein Intervall erst bei der nächsten Änderung wieder, denn er merkt sich den zuletzt gesendeten Wert, auch wenn das Gerät ihn wegen des Plans nicht übernommen hat (`server/lora_downlink.php:64-67`).
+
 Byte-Formate: [payload.md](payload.md).
 
 ## Zusammenspiel mit dem Server

@@ -180,7 +180,7 @@ Für beelogger-Server, die das Intervall selbst umstellen sollen. TTN reiht den 
 - API-Key: **Application → API keys**, Recht **„Write downlink application traffic“**, sonst nichts. Key nur auf dem Server ablegen.
 - Endpunkt (Cluster `eu1`):
   - `POST https://eu1.cloud.thethings.network/api/v3/as/applications/<app>/devices/<dev>/down/push` hängt an die Warteschlange an,
-  - `…/down/replace` ersetzt sie. Für das Intervall besser `replace`: Wird mehrmals umgestellt, kommt nur der letzte Wert an und kein Downlink-Stau.
+  - `…/down/replace` ersetzt sie, **löscht dabei aber auch wartende Downlinks anderer Ports**, z. B. einen Sendeplan auf FPort 12 ([fern_einstellungen.md](fern_einstellungen.md)). Deshalb `push` verwenden, wie `server/lora_downlink.php:76`. Einen Stau gibt es trotzdem nicht, solange nur bei einer Änderung gesendet wird (`server/lora_downlink.php:67-73`).
 - Body: FPort 10, `frm_payload` = 1 Byte **Base64**.
 
 | Intervall | hex | Base64 |
@@ -195,7 +195,7 @@ Gültig sind 0 und 5–180, andere Werte verwirft die Firmware ohne Meldung.
 
 curl:
 ```bash
-curl -X POST "https://eu1.cloud.thethings.network/api/v3/as/applications/beelogger011/devices/beelogger011-otaa/down/replace" \
+curl -X POST "https://eu1.cloud.thethings.network/api/v3/as/applications/beelogger011/devices/beelogger011-otaa/down/push" \
   -H "Authorization: Bearer $TTN_KEY" -H "Content-Type: application/json" \
   -d '{"downlinks":[{"f_port":10,"frm_payload":"Dw==","priority":"NORMAL"}]}'
 ```
@@ -205,7 +205,7 @@ PHP:
 ```php
 function beelogger_intervall($app, $dev, $minuten, $key) {
     if ($minuten != 0 && ($minuten < 5 || $minuten > 180)) return false;
-    $url  = "https://eu1.cloud.thethings.network/api/v3/as/applications/$app/devices/$dev/down/replace";
+    $url  = "https://eu1.cloud.thethings.network/api/v3/as/applications/$app/devices/$dev/down/push";
     $body = json_encode(["downlinks" => [[
         "f_port" => 10,
         "frm_payload" => base64_encode(chr($minuten)),

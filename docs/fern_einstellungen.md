@@ -238,6 +238,8 @@ Beispiele:
 nicht ersetzen (`x-downlink-replace`), sonst löscht er einen wartenden FPort-12-Downlink
 (`server/lora_downlink.php:76`).
 
+**Akku-Sparmodus:** Ändert ein FPort-12-Downlink den Plan, während der Akku-Sparmodus aktiv ist, verwirft die Firmware den ganzen Downlink, auch ein mitgeschicktes Kommando 10 oder 20 (`src/STM32_sendeplan.ino:288`, seriell „S6: Sparmodus, Plan nicht geschrieben“). Den Downlink nach Ende des Sparmodus neu schicken.
+
 ## Speicher und Flashen
 
 Der Plan liegt im letzten 128-KB-Flash-Sektor (F411: Sektor 7, `src/STM32_sendeplan.ino:85-93`) und übersteht
