@@ -52,7 +52,11 @@ Ein Fern-Intervall per Downlink hebt den Sparmodus nicht auf. Werte für andere 
 
 **Prüfen:** `VBatt` vor der ersten Lücke ansehen. Liegen die gesendeten Werte deutlich über 3,9 V und trotzdem
 kommen Lücken, eher an [springende Akkuspannung](#akkuspannung-springt) denken: Ein einzelner Einbruch reicht für
-den Sparmodus.
+den Sparmodus. Erkennungszeichen: Die Lücke dauert 125 statt 120 min, und der erste Wert danach hat `Service` 1.
+`Service` ist die Wachzeit des vorigen Laufs in Sekunden (`src/STM32_LORA_utility.ino:195`), 1 s heißt: Der Logger
+ist 5 min nach dem letzten Senden aufgewacht, hat unter `VMinimum` gemessen, nichts gesendet und 120 min geschlafen.
+Der LoRa-Zähler läuft über die Lücke durch, es geht also nichts verloren (gemessen 21.11.2026 an einem Feld-Logger:
+13 solche Lücken in 8 Tagen bei gesendeten Werten von 3,9–4,0 V).
 
 **Abhilfe:** Ursache für die niedrige Spannung beheben (Laden, Ruhestrom, Kontakte). Der Logger kehrt von selbst
 zurück.
