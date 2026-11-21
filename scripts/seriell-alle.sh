@@ -12,9 +12,10 @@ declare -A PLATZ=(
   [USB2]=$BP:4.1.3.4.4:1.0-port0   # FT232, Quad8 BlackPill
   [USB3]=$BP:2:1.0-port0           # FT232, Quad4 Blue
   [USB4]=$BP:3:1.0-port0           # FT232, Quad3 blue05 (Watchdog-Testaufbau)
+  [USB5]=$BP:3:1.0-port0           # FT232 A50285BI, Black Pill 1.5.1 (Prüfstand, beelogger09-Schlüssel); gleicher Platz wie USB4: nur einer von beiden steckt
 )
 meldung=""
-for tag in USB0 USB1 USB2 USB3 USB4; do
+for tag in USB0 USB1 USB2 USB3 USB4 USB5; do
   p=${PLATZ[$tag]}
   if [ ! -e "$p" ]; then meldung+="$tag: nicht eingesteckt"$'\n'; continue; fi
   dev=$(readlink -f "$p")
