@@ -55,6 +55,7 @@ nav:
       - Server-Alarme: server_alarme.md
   - Wie es funktioniert:
       - Hardware: hardware.md
+      - Black Pill und Blue Pill: boards_blackpill_bluepill.md
       - LoRaWAN: lorawan.md
       - Payload: payload.md
       - Intervalle: intervalle.md
