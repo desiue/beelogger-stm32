@@ -89,6 +89,11 @@
 /****************************************************************/
 // Global Libraries
 /****************************************************************/
+// beelogger: angepasste LMIC (Feld lchkReq) vor Config_LORA.h einbinden. Alte Configs mit
+// "#include <lmic.h>" holen sonst den Header aus lib/ mit anderer lmic_t-Struktur, gelinkt wird
+// aber src/lmic_otaa: dann landet z. B. LMIC.dn2Dr in snchAns (unaufgeforderte NewChannelAns).
+// Gleicher Include-Guard (_lmic_h_) -> <lmic.h> in der Config bleibt danach wirkungslos.
+#include "src/lmic_otaa/lmic.h"
 #include "Config_LORA.h"   // Konfiguration eintragen
 #include "Config_MULTI.h"  // Konfiguration und Kalibrierung eintragen
 #include "STM32_beelogger.h"
