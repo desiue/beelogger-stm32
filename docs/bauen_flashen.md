@@ -2,7 +2,7 @@
 
 [← Übersicht](README.md)
 
-Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit a3ac566 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026)
+Stand: 10.11.2026 · gilt für: STM32 261107 · geprüft gegen Code: Commit a3ac566 (danach bis 9a536c5 in `src/` nur Kommentare und Solar-Vorgabe in `Config_LORA.h.example`, geprüft 19.11.2026; Hinweis zur alten Config gemessen 21.11.2026)
 
 ```mermaid
 flowchart LR
@@ -38,6 +38,7 @@ flowchart LR
 
 Hinweise:
 - STM32-Core 2.6.0 (`framework-arduinoststm32@~4.20600`), in `platformio.ini` festgelegt.
+- **Update auf eine neue Version: `Config_LORA.h` und `Config_MULTI.h` nicht aus dem alten Stand mitnehmen,** sondern die Dateien aus dem neuen Paket (bzw. `*.example`) verwenden und nur die Schlüssel, `LOGGER_NAME` und die Kalibrierung übertragen. Eine alte `Config_LORA.h` mit `#include <lmic.h>` und `#include <hal/hal.h>` bricht in der Arduino IDE beim Linken mit „multiple definition“ ab (gemessen 21.11.2026) und ist bei PlatformIO nur dank des Include-Fix im Sketch unschädlich, siehe [abp_otaa.md](abp_otaa.md#abp-nach-stromverlust-gemessen).
 - BluePill: Board `bluepill_f103c8_128k` mit `-DARDUINO_BLUEPILL_F103CB` (die Firmware braucht 128 KB).
 - Flash-Belegung (07.11., mit OTAA): F103CB 56 500 B, F411CE 55 308 B. BluePill: Die OTAA-Session liegt in der letzten Flash-Seite (F103CB: bei 127 KB). Reicht das Programm bis dorthin, speichert der Logger keine Session und joint bei jedem Start ([speicher.md](speicher.md)).
 - `pio run -t upload` geht beim F411 nicht (stm32flash kennt die Chip-ID 0x431 nicht), deshalb stm32loader.
