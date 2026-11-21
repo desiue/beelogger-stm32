@@ -74,6 +74,11 @@ seine Spannung.
   eigenen MCP1702-33, der Regler auf dem Modul wird nicht gebraucht. Nach dem Entfernen lag der Ruhestrom bei
   etwa 8 µA. Auf einer anderen Platine blieb der Strom auch ohne Regler hoch. Der Regler ist also nicht in jedem
   Fall die einzige Ursache.
+- **Schwebende SPI-Leitungen zum RFM95.** Gemessen auf der Platine BlackPill 1.5.1 (Mike, 20.11.2026, sieben
+  BlackPill-Boards, siehe [boards_blackpill_bluepill.md](boards_blackpill_bluepill.md)): Der RFM95 hatte dort auch
+  bei gesperrtem Lastschalter 3,28 V (Multimeter), und im Schlaf hält der STM32 NSS, SCK und MOSI nicht fest. Je nach Board flossen dadurch 50 bis
+  650 µA. Mit je einem Widerstand 100 kΩ von NSS, SCK und MOSI nach 3,3 V lagen alle sieben Boards bei 9,7 bis
+  9,9 µA (Board 1 mit Regler 18,7 µA). Das war ein Aufbau, andere Platinen sind nicht gemessen.
 - **Laden gestört:** Solarzelle verschattet oder verschmutzt, Lademodul defekt. `VSolar` im Verlauf ansehen.
   Im Winter reicht die Sonne an manchen Standorten nicht aus.
 - Ein Regensensor kann den Ruhestrom ebenfalls erhöhen.
