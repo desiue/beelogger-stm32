@@ -95,6 +95,11 @@
 // Gleicher Include-Guard (_lmic_h_) -> <lmic.h> in der Config bleibt danach wirkungslos.
 #include "src/lmic_otaa/lmic.h"
 #include "Config_LORA.h"   // Konfiguration eintragen
+// beelogger: Bau abbrechen, falls trotzdem die Original-LMIC (ohne lchkReq) aktiv ist
+#include <type_traits>
+template<typename T, typename = void> struct check_lmic : std::false_type {};
+template<typename T> struct check_lmic<T, decltype((void)((T*)0)->lchkReq)> : std::true_type {};
+static_assert(check_lmic<lmic_t>::value, "Falsche LMIC: lmic_t ohne lchkReq. #include \"src/lmic_otaa/lmic.h\" vor Config_LORA.h einbinden");
 #include "Config_MULTI.h"  // Konfiguration und Kalibrierung eintragen
 #include "STM32_beelogger.h"
 #include <stm32yyxx_ll_adc.h>  // analog reading
