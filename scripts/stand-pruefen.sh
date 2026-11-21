@@ -62,9 +62,9 @@ for z in sys.stdin:
   else echo; echo "(eigener Server: EIGEN_SSH nicht gesetzt, übersprungen)"; fi
 
   if [ -n "$COMMUNITY_URL" ]; then
-  echo; echo "== Community-Server: letzte Zeile week.csv je Quad =="
+  echo; echo "== Community-Server: letzter Zeitstempel aus beelogger_show.php je Quad (CSV dort gesperrt, 403) =="
   for q in $(seq 1 12); do
-    curl -s -m 15 "$COMMUNITY_URL/Quad$q/week.csv" | tail -c 400 | grep -E '^[0-9]{4}/' | tail -1 | cut -d, -f1 | sed "s/^/Quad$q|/"
+    curl -s -m 20 "$COMMUNITY_URL/Quad$q/beelogger_show.php" | grep -oE '20[0-9]{2}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}' | tail -1 | sed "s/^/Quad$q|/"
   done | ALT_MIN=$ALT_MIN python3 -c '
 import sys,os,datetime as D
 jetzt=D.datetime.now(); alt=int(os.environ["ALT_MIN"])
