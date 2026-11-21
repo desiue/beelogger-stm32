@@ -47,6 +47,8 @@ der zur Durchsicht abgehoben und vor Ablauf der ReferenzZeit wieder aufgesetzt w
 Schwarmlogik auf den 10-min-Takt ausgelegt; kürzere Intervalle bringen hier nichts
 ([ttn_einrichten.md, Abschnitt 8](ttn_einrichten.md#8-ttn-fair-use-policy)).
 
+**Die Sperre gilt auch bei Schwarmalarm.** Der Server prüft den Mindestabstand (220 s, auf community.beelogger.de von Oktober bis Februar 520 s) vor jeder Auswertung, der Bezug ist die Messzeit, nicht die Ankunftszeit (`beelogger_log.php:570-578`, geprüft gegen die Serverkopie `M41_261110a_ServerSkripte`, nicht online gemessen). Ausnahmen gibt es nur für Service 99 (Arbeitsschalter, Meldung nur jünger als die letzte), Service unter 0 (Pegelmessung, 110 s) und die Testfunktion (Kalibriertemperatur 99.9, 55 s). Der Wert 99 taugt nicht als Trick für Sofort-Meldungen: Bei Service 99 entfallen für diese und die nächste Meldung die Gewichtsanmerkungen und das Durchsicht-Symbol wird gesetzt (`beelogger_log.php:736-749`). Ein Sofort-Uplink früher als 220/520 s nach dem letzten gespeicherten wird verworfen; das ist der Hintergrund von Aufgabe S5 in der [Planungsidee](planung/idee_sendeplan_schwarmalarm.md).
+
 ## Triggeralarme
 
 `Triggeralarme()`, Zeile 1400. Bis zu vier frei einstellbare Alarme (`$TriggerAlarmArray[1..4]`). Zustand in
