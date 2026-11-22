@@ -2,6 +2,7 @@
 //   2026-11-06, desiue (github.com/desiue/beelogger-stm32): Variable FernIntervall (Sendeintervall per Downlink); l_ID 261106.
 //   2026-11-07, desiue: ADR aus (LMIC_setAdrMode(0) in STM32_LORA.ino); l_ID 261107.
 //   2026-11-07, desiue: Software-Watchdog (wdt_init/wdt_start) und I2C-Bus freitakten in setup()/loop().
+//   2026-11-22, desiue: l_ID 261122 (Feld-Flash mit Include-Fix bb70cf4, Sendeplan).
 //   Vollständige Änderungen: docs/aenderungen_gegen_260705.diff
 
 /*
@@ -110,7 +111,7 @@ static_assert(check_lmic<lmic_t>::value, "Falsche LMIC: lmic_t ohne lchkReq. #in
 
 
 char ID_ID[16] = "STM32_LORA_";  //nur Grossbuchstaben,Zahlen, keine Blanks
-long l_ID = 261119;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
+long l_ID = 261122;  // Firmware-Kennung JJMMTT, bei jeder Version anpassen (Original: 260705)
 
 #define CFG_noassert 1  // supress error messages in LMIC-library
 

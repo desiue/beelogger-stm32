@@ -64,12 +64,15 @@ for z in sys.stdin:
   if [ -n "$COMMUNITY_URL" ]; then
   echo; echo "== Community-Server: letzte Zeile week.csv je Quad =="
   for q in $(seq 1 12); do
-    curl -s -m 15 "$COMMUNITY_URL/Quad$q/week.csv" | tail -c 400 | grep -E '^[0-9]{4}/' | tail -1 | cut -d, -f1 | sed "s/^/Quad$q|/"
+    r=$(curl -s -m 15 -w '\n%{http_code}' "$COMMUNITY_URL/Quad$q/week.csv"); c=${r##*$'\n'}
+    z=$(printf '%s' "$r" | tail -c 400 | grep -E '^[0-9]{4}/' | tail -1 | cut -d, -f1)
+    echo "Quad$q|${z:-FEHLER HTTP $c}"
   done | ALT_MIN=$ALT_MIN python3 -c '
 import sys,os,datetime as D
 jetzt=D.datetime.now(); alt=int(os.environ["ALT_MIN"])
 for z in sys.stdin:
     q,t=z.strip().split("|")
+    if t.startswith("FEHLER"): print(f"!! {q:6} keine Zeile ({t[7:]}; 403 = Zugriff verweigert, 000 = keine Verbindung)"); continue
     m=int((jetzt-D.datetime.strptime(t,"%Y/%m/%d %H:%M:%S")).total_seconds()//60)
     print(("ok" if m<=alt else "!!")+f" {q:6} {t}  vor {m} min")'
   else echo; echo "(Community-Server: COMMUNITY_URL nicht gesetzt, übersprungen)"; fi
