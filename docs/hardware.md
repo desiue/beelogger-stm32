@@ -63,7 +63,11 @@ braucht für Waage 3 und 4 andere Leitungen als eine für die BlackPill.
 
 ## Baugruppen (laut Schaltplan, nicht im Code prüfbar)
 
-- **Funkmodul:** RFM95 (SX1276, 868 MHz). Hängt an der geschalteten 3,3-V-Schiene, ist also im Schlaf aus.
+- **Funkmodul:** RFM95 (SX1276, 868 MHz). Hängt an der geschalteten 3,3-V-Schiene, ist also im Schlaf aus,
+  wenn der zweite MCP1702-33 und die Drahtbrücke *w*–*w* bestückt sind (siehe
+  [LoRa-Modul je Platinenversion](#lora-modul-je-platinenversion)). Auf der gemessenen Platine BlackPill 1.5.1
+  (Mike, 20.11.2026) hing er per Draht an der dauernden 3,3 V: 3,28 V am RFM95 bei gesperrtem Lastschalter
+  (Multimeter), Folge siehe [haeufige_fehler.md](haeufige_fehler.md#akku-wird-leer-gesaugt).
   Nie ohne Antenne senden.
 - **Waagen:** bis zu zwei HX711 mit je zwei Kanälen. Kanal A = Gain 128, Kanal B = Gain 32
   (`beelogger_HX711_STM.ino`). HX711 Nr. 1: Waage 1 (A) und 2 (B), Nr. 2: Waage 3 (A) und 4 (B).
@@ -74,14 +78,17 @@ braucht für Waage 3 und 4 andere Leitungen als eine für die BlackPill.
   steht hinter `#if 0`.
 - **Stromversorgung:** eine Li-Ion-Zelle (18650), Solarzelle mit Lademodul „Solar-Charger 1.0“ (CN3065),
   zwei Spannungsregler MCP1702-33. Einer versorgt den Mikrocontroller dauernd, der zweite die Peripherie.
-  Am Solareingang sitzt eine Diode 1N4004. Optional (Plan BlackPill 2.0): Step-up-Wandler MT3608 auf 5 V
+  Am Solareingang sitzt eine Diode (Plan BlackPill 2.0: 1N4004; Tabelle „Bauteile und Bezug“ auf beelogger.de:
+  Schottky 1N5818, alternativ 1N5817/1N5819, dazu Zenerdiode 5,6 V 1–5 W; Seite gelesen 22.11.2026). Optional (Plan BlackPill 2.0): Step-up-Wandler MT3608 auf 5 V
   (`VCCSW`) mit Spannungsregler MCP1702-50; Bestückungsplatz für LF33CV (U1) parallel zum geschalteten MCP1702-33.
   Bis BlackPill V1.2 (und BluePill 1.02/1.04) gab es statt des Moduls eine SMD-Ladeschaltung mit SPV1040
   als Option, ab V1.3 ist sie entfernt (beelogger.de, „beelogger-STM32 – Platinenversionen“ und
   „Bauteile und Bezug“). Der Laderegler bestimmt die passende Schwelle `SolarSpannung_Sommertag`, siehe
   [intervalle.md](intervalle.md).
 - **Lastschalter:** PB5 schaltet über Transistor und P-MOSFET die Peripherie-Schiene (Sensoren, HX711,
-  RFM95). Vor dem Schlafen setzt die Firmware PB5 auf LOW (`System_ShutDown()`).
+  RFM95). Der Plan beschriftet den MOSFET mit IRF5305; die Tabelle „Bauteile und Bezug“ nennt DMP4015SK3 oder
+  STD26P3LLH6 (Logic-Level, U<sub>GS</sub> < 3 V; Seite gelesen 22.11.2026). Auf der gemessenen Platine 1.5.1 ist
+  ein STD26P3LLH6 bestückt (Mike, 21.11.2026). Vor dem Schlafen setzt die Firmware PB5 auf LOW (`System_ShutDown()`).
 - **Spannungsteiler:** 1 MΩ / 470 kΩ mit 100 nF für Akku (PB0) und Solar (PB1). Die Kondensatoren halten
   die Spannung am hochohmigen Teiler während der Wandlung stabil.
 - **Optional:** serielle Leiste für FTDI, ESP8266-Fassung, SIM800 (für LoRa nicht nötig).

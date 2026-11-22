@@ -126,6 +126,7 @@ Stattdessen `stm32loader` aus der PlatformIO-Umgebung:
    ~/.platformio/penv/bin/stm32loader -p /dev/ttyUSB0 -f F4 -e -w -v -g 0x08000000 -n .pio/build/blackpill_f411ce/firmware.bin
    ```
    BluePill: `-f F1` und `.pio/build/bluepill_f103c8/firmware.bin`.
+   `-e` löscht den ganzen Chip, beim BlackPill also auch einen Sendeplan im letzten Sektor (ab 261119), auch mit `-a`/`-l` (gemessen 19.11.2026). Plan danach per FPort 12 neu schicken oder nur Sektoren 0–3 löschen, siehe [speicher.md](speicher.md), Abschnitt „Falle beim Flashen“.
 3. BOOT0 zurück auf 0. Sonst landet der Logger nach jedem Aufwachen (Standby = Neustart) wieder im Bootloader.
 4. Schnittstelle zurückstellen – stm32loader lässt sie auf 8E1 (gerade Parität):
    ```

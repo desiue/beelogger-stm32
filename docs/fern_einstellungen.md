@@ -190,7 +190,10 @@ Regeln (alle aus `src/STM32_sendeplan.ino:237-313`):
 Kommando 10 sofort (`src/STM32_sendeplan.ino:306`). Es liegt in den Backup-Registern und übersteht deshalb
 Aufwachen und Reset-Taste (gemessen 19.11.2026: nach „RST“ weiter „K10 1/5“). Beendet wird es außerdem durch
 Kommando 20 (`src/STM32_sendeplan.ino:318`) und vermutlich durch Akku ab ohne Pufferbatterie (ungeprüft). Gemessen 19.11.2026: `01 10 03 01 05 01` → seriell „K10 1/5“, Uplinks alle
-5 min, Quittung 90.
+5 min, Quittung 90. Ablauf nach 1 h gemessen 19.11.2026 (beelogger08, Seriell-Log USB2): bis 18:05:19 „K10 1/5“
+(Wiegen jede Minute), ab 18:06:19 „K10 0/0“ und wieder der Plan: Wiegen alle 2 min (18:06, 18:08, 18:10, 18:12),
+Uplink 18:12:24, also beim ersten Wiegen mindestens 10 min nach dem letzten Uplink (18:01:24;
+`s6_senden_faellig()`, `src/STM32_sendeplan.ino:195-199`).
 
 ### Kommando 20: Neustart
 
