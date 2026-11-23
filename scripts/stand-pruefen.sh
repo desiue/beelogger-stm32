@@ -61,7 +61,7 @@ for z in sys.stdin:
     print(f"{s} {q:6} {t}  vor {m} min  Server {v}")'
   else echo; echo "(eigener Server: EIGEN_SSH nicht gesetzt, übersprungen)"; fi
 
-  if [ -n "$COMMUNITY_URL" ]; then
+  if [ -n "$COMMUNITY_URL" ] && [ "${COMMUNITY_ABRUF:-0}" = 1 ]; then
   echo; echo "== Community-Server: letzte Zeile week.csv je Quad =="
   for q in $(seq 1 12); do
     r=$(curl -s -m 15 -w '\n%{http_code}' "$COMMUNITY_URL/Quad$q/week.csv"); c=${r##*$'\n'}
@@ -75,7 +75,7 @@ for z in sys.stdin:
     if t.startswith("FEHLER"): print(f"!! {q:6} keine Zeile ({t[7:]}; 403 = Zugriff verweigert, 000 = keine Verbindung)"); continue
     m=int((jetzt-D.datetime.strptime(t,"%Y/%m/%d %H:%M:%S")).total_seconds()//60)
     print(("ok" if m<=alt else "!!")+f" {q:6} {t}  vor {m} min")'
-  else echo; echo "(Community-Server: COMMUNITY_URL nicht gesetzt, übersprungen)"; fi
+  else echo; echo "(Community-Server: kein Abruf, seit 23.11. aus; Rudolf-Server liefert 403. Nur bewusst: COMMUNITY_ABRUF=1)"; fi
 
   [ -n "$TTN_KEYFILE" ] || { echo; echo "(TTN: TTN_KEYFILE nicht gesetzt, übersprungen)"; return; }
   echo; echo "== TTN: letzter Uplink je Gerät (Network Server, UTC) =="
