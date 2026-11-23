@@ -21,6 +21,7 @@ Neuer Fall? Unten einen Abschnitt im selben Aufbau ergänzen: Anzeichen, Ursache
 | zwei Werte kurz hintereinander, danach normal | Neustart des Loggers | [Doppelte Werte, Neustart](#doppelte-werte-neustart) |
 | Werte passen nicht zum Volk, springen zwischen zwei Niveaus | zwei Geräte schreiben in denselben Ordner | [Werte von zwei Loggern gemischt](#werte-von-zwei-loggern-gemischt) |
 | Gewicht springt oder rauscht | Einstreuung auf die Waagenleitungen, HX711 | [Gewicht springt](#gewicht-springt) |
+| einzelne Ausreißer bei Temperatur/Feuchte (z. B. −142,78 °C, 0 %), Schwarmalarm ohne Schwarm | Fehlmessung des BME280 | [BME280-Ausreißer](#bme280-ausreißer) |
 | im Winter fehlt jeder zweite Wert | Mindestabstand auf dem Server | [Fehlersuche, Abschnitt 4](fehlersuche.md#4-server-wird-gespeichert) |
 
 ## Akkuspannung springt
@@ -135,3 +136,11 @@ dagegen erlaubt ([TTN einrichten](ttn_einrichten.md)).
 
 **Abhilfe:** Schirme der Wägezellenleitungen EMV-gerecht anschließen, am besten auf ein Blechgehäuse für die
 Elektronik. Sensorleitungen geschirmt oder sehr kurz. HX711-Module tauschen.
+
+## BME280-Ausreißer
+
+**Anzeichen:** Einzelne Zeilen mit unmöglichen Werten, etwa −142,78 °C und 0 % Feuchte, in allen Kanälen. Der Server meldet daraufhin Schwarmalarm (Beispiel Q2, 21.11.2026, 19:07 und 19:22 MEZ; Rohpayload in TTN identisch, also Fehlmessung am Logger, nicht Übertragung).
+
+**Ursachen:** Fehllesung des BME280 über I2C, vermutlich Kontakt oder Feuchte am Sensor (ungeprüft, Besuch am Q2 offen).
+
+**Abhilfe:** Der Sketch verwirft seit Commit 25aae17 Temperatur außerhalb −30…60 °C und Feuchte unter 2,0 oder ab 99,9 % (`Sensor_BME280()` in `src/STM32_I2C_sensors.ino`, Grenzen wie beim DHT in `beelogger_DHT.ino:44-45`); statt des Werts geht der Platzhalter `No_Val`/`No_Value` raus. Der Luftdruck wird nicht gefiltert. Gilt erst nach Flashen dieser Firmware (Stand 23.11.2026: gebaut, auf keinem Logger geflasht). Bis dahin hilft nur Sensor tauschen oder Kontakte prüfen.
