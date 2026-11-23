@@ -243,11 +243,12 @@ void Sensor_BME280() {
     delay(100);                               // time til sensor ready
     if (check) {                              // if bme ok
       Temperatur_BME = my_bme.readTemperature();
-      if (isnan(Temperatur_BME)) {
+      // Plausibilitaet wie beim DHT: Fehlwerte des BME280 (z.B. -142,78 C) nicht weitergeben
+      if (isnan(Temperatur_BME) || (Temperatur_BME < -30.0) || (Temperatur_BME > 60.0)) {
         Temperatur_BME = No_Val;
       }
       Luftfeuchte_BME = my_bme.readHumidity();
-      if (isnan(Luftfeuchte_BME)) {
+      if (isnan(Luftfeuchte_BME) || (Luftfeuchte_BME < 2.0) || (Luftfeuchte_BME >= 99.9)) {
         Luftfeuchte_BME = No_Value;
       }
       Luftdruck_BME = my_bme.readPressure();
