@@ -6,6 +6,7 @@
 // 30.01.2024 CPU_Sensors always
 // 30.06.2024 Zuordnung Aux[]
 // 10.07.2024 Korrektur Luftdruck Server
+// 24.11.2026 validieren BME Werte
 
 
 
@@ -20,11 +21,11 @@ void Sensor_Temp_Zelle(uint8_t set) {
 #if Anzahl_Sensoren_Gewicht > 1
     DS_Temp = SensorTemp[Temp_Zelle];  // duo, tripple, quad, ...
     if (DS_Temp == No_Val) {
-      DS_Temp = Aux[2];  // force
+      DS_Temp = Aux[2];  // force Temp from STM32
     }
 #else
     if (SensorTemp[Aussenwerte] == No_Val) {  // single
-      SensorTemp[Aussenwerte] = Aux[2];       // force
+      SensorTemp[Aussenwerte] = Aux[2];       // force Temp from STM32
     }
 #endif
   } else {
@@ -35,7 +36,6 @@ void Sensor_Temp_Zelle(uint8_t set) {
 #endif
 
     CPU_Sensors();
-
 
     debugprintF("Vdd. [V]: ");
     debugprintln(Aux[1]);
@@ -243,16 +243,13 @@ void Sensor_BME280() {
     delay(100);                               // time til sensor ready
     if (check) {                              // if bme ok
       Temperatur_BME = my_bme.readTemperature();
-      // Plausibilitaet wie beim DHT: Fehlwerte des BME280 (z.B. -142,78 C) nicht weitergeben
-      if (isnan(Temperatur_BME) || (Temperatur_BME < -30.0) || (Temperatur_BME > 60.0)) {
-        Temperatur_BME = No_Val;
-      }
       Luftfeuchte_BME = my_bme.readHumidity();
-      if (isnan(Luftfeuchte_BME) || (Luftfeuchte_BME < 2.0) || (Luftfeuchte_BME >= 99.9)) {
-        Luftfeuchte_BME = No_Value;
-      }
       Luftdruck_BME = my_bme.readPressure();
-      if (isnan(Luftdruck_BME)) {
+
+      // Check if any reads failed
+      if (isnan(Temperatur_BME) || (Temperatur_BME < -30.0) || (Temperatur_BME > 60.0)) Temperatur_BME = No_Val;
+      if (isnan(Luftfeuchte_BME) || (Luftfeuchte_BME < 2.0) || (Luftfeuchte_BME >= 100)) Luftfeuchte_BME = No_Value;
+      if (isnan(Luftdruck_BME) || (Luftdruck_BME < 90000) || (Luftdruck_BME > 120000)) {
         Luftdruck_BME = No_Value;
       } else {
         Luftdruck_BME = Luftdruck_BME / 100.0;
