@@ -80,6 +80,13 @@ seine Spannung.
   bei gesperrtem Lastschalter 3,28 V (Multimeter), und im Schlaf hält der STM32 NSS, SCK und MOSI nicht fest. Je nach Board flossen dadurch 50 bis
   650 µA. Mit je einem Widerstand 100 kΩ von NSS, SCK und MOSI nach 3,3 V lagen alle sieben Boards bei 9,7 bis
   9,9 µA (Board 1 mit Regler 18,7 µA). Das war ein Aufbau, andere Platinen sind nicht gemessen.
+  Statt der Widerstände geht auch der zweite MCP1702-33, der den RFM95 im Schlaf abschaltet (siehe
+  [hardware.md](hardware.md#lora-modul-je-platinenversion)): dasselbe Board lag damit bei
+  8,06 µA, mit den Widerständen bei 9,7 µA (Mike, 22.11.2026, ein Board). Der Solarcharger machte keinen
+  Unterschied (8,4 µA mit und ohne, Mike, 23.11.2026). Das beelogger-Team empfiehlt dasselbe: RFM95 abschalten
+  oder Pull-ups setzen; unter 10 µA ist ein sehr guter Wert, tiefer kommt ein STM32F4 eventuell nicht
+  (Rudolf, Mail 24.11.2026). Zum Vergleich seine Messungen ohne Solarcharger (Mail 24.11.2026): ATmega328
+  16 MHz auf Universal 2.4 knapp 5 µA, STM32F401CC auf Platine 1.4 22 µA.
 - **Laden gestört:** Solarzelle verschattet oder verschmutzt, Lademodul defekt. `VSolar` im Verlauf ansehen.
   Im Winter reicht die Sonne an manchen Standorten nicht aus.
 - Ein Regensensor kann den Ruhestrom ebenfalls erhöhen.
