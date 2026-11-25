@@ -254,3 +254,17 @@ Akkuwechsel. **Ein Löschen des ganzen Chips löscht auch den Plan**, z. B. `stm
 Gemessen 19.11.2026 auf beelogger08 (F411, Testlogger): Plan setzen, Reset (Plan bleibt), ungültiger Wert,
 Längenfehler, unbekanntes Kommando, Plan löschen `0F`, Plan neu setzen, Kommando 10 – alle bestanden.
 Bestanden außerdem: Neustart `20/01`, Neu-Join `20/02`, FPort 10 bei aktivem Plan wirkungslos, `0B` 240 min, Akku ab (Plan bleibt), Arbeitsschalter 240 min real (20.11.2026). **Noch ungeprüft auf Hardware:** `05`, `06`/`07` (Winter), `08` (Sofort-Senden), `09`/`0A` (Akkusparmodus), Waagen-Pfad, Strom je Wiegung.
+
+### Verbrauch bei minütlichem Wiegen (Akkutest 23.–25.11.2026)
+
+Messung Seriell-Log (Zeitraum 23.11.2026 20:11 bis 25.11.2026 22:02), Wachstrom 24–34 mA aus [hardware.md](hardware.md) (gemessen 06.11.2026), Verbrauch = Wachzeit × Wachstrom:
+
+| Logger | Plan | Wachzeit je Lauf | Wachzeit/Tag | Verbrauch/Tag |
+|---|---|---|---|---|
+| beelogger08 (Testlogger, ohne Wägezellen) | 1 min wiegen, 180 min senden (`01 10 03 01 B4 48`) | 3 s ohne Senden, 5–6 s mit Senden | ca. 4340 s | 29–41 mAh |
+| altes Q5-Board (alte Firmware) | alle 5 min, jedes Mal senden | 20–23 s | ca. 5880 s | 39–56 mAh (Wachstrom dieses Boards nicht gemessen) |
+
+- beelogger08: 2988 Wachläufe in 50 h, alle mit sauberem Ende (kein Power-On-Reset, keine Lücke).
+- Feld-Logger Q5 braucht mit Senden 8–11 s (Spalte „Service“ auf majkic, 25.11.2026). Minütliches Wiegen im Feld wäre damit **geschätzt** 52–74 mAh/Tag gegen heute ca. 15–22 mAh/Tag (**ungeprüft**, Schätzung).
+- Die Akkuspannung taugt nicht als Beleg: beide Boards hingen am Solarmodul.
+- Nebenbefund: Die Uhr von beelogger08 geht ca. 15 s/Tag vor (Sendezeit 20:21:06 → 20:20:35 nach 48 h).

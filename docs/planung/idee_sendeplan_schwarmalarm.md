@@ -2,7 +2,7 @@
 
 [← Übersicht](../README.md)
 
-Stand 07.11.2026, ergänzt 19.11.2026 (Variante 10 min senden / 5 min wiegen), **zur Diskussion**, nichts davon ist umgesetzt.
+Stand 07.11.2026, ergänzt 19.11.2026 (Variante 10 min senden / 5 min wiegen), **Stand 25.11.2026:** Sendeplan S6 (Wiegen und Senden getrennt, Fern-Kommando FPort 12) ist auf `main` umgesetzt (Merge 36c6ca4, Code `src/STM32_sendeplan.ino`); Schwarmverdacht-Bestätigung, Feld-Flash und Verbrauch im Feld sind offen.
 
 **Antwort beelogger-Team (07.11.):** LoRa sendet ohnehin mindestens alle 10 min, forciertes Senden braucht es nicht. Öfter bringt nichts: Der Server ignoriert kurze Abstände (Okt–März 400 s; *Stand Code M41: 220 s, auf community.beelogger.de Okt–Feb 520 s, `beelogger_log.php` Z. 573–574, vom Team am 18.11. bestätigt*), und die Schwarmlogik ist auf den 10-min-Takt ausgelegt (Windböen). Dabei bleibt es. **Status: nicht für `main`**, höchstens als Experiment im eigenen Branch mit eigenem Server.
 
@@ -47,14 +47,14 @@ Bei B–D kann ein Sofort-Uplink kurz nach dem regulären kommen. Der Server ign
 | S3 | **Solarstrom im Sommer** für Wiegen jede Minute (Abschnitt „Offene Frage: Reicht im Sommer der Strom …“) | Testlogger | D | offen |
 | S4 | **Diebstahl-Test:** jede Minute wiegen, nur bei Änderung senden | Testlogger, eigener Server | D | offen |
 | S5 | **Server:** Verwirft beelogger.de die Sofort-Uplinks? Wenn ja, nimmt der eigene Server sie an (Sperre dort für diese Quads anpassen), der Community-Server bleibt unverändert | eigener Server | B–D | offen |
-| S6 | **Firmware:** Wiegen und Senden trennen, alles per Downlink verstellbar: Wiegeabstand (ab 1 min), Sendeabstand Tag/Nacht, Grenze Tag/Nacht, Schwelle für Sofort-Senden. Vorgabe = heutiges Verhalten (A). Format und Bauschritte: „Entwurf Kommando-Format FPort 12“ und „Plan S6“ unten. | Repo, Testlogger | Feld-Flash | Entwurf 19.11., nicht gebaut |
+| S6 | **Firmware:** Wiegen und Senden trennen, alles per Downlink verstellbar: Wiegeabstand (ab 1 min), Sendeabstand Tag/Nacht, Grenze Tag/Nacht, Schwelle für Sofort-Senden. Vorgabe = heutiges Verhalten (A). Format und Bauschritte: „Entwurf Kommando-Format FPort 12“ und „Plan S6“ unten. | Repo, Testlogger | Feld-Flash | gebaut, auf `main` (Merge 36c6ca4, 20.11.2026), Test auf beelogger08 25.11. ohne Fehler; Feld-Flash offen |
 | S7 | **Feld-Flash erst nach S6** (auf Testloggern geprüft), damit die Feld-Logger nur einmal geflasht werden | Nutzer | Feld-Flash | entschieden 19.11. (Nutzer): erst nach S6, bis dahin laufen die Feld-Logger unverändert |
 | S9 | **Weitere Fern-Einstellungen per eigenem Downlink-Kommando:** Was soll außer Wiegen/Senden noch verstellbar sein? Kandidaten: Tabelle im Abschnitt „Was soll dann noch aus der Ferne verstellbar sein?“, Waagenkonfiguration (Nutzer 06.11.). Muss vor S6 feststehen: Das Kommando-Format kommt mit dem einen Feld-Flash ins Feld und muss erweiterbar sein. | Gespräch mit Nutzer | S6, Feld-Flash | entschieden 19.11. (Nutzer), siehe „Ergebnis S9“ unten |
 | S8 | **Branch:** Parameteränderungen (Intervalle) brauchen keinen eigenen Branch (Nutzer 19.11.), Absatz „Einordnung“ oben ergänzt | – | – | erledigt 19.11. |
 
 ### Ergebnis S9: Fern-Kommandos der neuen Firmware (entschieden 19.11.2026)
 
-Der Nutzer hat jeden Punkt einzeln entschieden. Das ist die Vorgabe für S6, noch nicht gebaut.
+Der Nutzer hat jeden Punkt einzeln entschieden. Das ist die Vorgabe für S6, umgesetzt in `src/STM32_sendeplan.ino` (auf `main` seit 20.11.2026).
 
 | Punkt | Entscheidung | Speicher |
 |---|---|---|
