@@ -89,7 +89,11 @@ seine Spannung.
   16 MHz auf Universal 2.4 knapp 5 µA, STM32F401CC auf Platine 1.4 22 µA.
 - **Laden gestört:** Solarzelle verschattet oder verschmutzt, Lademodul defekt. `VSolar` im Verlauf ansehen.
   Im Winter reicht die Sonne an manchen Standorten nicht aus.
-- Ein Regensensor kann den Ruhestrom ebenfalls erhöhen.
+- Ein Regensensor kann den Ruhestrom ebenfalls erhöhen. Mit Interrupt für den Regenmesser steigt der Strom auf
+  einige 100 µA; ob es am Interrupt oder am Pull-up liegt, ist nicht untersucht (Rudolf, Mail 22.11.2026). Das
+  beelogger-Team empfiehlt STM32F4 mit Regenmesser deshalb nicht (Rudolf, Mail 20.11.2026). Die LoRa-Firmware hat
+  ohnehin keinen Regenmesser-Code: Nur der Config-Wert `Anzahl_Sensor_Regen` (`src/Config_MULTI.h.example`) existiert,
+  ein Aufruf `Sensor_Regen()` steht in keinem Sketch unter `src/`.
 
 **Prüfen:** Ruhestrom mit dem Multimeter in Reihe zum Akku messen, während der Logger schläft. Das Messgerät senkt
 die angezeigte Akkuspannung, das ist normal.

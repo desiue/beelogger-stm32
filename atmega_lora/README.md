@@ -95,6 +95,10 @@ Bibliotheken 2026_04, Pro Mini 8 MHz = beeloggerSMD). „DS18B20“ und „Waage
 **Mit `myDEBUG 0` passt mehr.** In `beelogger_config.h` steht wie im Original 250326 `#define myDEBUG 1`
 (Debug-Ausgaben im Seriellen Monitor). Mit `0` entfallen nur diese Ausgaben (`beelogger_config.h`, Abschnitt
 „Debug Print Functions“), das spart rund 1,9 KB. Den Join sieht man dann im Seriellen Monitor nicht mehr, nur in TTN.
+Das beelogger-Team hält es so (Rudolf, Mail 20.11.2026): Im Download steht `myDEBUG 1` für die Testphase mit
+Ausgaben, am Bienenstand geht es ohne. Die Debug-Ausgaben belasten den ATmega stark mit Interrupts der seriellen
+Schnittstelle; bei den 8-MHz-ATmega gab es deshalb öfter Probleme. Abhilfe war, nach jeder Ausgabe mit `flush` zu
+warten, das geht im Ablauf aber nicht immer und kostet weiteren Speicher.
 Gemessen 19.11.2026 wie oben:
 
 | Sensoren, `myDEBUG 0` | ABP 261107 | OTAA 261119 |
@@ -116,15 +120,24 @@ Mit OTAA passt damit ein BME280 (198 B Reserve) oder zwei (98 B Reserve), aber n
 Hinweise:
 - **Mit OTAA und `myDEBUG 1` geht kein BME280.** Bei 4 Waagen passt neben dem DS18B20 genau ein weiterer kleiner Sensor
   (Si7021, SHT31 oder BH1750), nicht zwei. Mit ABP passt der BME280 bei einer Waage, aber nicht zusammen
-  mit dem Lichtsensor oder mit 4 Waagen.
+  mit dem Lichtsensor oder mit 4 Waagen. Das deckt sich mit den Untersuchungen des beelogger-Teams: Die
+  BME280-Bibliothek braucht viel Speicher, weil sie die Rohdaten aufwendig umrechnet (Rudolf, Mail 20.11.2026).
 - **Speicherort:** Bis 261108 legte die LMIC-Kopie für ihre Fehlermeldungen den vollen Dateipfad ab. Gemessen: je
   Zeichen im Pfad des Sketch-Ordners etwa 2 B mehr Flash und RAM (Pfad 49 Zeichen länger → +96 B). Seit 261119 steht
   dort nur die Zeilennummer (`src/lmic_otaa/lmic/oslmic.h:46–47`); gemessen: Pfad 30 Zeichen länger → +2 B.
+- **`CFG_noassert` wirkt nicht:** Der Sketch setzt `#define CFG_noassert 1` (`beelogger_LORA_OTAA_261119.ino:31`,
+  `beelogger_LORA_261107.ino:29`, schon im Original 250326). Die Bibliothek wird getrennt übersetzt, dort kommt der
+  Schalter nicht an, die Prüfungen (`src/lmic_otaa/lmic/oslmic.h:45–49`) bleiben drin. Das zeigt die Pfadmessung
+  oben: Ohne Prüfungen hätte der Pfad nichts gekostet. Das beelogger-Team vermutet, dass neuere Arduino-IDE-Versionen
+  den Schalter nicht mehr durchreichen oder er vergessen wurde (Rudolf, Mail 20.11.2026).
 - 2 Waagen brauchen mehr als 3: Der Code hat für 1, 2, 3 und 4 Waagen eigene Zweige, z. B. sendet er
   Beutensensor-Werte nur bis zu zwei Waagen (`Multi_LORA.ino:428`, `beelogger_DS18B20.ino:220–289`).
 - RAM: ABP 1 431–1 499 B, OTAA 1 165–1 231 B von 2 048 B (`myDEBUG 1`; mit `myDEBUG 0` rund 30 B weniger).
 - Pro Mini 16 MHz und Nano (Universal 1.x) brauchen im Grundausbau 14–16 B mehr (ABP 26 314 B, OTAA 28 480 B).
 - Regenmesser: im LoRa-Sketch schon im Original 250326 auskommentiert (`Sensor_Regen()`), deshalb nicht in der Tabelle.
+  Laut beelogger-Team fehlt der Code für den Regenmesser ganz, für die Messung und für die Übertragung per LoRa.
+  Die Config ist für alle Systemvarianten gleich und enthält deshalb die Kalibrierwerte; wer will, kann es selbst
+  erweitern (Rudolf, Mail 20.11.2026).
 - Eigene Kombination prüfen: `scripts/atmega-speicher-matrix.sh "DS18B20=1 Gewicht=4 Si7021=1"` (mit `myDEBUG=0` am Anfang ohne Debug-Ausgaben).
 
 **Getestet** auf dem Steckbrett ([testaufbau_uno.md](testaufbau_uno.md)), Uno 16 MHz mit RFM95, TTN, Gerät mit den Einstellungen oben:
