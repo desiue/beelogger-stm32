@@ -35,7 +35,11 @@ flowchart LR
 - **Webhook:** TTN schickt pro Uplink einen HTTP-POST (JSON, TTN-v3-Format) an
   `…/beelogger_log.php?Passwort=<LogPasswort>&LORA=1`. Einrichtung: [ttn_einrichten.md](ttn_einrichten.md).
 - **Rückweg (gestrichelt):** nur dort, wo `lora_downlink.php` eingebunden ist (eigene Erweiterung, siehe
-  [server.md](server.md)). Der Community-Server sendet keine Downlinks.
+  [server.md](server.md)) **und** der Webhook einen Downlink-API-Key hat. Den Key bekommt nur der Webhook
+  zum eigenen Server ([ttn_einrichten.md](ttn_einrichten.md), Schritt 4); ohne Key kann ein Server keinen
+  Downlink in die TTN-Queue stellen. Der Webhook zum Community-Server bleibt deshalb ohne Key und von dort
+  kommen keine Downlinks (in eigener Einrichtung per TTN-API geprüft am 26.11.2026: kein Community-Webhook
+  mit Downlink-Key).
 
 ## Datenweg WLAN/LTE zum Vergleich
 

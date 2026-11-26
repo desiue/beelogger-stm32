@@ -5,7 +5,8 @@
 Stand: 19.11.2026 · gilt für: Server-Skripte M.41 (Paket M41_261110a) und M.40 (Paket M40_261109) ·
 geprüft gegen Code: `beelogger1/beelogger_log.php`, `beelogger_cron21.php`, `beelogger_mobileWatch.php`
 aus M41_261110a am 19.11.2026 (Repo-Stand Commit 8c5fb97; gleiche Zeilennummern wie `server/M40_261109/`);
-vorher M40_261109, Commit a688002
+vorher M40_261109, Commit a688002; Abschnitt ReferenzZeit ergänzt 26.11.2026 (Code M41_261110a
+`beelogger_log.php:927/941`, Mail beelogger-Team 26.11.2026)
 
 Die Alarme laufen auf dem Server, nicht im Logger. Für LoRa-Logger gilt alles genauso, die Firmware weiß davon
 nichts. Eingestellt wird in der Web-Konfiguration des Loggers (`beelogger_ini.php`). Zeilennummern beziehen sich
@@ -46,6 +47,20 @@ der zur Durchsicht abgehoben und vor Ablauf der ReferenzZeit wieder aufgesetzt w
 [Speicherregel](server.md#speicherregel-mindestabstand) verwirft, zählen nicht. Laut beelogger-Team ist die
 Schwarmlogik auf den 10-min-Takt ausgelegt; kürzere Intervalle bringen hier nichts
 ([ttn_einrichten.md, Abschnitt 8](ttn_einrichten.md#8-ttn-fair-use-policy)).
+
+**ReferenzZeit länger als den Sendeabstand einstellen.** Beim ersten Verlust prüft der Server sofort, ob
+seit der zuletzt gespeicherten Meldung schon die ReferenzZeit vergangen ist (`beelogger_log.php:927`). Ist
+die ReferenzZeit nicht länger als der Abstand zwischen zwei gespeicherten Meldungen, trifft das immer zu:
+Schon ein einzelner Ausreißer löst Alarm aus, die Prüfung „Verlust hält an“ (`beelogger_log.php:941`)
+kommt nicht mehr zum Zug. Laut beelogger-Team muss die ReferenzZeit deshalb immer etwas über dem
+Messzyklus liegen. Die Vorbelegung in der Quad-Konfiguration (5 bis 8 Minuten) ist nicht auf den Takt
+abgestimmt (Mail beelogger-Team 26.11.2026). Die WLAN-, LTE- und GSM-Sketche senden bei einer
+Gewichtsänderung über einem festen Limit sofort und bekommen nach einem Alarm vom Server 10 Minuten als
+Messzyklus; bei LoRa geht das beelogger-Team von 5 bis 10 Minuten Messzyklus aus (gleiche Mail).
+Beispiel aus eigenem Betrieb (21.11.2026): ein einzelner Fehlwert, 5 Minuten später wieder normal, gab
+auf dem eigenen Server (ReferenzZeit 5 Minuten, 5-Minuten-Takt) und auf dem Community-Server Alarm. Fällt ein Paket aus, wird der
+Abstand doppelt so lang; wer das überbrücken will, rechnet einen weiteren Sendeabstand dazu (eigene
+Überlegung aus dem Code, nicht vom beelogger-Team). Ein echter Schwarm wird entsprechend später gemeldet.
 
 **Die Sperre gilt auch bei Schwarmalarm.** Der Server prüft den Mindestabstand (220 s, auf community.beelogger.de von Oktober bis Februar 520 s) vor jeder Auswertung, der Bezug ist die Messzeit, nicht die Ankunftszeit (`beelogger_log.php:570-578`, geprüft gegen die Serverkopie `M41_261110a_ServerSkripte`, nicht online gemessen). Ausnahmen gibt es nur für Service 99 (Arbeitsschalter, Meldung nur jünger als die letzte), Service unter 0 (Pegelmessung, 110 s) und die Testfunktion (Kalibriertemperatur 99.9, 55 s). Der Wert 99 taugt nicht als Trick für Sofort-Meldungen: Bei Service 99 entfallen für diese und die nächste Meldung die Gewichtsanmerkungen und das Durchsicht-Symbol wird gesetzt (`beelogger_log.php:736-749`). Ein Sofort-Uplink früher als 220/520 s nach dem letzten gespeicherten wird verworfen; das ist der Hintergrund von Aufgabe S5 in der [Planungsidee](planung/idee_sendeplan_schwarmalarm.md).
 
