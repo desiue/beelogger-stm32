@@ -134,7 +134,7 @@ Diese Werte stehen in `Config_LORA.h`/`Config_MULTI.h` und ändern sich nur durc
 | Tara und Skalierung der Waagen | `src/Config_MULTI.h:167-168` | nein, entschieden 19.11.2026: Kalibrieren braucht ein Prüfgewicht am Stand. Denkbar wäre nur, eine kaputte Waage abzuschalten (`Taragewicht = 10` heißt „aus“, `src/beelogger_HX711_STM.ino:31`) |
 | Spannungsteiler (`Kalib_Spannung`, `Kalib_Bitwert`) | `src/Config_MULTI.h:169-170` | eher nein, Abgleich braucht ein Messgerät am Logger |
 | Sensoren: Anzahl je Typ und Zuordnung (`Aussenwerte`, `Beute1`–`4`, `Temp_Zelle`) | `src/Config_MULTI.h:11-43` | ja, siehe [Möglichkeiten](#möglichkeiten-nicht-geplant) |
-| `Korrektur_Luftdruck` | `src/Config_MULTI.h:50` | nicht nötig, der Server korrigiert selbst (`$KorrPressure`, `M41_261110a_ServerSkripte/beelogger1/beelogger_log.php:596`) |
+| `Korrektur_Luftdruck` | `src/Config_MULTI.h:50` | nicht nötig, der Server korrigiert selbst (`$KorrPressure`, `M41_261122_ServerSkripte/install_or_update/beelogger1/beelogger_log.php:596`) |
 | `Alarm_Gewicht` (1 kg) | `src/STM32_beelogger.h:30` | nicht nötig: Bei LoRa wird der Schwarmalarm der Firmware nicht ausgewertet (`src/STM32_LORA_260705.ino:210-241`), den Gewichtssprung deckt `08` ab, den Schwarmalarm macht der Server |
 | LoRa-Schlüssel, `LOGGER_NAME`, Kanäle | `src/Config_LORA.h` | nein, Sicherheit |
 

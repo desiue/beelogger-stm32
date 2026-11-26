@@ -2,11 +2,11 @@
 
 [← Übersicht](README.md)
 
-Stand: 19.11.2026 · gilt für: Server-Skripte M.41 (Paket M41_261110a) und M.40 (Paket M40_261109) ·
-geprüft gegen Code: `beelogger1/beelogger_log.php`, `beelogger_cron21.php`, `beelogger_mobileWatch.php`
-aus M41_261110a am 19.11.2026 (Repo-Stand Commit 8c5fb97; gleiche Zeilennummern wie `server/M40_261109/`);
-vorher M40_261109, Commit a688002; Abschnitt ReferenzZeit ergänzt 26.11.2026 (Code M41_261110a
-`beelogger_log.php:927/941`, Mail beelogger-Team 26.11.2026)
+Stand: 26.11.2026 · gilt für: Server-Skripte M.41 (Paket M41_261122) und M.40 (Paket M40_261109) ·
+geprüft gegen Code: `beelogger1/beelogger_log.php` und `beelogger_mobileWatch.php` (Tageswächter-Aufruf) aus
+M41_261122 am 26.11.2026; vorher M41_261110a am 19.11.2026 (Repo-Stand Commit 8c5fb97) und M40_261109, Commit
+a688002; ReferenzZeit: Mail beelogger-Team 26.11.2026. Die Beschreibung von `beelogger_cron21.php` gilt für
+M41_261110a; die Fassung in M41_261122 weicht ab und ist hier nicht beschrieben.
 
 Die Alarme laufen auf dem Server, nicht im Logger. Für LoRa-Logger gilt alles genauso, die Firmware weiß davon
 nichts. Eingestellt wird in der Web-Konfiguration des Loggers (`beelogger_ini.php`). Zeilennummern beziehen sich
@@ -62,11 +62,11 @@ auf dem eigenen Server (ReferenzZeit 5 Minuten, 5-Minuten-Takt) und auf dem Comm
 Abstand doppelt so lang; wer das überbrücken will, rechnet einen weiteren Sendeabstand dazu (eigene
 Überlegung aus dem Code, nicht vom beelogger-Team). Ein echter Schwarm wird entsprechend später gemeldet.
 
-**Die Sperre gilt auch bei Schwarmalarm.** Der Server prüft den Mindestabstand (220 s, auf community.beelogger.de von Oktober bis Februar 520 s) vor jeder Auswertung, der Bezug ist die Messzeit, nicht die Ankunftszeit (`beelogger_log.php:570-578`, geprüft gegen die Serverkopie `M41_261110a_ServerSkripte`, nicht online gemessen). Ausnahmen gibt es nur für Service 99 (Arbeitsschalter, Meldung nur jünger als die letzte), Service unter 0 (Pegelmessung, 110 s) und die Testfunktion (Kalibriertemperatur 99.9, 55 s). Der Wert 99 taugt nicht als Trick für Sofort-Meldungen: Bei Service 99 entfallen für diese und die nächste Meldung die Gewichtsanmerkungen und das Durchsicht-Symbol wird gesetzt (`beelogger_log.php:736-749`). Ein Sofort-Uplink früher als 220/520 s nach dem letzten gespeicherten wird verworfen; das ist der Hintergrund von Aufgabe S5 in der [Planungsidee](planung/idee_sendeplan_schwarmalarm.md).
+**Die Sperre gilt auch bei Schwarmalarm.** Der Server prüft den Mindestabstand (220 s, auf community.beelogger.de von Oktober bis Februar 520 s) vor jeder Auswertung, der Bezug ist die Messzeit, nicht die Ankunftszeit (`beelogger_log.php:570-578`, geprüft gegen die Serverkopie `M41_261122_ServerSkripte`, nicht online gemessen). Ausnahmen gibt es nur für Service 99 (Arbeitsschalter, Meldung nur jünger als die letzte), Service unter 0 (Pegelmessung, 110 s) und die Testfunktion (Kalibriertemperatur 99.9, 55 s). Der Wert 99 taugt nicht als Trick für Sofort-Meldungen: Bei Service 99 entfallen für diese und die nächste Meldung die Gewichtsanmerkungen und das Durchsicht-Symbol wird gesetzt (`beelogger_log.php:736-749`). Ein Sofort-Uplink früher als 220/520 s nach dem letzten gespeicherten wird verworfen; das ist der Hintergrund von Aufgabe S5 in der [Planungsidee](planung/idee_sendeplan_schwarmalarm.md).
 
 ## Triggeralarme
 
-`Triggeralarme()`, Zeile 1400. Bis zu vier frei einstellbare Alarme (`$TriggerAlarmArray[1..4]`). Zustand in
+`Triggeralarme()`, Zeile 1394. Bis zu vier frei einstellbare Alarme (`$TriggerAlarmArray[1..4]`). Zustand in
 `Triggeralarm.php` (`$LastTriggerArray`, `$TriggerGesendetArray`).
 
 | Feld | Bedeutung |
@@ -86,7 +86,7 @@ wenn der Wert die Schwelle neu überschreitet (vorher nicht ausgelöst) **und** 
 
 Meldet Logger, die nichts mehr senden. Akkuwerte spielen keine Rolle.
 
-**`beelogger_cron21.php`** (im Basisordner, als Cronjob stündlich oder zur Prüfstunde): läuft nur, wenn
+**`beelogger_cron21.php`** (Stand M41_261110a, als Cronjob stündlich oder zur Prüfstunde): läuft nur, wenn
 `$GeneralAutowatch` in `general_ini.php` `p`, `m` oder `pm` ist und `$GeneralAutowatchTime` gleich der Stunde
 `$Check_Hour` im Skript (`"21"`) oder `Alle` ist. Dann prüft es alle Logger-Ordner mit `$Watchdog = "aktiviert"`:
 
@@ -116,6 +116,6 @@ Token, Chat-ID und Mailadressen gehören nur in `beelogger_ini.php` auf dem Serv
 ## Weitergabe an andere Dienste
 
 Nach dem Speichern schickt der Server die Werte je Waage an BEEP, iBeekeeper und ThingSpeak, wenn in der
-Konfiguration aktiviert (Zeile 760 ff., `ExternDataOut()` Zeile 1218). BEEP und iBeekeeper bekommen
+Konfiguration aktiviert (Zeile 760 ff., `ExternDataOut()` Zeile 1216). BEEP und iBeekeeper bekommen
 `time, t, t_i, h, h_i, l, bv, weight_kg`, dazu `p` (Luftdruck über 500), `rssi` und Bienenzähler-Werte,
 wenn vorhanden.

@@ -2,19 +2,26 @@
 
 [← Übersicht](README.md)
 
-Stand: 19.11.2026 · gilt für: Server-Skripte M.41 (Paket M41_261110a) und M.40 (Paket M40_261109),
-`server/lora_downlink.php` vom 09.11.2026 · geprüft gegen Code: Paket M41_261110a am 19.11.2026 (Repo-Stand
-Commit 8c5fb97); vorher M40_261109, Commits 7ccdb38 und a688002
+Stand: 26.11.2026 · gilt für: Server-Skripte M.41 (Paket M41_261122) und M.40 (Paket M40_261109),
+`server/lora_downlink.php` vom 09.11.2026 · geprüft gegen Code: Paket M41_261122 am 26.11.2026; vorher
+M41_261110a am 19.11.2026 (Repo-Stand Commit 8c5fb97) und M40_261109, Commits 7ccdb38 und a688002
 
 Die Server-Skripte stammen von beelogger.de (GPLv3). Eine unveränderte Kopie des Pakets M40_261109 liegt unter
-[`server/M40_261109/`](../server/M40_261109/). Zeilennummern beziehen sich auf deren `beelogger1/beelogger_log.php`.
-Das Paket M41 (M41_261110a) unterscheidet sich davon nur in den Versionszeilen und bringt zusätzlich
-`beelogger_show.php` mit; die Zeilennummern in `beelogger_log.php` sind in beiden Paketen gleich. Überblick über den Datenweg: [architektur.md](architektur.md).
+[`server/M40_261109/`](../server/M40_261109/). Zeilennummern beziehen sich auf `beelogger1/beelogger_log.php`
+aus **M41_261122**. In M40_261109 liegen die Zeilen 66–142 um eine Zeile höher (Nummer minus 1), ab Zeile 1010
+bis zu 10 Zeilen tiefer; dazwischen sind sie gleich.
+
+Gegenüber M41_261110a ändert M41_261122 an der Datenannahme nichts Sichtbares (`curl_close()`-Aufrufe
+entfernt, zwei Variablen früher initialisiert). Anders sind: `beelogger_show.php` setzt alle `*.json` im
+Logger-Ordner auf 0600 (Zeile 911), `lora_downlink.php` schreibt auf `community.beelogger.de` kein Log
+(Zeile 100), `beelogger_mobileCheck.php`, `beelogger_mobileWatch.php`, `beelogger_cron21.php` und
+`local_Updater.php` sind geändert, `local_install.php` und `local_CSV_Split_Archiv.php` liegen bei.
+Überblick über den Datenweg: [architektur.md](architektur.md).
 
 **Was öffentlich zu haben ist** (gemessen 19.11.2026 mit `scripts/stand-pruefen.sh server`): Die
 [Release-Seite](https://beelogger.de/webserver/webserver-skripte/webserver-skripte-release/) bietet
 `M40_261004_ServerSkripte.zip` an, die Downloads-Seite `M35_260909_ServerSkripte.zip`. M.41 ist dort
-angekündigt („Dezember 2026“), aber noch nicht zum Download. Die Pakete M40_261109 und M41_261110a hat das
+angekündigt („Dezember 2026“), aber noch nicht zum Download. Die Pakete M40_261109, M41_261110a und M41_261122 hat das
 beelogger-Team für die Tests vorab geschickt; M41 läuft laut beelogger-Team (Mail 17.11.2026) bereits auf
 `community.beelogger.de`. Die Version dort ist von außen nicht ablesbar (`$show_version=0` in `beelogger_show.php`).
 
@@ -41,9 +48,10 @@ Wichtige Dateien im Ordner:
 | `beelogger.csv`, `month.csv`, `week.csv` | Messdaten: alles, letzter Monat, letzte Woche |
 
 **Installation (Original-Skripte).** Laut beelogger.de: PHP 8, für einige Funktionen cURL. Ein Basisordner mit
-Schreibrecht enthält `general_ini.php` (Sprache, Tageswächter, Schlüssel für Wetter/Karte), `beelogger_cron21.php`,
-`Errorchecker*.php`, `beelogger_mobileWatch.php`, `beelogger_mobileCheck.php`, Dygraph-Dateien, Icons und Sprachen,
-darunter je Logger ein Ordner. Fehlende Dateien (`beelogger_ini.php`, CSV-Dateien, `notes.csv`, `Schwarminfo.php` …)
+Schreibrecht enthält `general_ini.php` (Sprache, Tageswächter, Schlüssel für Wetter/Karte),
+`beelogger_mobileWatch.php`, `beelogger_mobileCheck.php`, Dygraph-Dateien, Icons und Sprachen, darunter je Logger
+ein Ordner. `beelogger_cron21.php` und die `Errorchecker*.php` legen `local_install.php` und `local_Updater.php`
+aus M41_261122 eine Ebene über dem Skriptordner des Pakets ab. Fehlende Dateien (`beelogger_ini.php`, CSV-Dateien, `notes.csv`, `Schwarminfo.php` …)
 legen die Skripte selbst an. Fehlerprotokolle von `beelogger_log.php` (falsches Passwort, fehlerhafte Daten)
 landen in `ErrorcheckerData.php` im Basisordner. `local_Updater.php` kopiert neue Skripte in bestehende Ordner:
 ohne Option nur Anzeige, `?U` Skripte, `?X` Icons und Sprachen. Weitere Logger-Ordner legt die Web-Konfiguration
@@ -64,7 +72,7 @@ ist in beiden Paketen dabei.
    Der RSSI des ersten Gateways landet in `Aux2`. Felder der Waagen 2 ff. (`Gewicht2`, `TempIn2` …) liest der
    Server nur, wenn der Ordnername so viele Waagen erwartet. Mehr gesendete Waagen fallen weg. Fehlt bei einem
    Ordner `Triple…` das Feld `Gewicht3` (bei `Penta…`/`Hexa…` `Gewicht5`/`Gewicht6`), antwortet der Server
-   `typErrT25Dok` und speichert **nichts** (Zeilen 118–142 und 381–387). Bei Duo und Quad gibt es diese Prüfung
+   `typErrT25Dok` und speichert **nichts** (Zeilen 119–143 und 381–387). Bei Duo und Quad gibt es diese Prüfung
    nicht, fehlende Waagen bleiben dort einfach leer. `Aux3` wird als
    Sketch-ID `LORA_<Aux3>` gemerkt. Fehlt das Feld (9 von 10 Uplinks), bleibt die zuletzt gemerkte ID.
 4. **Zeitstempel = Serverzeit** (Europe/Berlin), Sekunden auf 00 gesetzt. Die Uhr im Logger spielt dafür
@@ -120,7 +128,7 @@ Wird gespeichert, hängt der Server dieselbe Zeile an `beelogger.csv`, `month.cs
 Einzel-Loggers im Unterordner `beelogger<Kennbuchstabe><Nr>_<Waage>` (z. B. `beeloggerQ4_1` … `beeloggerQ4_4`,
 Kennbuchstabe D/T/Q/P/H).
 
-**Kürzen** (`CSVbuilder_log()`, Zeile 1188): nach dem Speichern, wenn die Stunde kleiner als 8 ist und
+**Kürzen** (`CSVbuilder_log()`, Zeile 1186): nach dem Speichern, wenn die Stunde kleiner als 8 ist und
 `month.csv` mehr als 20 Zeilen hat. `month.csv` behält die letzten 31 Tage (2 678 400 s vor dem jüngsten
 Zeitstempel), `week.csv` die letzten 7 Tage (604 800 s). `beelogger.csv` wird nie gekürzt.
 
@@ -324,9 +332,9 @@ Intervalls (TTN Fair Use: etwa 10 pro Gerät und Tag). Nur Intervalle von 5–60
 | `lora_downlink.log` | eine Zeile pro Downlink-Versuch mit HTTP-Antwort von TTN |
 
 **Zugriffsrechte:** Beide Dateien liegen im Logger-Ordner und sind über die Webseite abrufbar, solange der Server sie
-ausliefert (Rechte 644). In der Fassung, die das beelogger-Team am 17.11.2026 auf seinem Server verteilt hat, setzt das Skript
-die Rechte der State-Datei bei jedem Aufruf auf 0600; auf `community.beelogger.de` schreibt es das Log gar nicht.
-Diese Fassung steckt weder im Paket M41_261110a noch in `server/lora_downlink.php`. Wer das Skript von Hand einspielt,
+ausliefert (Rechte 644). Im Paket M41_261122 setzt `beelogger_show.php` bei jedem Aufruf alle `*.json` im Ordner auf
+0600 (Zeile 911), das Log nicht; auf `community.beelogger.de` schreibt `lora_downlink.php` das Log gar nicht
+(Zeile 100). `server/lora_downlink.php` aus diesem Repo macht beides nicht. Wer das Skript von Hand einspielt,
 setzt beide Dateien einmal selbst auf 0600 (danach liefert der Server 403). Das Log liest man dann per SSH.
 
 Beispielzeile im Log:
