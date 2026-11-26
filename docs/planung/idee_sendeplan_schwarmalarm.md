@@ -2,7 +2,7 @@
 
 [← Übersicht](../README.md)
 
-Stand 07.11.2026, ergänzt 19.11.2026 (Variante 10 min senden / 5 min wiegen), **Stand 25.11.2026:** Sendeplan S6 (Wiegen und Senden getrennt, Fern-Kommando FPort 12) ist auf `main` umgesetzt (Merge 36c6ca4, Code `src/STM32_sendeplan.ino`); Schwarmverdacht-Bestätigung, Feld-Flash und Verbrauch im Feld sind offen.
+Stand 07.11.2026, ergänzt 19.11.2026 (Variante 10 min senden / 5 min wiegen), **Stand 25.11.2026:** Sendeplan S6 (Wiegen und Senden getrennt, Fern-Kommando FPort 12) ist auf `main` umgesetzt (Merge 36c6ca4, Code `src/STM32_sendeplan.ino`); Feld-Flash und Verbrauch im Feld sind offen. **26.11.2026:** Eine zusätzliche Bestätigung des Schwarmverdachts in der Firmware kommt nicht. Einzelne Ausreißer fängt der Server ab, wenn die ReferenzZeit über dem Sendeabstand liegt ([server_alarme.md](../server_alarme.md#schwarmalarm); Mail beelogger-Team 26.11.2026).
 
 **Antwort beelogger-Team (07.11.):** LoRa sendet ohnehin mindestens alle 10 min, forciertes Senden braucht es nicht. Öfter bringt nichts: Der Server ignoriert kurze Abstände (Okt–März 400 s; *Stand Code M41: 220 s, auf community.beelogger.de Okt–Feb 520 s, `beelogger_log.php` Z. 573–574, vom Team am 18.11. bestätigt*), und die Schwarmlogik ist auf den 10-min-Takt ausgelegt (Windböen). Dabei bleibt es. **Status: nicht für `main`**, höchstens als Experiment im eigenen Branch mit eigenem Server.
 
